@@ -74,6 +74,15 @@ public:
     std::string getPupilFactoryName() const { return _pupilFactoryName; }
 
     /**
+     * Return True if there is an x-axis flip from FOCAL_PLANE to FIELD_ANGLE, False otherwise.
+     *
+     * @details Cameras with an even number of reflective surfaces (e.g. LATISS) or a particular choice for
+     *          the PIXEL coordinates (e.g. DECam) require this x-axis flip for their coordinate system to
+     *          match our conventions.
+     */
+    bool getFocalPlaneParity() const;
+
+    /**
      * Find the detectors that cover a point in any camera system
      *
      * @param[in] point  position to use in lookup (lsst::geom::Point2D)
