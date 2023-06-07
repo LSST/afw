@@ -447,6 +447,7 @@ class ButlerImage(FakeImageDataSource):
             im = afwMath.binImage(im, binSize)
 
         if allowRotate:
+            # if hasattr(ccd, "getOrientation"):
             im = afwMath.rotateImageBy90(
                 im, ccd.getOrientation().getNQuarter())
 
@@ -472,13 +473,17 @@ class ButlerImage(FakeImageDataSource):
             except Exception as e:  # try a different dataId
                 err = e
             else:
-                ccd = im.getDetector()  # possibly modified by assembleCcdTask
+                if self.type == "raw":
+                    ccd = im.getDetector()  # possibly modified by assembleCcdTask
 
             if im:
                 if asMaskedImage:
                     im = im.getMaskedImage()
                 else:
-                    im = im.getMaskedImage().getImage()
+                    if hasattr(im, "getMaskedImage"):
+                        im = im.getMaskedImage().getImage()
+                    else:
+                        im = im.getImage()
             else:
                 if self.verbose:
                     # Lost by jupyterlab.
@@ -918,7 +923,13 @@ def makeImageFromCamera(camera, detectorNameList=None, background=numpy.nan, buf
         try:
             imView[:] = im
         except pexExceptions.LengthError:
-            log.exception("Unable to fit image for detector \"%s\" into image of camera.", det.getName())
+            nQuarter = det.getOrientation().getNQuarter()
+            if nQuarter % 4:
+                im = afwMath.rotateImageBy90(im, det.getOrientation().getNQuarter())
+                imView[:] = im
+            else:
+                log.exception("Unable to fit image for detector \"%s\" [\"%d\"] into image of camera.",
+                              det.getName(), det.getId())
 
     return camIm
 
