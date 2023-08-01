@@ -39,7 +39,7 @@ namespace lsst {
 namespace afw {
 namespace math {
 
-using ClsField = py::class_<TransformBoundedField, std::shared_ptr<TransformBoundedField>, BoundedField>;
+using ClsField = py::class_<TransformBoundedField, BoundedField>;
 
 void declareTransformBoundedField(lsst::utils::python::WrapperCollection &wrappers) {
     wrappers.wrapType(ClsField(wrappers.module, "TransformBoundedField"), [](auto &mod, auto &cls) {

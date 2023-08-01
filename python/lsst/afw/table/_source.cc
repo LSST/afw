@@ -51,11 +51,9 @@ using utils::python::WrapperCollection;
 
 namespace {
 
-using PySourceRecord = py::class_<SourceRecord, std::shared_ptr<SourceRecord>, SimpleRecord>;
-using PySourceTable = py::class_<SourceTable, std::shared_ptr<SourceTable>, SimpleTable>;
-using PySourceColumnView =
-        py::class_<SourceColumnViewT<SourceRecord>, std::shared_ptr<SourceColumnViewT<SourceRecord>>,
-                   ColumnViewT<SourceRecord>>;
+using PySourceRecord = py::class_<SourceRecord, SimpleRecord>;
+using PySourceTable = py::class_<SourceTable, SimpleTable>;
+using PySourceColumnView = py::class_<SourceColumnViewT<SourceRecord>, ColumnViewT<SourceRecord>>;
 
 /*
 Declare member and static functions for a pybind11 wrapper of SourceRecord

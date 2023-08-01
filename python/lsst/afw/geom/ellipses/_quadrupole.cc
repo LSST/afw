@@ -38,7 +38,7 @@ namespace geom {
 namespace ellipses {
 void wrapQuadrupole(lsst::utils::python::WrapperCollection &wrappers) {
     wrappers.wrapType(
-            py::class_<Quadrupole, std::shared_ptr<Quadrupole>, BaseCore>(wrappers.module, "Quadrupole"),
+            py::class_<Quadrupole, BaseCore>(wrappers.module, "Quadrupole"),
             [](auto &mod, auto &cls) {
                 /* Member types and enums */
                 using Matrix = Eigen::Matrix<double, 2, 2, Eigen::DontAlign>;

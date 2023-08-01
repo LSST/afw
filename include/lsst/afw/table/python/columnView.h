@@ -36,8 +36,7 @@ namespace table {
 namespace python {
 
 template <typename Record>
-using PyColumnView =
-        pybind11::class_<ColumnViewT<Record>, std::shared_ptr<ColumnViewT<Record>>, BaseColumnView>;
+using PyColumnView = pybind11::class_<ColumnViewT<Record>, BaseColumnView>;
 
 /**
  * Declare member and static functions for a given instantiation of lsst::afw::table::ColumnViewT<RecordT>.

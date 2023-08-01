@@ -37,7 +37,7 @@ namespace detection {
 
 void wrapGaussianPsf(utils::python::WrapperCollection& wrappers) {
     wrappers.wrapType(
-            py::class_<GaussianPsf, std::shared_ptr<GaussianPsf>, Psf>(wrappers.module, "GaussianPsf"),
+            py::class_<GaussianPsf, Psf>(wrappers.module, "GaussianPsf"),
             [](auto& mod, auto& cls) {
                 table::io::python::addPersistableMethods<GaussianPsf>(cls);
 

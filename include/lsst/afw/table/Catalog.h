@@ -149,10 +149,11 @@ public:
         insert(end(), first, last, deep);
     }
 
-    /// Shallow copy constructor.
-    CatalogT(CatalogT const& other) : _table(other._table), _internal(other._internal) {}
-    // Delegate to copy constructor for backward compatibility
-    CatalogT(CatalogT&& other) : CatalogT(other) {}
+    //@{
+    /// Shallow copy and constructors.
+    CatalogT(CatalogT const& other) = default;
+    CatalogT(CatalogT&& other) noexcept = default;
+    //@}
 
     ~CatalogT() = default;
 
@@ -182,7 +183,7 @@ public:
      *
      *  The returned array's records are shallow copies, and hence will not in general be contiguous.
      */
-    CatalogT<RecordT> subset(ndarray::Array<bool const, 1> const& mask) const {
+    CatalogT subset(ndarray::Array<bool const, 1> const& mask) const {
         if (size_type(mask.size()) != size()) {
             throw LSST_EXCEPT(
                     pex::exceptions::LengthError,
@@ -203,7 +204,7 @@ public:
      * @brief Returns a shallow copy of a subset of this Catalog.  The arguments
      * correspond to python's slice() syntax.
      */
-    CatalogT<RecordT> subset(std::ptrdiff_t startd, std::ptrdiff_t stopd, std::ptrdiff_t step) const {
+    CatalogT subset(std::ptrdiff_t startd, std::ptrdiff_t stopd, std::ptrdiff_t step) const {
         /* Python's slicing syntax is weird and wonderful.
 
          Both the "start" and "stop" indices can be negative, which means the

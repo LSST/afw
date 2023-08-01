@@ -37,7 +37,7 @@ namespace afw {
 namespace geom {
 namespace {
 
-using PySpan = py::class_<Span, std::shared_ptr<Span>>;
+using PySpan = py::class_<Span>;
 
 // A thin wrapper around SpanPixelIterator.
 // Unfortunately we cannot use py::make_iterator here, as we normally

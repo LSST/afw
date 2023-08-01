@@ -32,7 +32,7 @@ namespace lsst {
 namespace afw {
 namespace math {
 
-using PyClass = py::class_<PixelAreaBoundedField, std::shared_ptr<PixelAreaBoundedField>, BoundedField>;
+using PyClass = py::class_<PixelAreaBoundedField, BoundedField>;
 
 void wrapPixelAreaBoundedField(lsst::utils::python::WrapperCollection &wrappers) {
     wrappers.wrapType(PyClass(wrappers.module, "PixelAreaBoundedField"), [](auto &mod, auto &cls) {

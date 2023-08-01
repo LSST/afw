@@ -32,7 +32,7 @@ using namespace lsst::afw::math;
 namespace lsst {
 namespace afw {
 namespace math {
-using PyClass = py::class_<ProductBoundedField, std::shared_ptr<ProductBoundedField>, BoundedField>;
+using PyClass = py::class_<ProductBoundedField, BoundedField>;
 
 void wrapProductBoundedField(lsst::utils::python::WrapperCollection &wrappers) {
     wrappers.wrapType(PyClass(wrappers.module, "ProductBoundedField"), [](auto &mod, auto &cls) {

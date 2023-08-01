@@ -36,7 +36,7 @@ namespace table {
 namespace python {
 
 template <typename Record>
-using PyCatalog = pybind11::class_<CatalogT<Record>, std::shared_ptr<CatalogT<Record>>>;
+using PyCatalog = pybind11::class_<CatalogT<Record>>;
 
 /// Extract a column from a potentially non-contiguous Catalog
 template <typename T, typename Record>

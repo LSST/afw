@@ -42,7 +42,7 @@ template <typename K>
 void declareSimpleGenericMap(utils::python::WrapperCollection& wrappers, std::string const& suffix,
                              std::string const& key) {
     using Class = SimpleGenericMap<K>;
-    using PyClass = py::class_<Class, std::shared_ptr<Class>, MutableGenericMap<K>>;
+    using PyClass = py::class_<Class, MutableGenericMap<K>>;
 
     std::string className = "SimpleGenericMap" + suffix;
     // Give the class a custom docstring to avoid confusing Python users

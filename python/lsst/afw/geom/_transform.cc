@@ -79,7 +79,7 @@ void declareTransform(lsst::utils::python::WrapperCollection &wrappers) {
 
     std::string const pyClassName = Class::getShortClassName();
     wrappers.wrapType(
-            py::class_<Class, std::shared_ptr<Class>, table::io::Persistable>(wrappers.module, pyClassName.c_str()),
+            py::class_<Class, table::io::Persistable>(wrappers.module, pyClassName.c_str()),
             [](auto &mod, auto &cls) {
                 std::string const pyClassName = Class::getShortClassName();
                 cls.def(py::init<ast::FrameSet const &, bool>(), "frameSet"_a, "simplify"_a = true);

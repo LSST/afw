@@ -43,7 +43,7 @@ namespace geom {
 namespace ellipses {
 void wrapEllipse(lsst::utils::python::WrapperCollection &wrappers) {
     wrappers.wrapType(
-            py::class_<Ellipse, std::shared_ptr<Ellipse>>(wrappers.module, "Ellipse"),
+            py::class_<Ellipse>(wrappers.module, "Ellipse"),
             [](auto &mod, auto &cls) {
                 /* Constructors */
                 cls.def(py::init<BaseCore const &, lsst::geom::Point2D const &>(), "core"_a,

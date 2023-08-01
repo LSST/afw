@@ -80,7 +80,7 @@ void declareSkyWcs(lsst::utils::python::WrapperCollection &wrappers) {
                 "simplify"_a = true);
     });
     wrappers.wrapType(
-            py::class_<SkyWcs, std::shared_ptr<SkyWcs>, typehandling::Storable>(wrappers.module, "SkyWcs"),
+            py::class_<SkyWcs, typehandling::Storable>(wrappers.module, "SkyWcs"),
             [](auto &mod, auto &cls) {
                 cls.def(py::init<daf::base::PropertySet &, bool>(), "metadata"_a, "strip"_a = false);
                 cls.def(py::init<ast::FrameDict const &>(), "frameDict"_a);

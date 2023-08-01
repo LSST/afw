@@ -37,7 +37,7 @@ namespace lsst {
 namespace afw {
 namespace math {
 void wrapKernel(lsst::utils::python::WrapperCollection &wrappers) {
-    using PyKernel = py::class_<Kernel, std::shared_ptr<Kernel>>;
+    using PyKernel = py::class_<Kernel>;
 
     wrappers.addSignatureDependency("lsst.afw.table");
     wrappers.addSignatureDependency("lsst.afw.table.io");
@@ -78,7 +78,7 @@ void wrapKernel(lsst::utils::python::WrapperCollection &wrappers) {
         cls.def("getCacheSize", &Kernel::getCacheSize);
     });
 
-    using PyFixedKernel = py::class_<FixedKernel, std::shared_ptr<FixedKernel>, Kernel>;
+    using PyFixedKernel = py::class_<FixedKernel, Kernel>;
     wrappers.wrapType(PyFixedKernel(wrappers.module, "FixedKernel"), [](auto &mod, auto &cls) {
         cls.def(py::init<>());
         cls.def(py::init<lsst::afw::image::Image<Kernel::Pixel> const &>(), "image"_a);
@@ -91,7 +91,7 @@ void wrapKernel(lsst::utils::python::WrapperCollection &wrappers) {
         cls.def("isPersistable", &FixedKernel::isPersistable);
     });
 
-    using PyAnalyticKernel = py::class_<AnalyticKernel, std::shared_ptr<AnalyticKernel>, Kernel>;
+    using PyAnalyticKernel = py::class_<AnalyticKernel, Kernel>;
     wrappers.wrapType(PyAnalyticKernel(wrappers.module, "AnalyticKernel"), [](auto &mod, auto &cls) {
         cls.def(py::init<>());
         // Workaround for NullSpatialFunction and py::arg not playing well with Citizen (TODO: no longer
@@ -114,7 +114,7 @@ void wrapKernel(lsst::utils::python::WrapperCollection &wrappers) {
     });
 
     using PyDeltaFunctionKernel =
-            py::class_<DeltaFunctionKernel, std::shared_ptr<DeltaFunctionKernel>, Kernel>;
+            py::class_<DeltaFunctionKernel, Kernel>;
     wrappers.wrapType(
             PyDeltaFunctionKernel(wrappers.module, "DeltaFunctionKernel"), [](auto &mod, auto &cls) {
                 cls.def(py::init<int, int, lsst::geom::Point2I const &>(), "width"_a, "height"_a, "point"_a);
@@ -126,7 +126,7 @@ void wrapKernel(lsst::utils::python::WrapperCollection &wrappers) {
             });
 
     using PyLinearCombinationKernel =
-            py::class_<LinearCombinationKernel, std::shared_ptr<LinearCombinationKernel>, Kernel>;
+            py::class_<LinearCombinationKernel, Kernel>;
     wrappers.wrapType(
             PyLinearCombinationKernel(wrappers.module, "LinearCombinationKernel"), [](auto &mod, auto &cls) {
                 cls.def(py::init<>());
@@ -149,7 +149,7 @@ void wrapKernel(lsst::utils::python::WrapperCollection &wrappers) {
                 cls.def("isPersistable", &LinearCombinationKernel::isPersistable);
             });
 
-    using PySeparableKernel = py::class_<SeparableKernel, std::shared_ptr<SeparableKernel>, Kernel>;
+    using PySeparableKernel = py::class_<SeparableKernel, Kernel>;
     wrappers.wrapType(PySeparableKernel(wrappers.module, "SeparableKernel"), [](auto &mod, auto &cls) {
         cls.def(py::init<>());
         // Workaround for NullSpatialFunction and py::arg not playing well with Citizen (TODO: no longer

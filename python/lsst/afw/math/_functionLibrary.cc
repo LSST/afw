@@ -35,8 +35,6 @@
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-PYBIND11_DECLARE_HOLDER_TYPE(MyType, std::shared_ptr<MyType>);
-
 namespace lsst {
 namespace afw {
 namespace math {
@@ -46,7 +44,7 @@ void declarePolynomialFunctions(lsst::utils::python::WrapperCollection &wrappers
     /* PolynomialFunction1 */
 
     wrappers.wrapType(
-            py::class_<PolynomialFunction1<ReturnT>, std::shared_ptr<PolynomialFunction1<ReturnT>>,
+            py::class_<PolynomialFunction1<ReturnT>,
                        Function1<ReturnT>>(wrappers.module, ("PolynomialFunction1" + suffix).c_str()),
             [](auto &mod, auto &cls) {
                 cls.def(py::init<std::vector<double> const &>(), "params"_a);
@@ -59,7 +57,7 @@ void declarePolynomialFunctions(lsst::utils::python::WrapperCollection &wrappers
                 cls.def("toString", &PolynomialFunction1<ReturnT>::toString, "prefix"_a = "");
             });
     /* PolynomialFunction2 */
-    wrappers.wrapType(py::class_<PolynomialFunction2<ReturnT>, std::shared_ptr<PolynomialFunction2<ReturnT>>,
+    wrappers.wrapType(py::class_<PolynomialFunction2<ReturnT>,
                                  BasePolynomialFunction2<ReturnT>>(wrappers.module,
                                                                    ("PolynomialFunction2" + suffix).c_str()),
                       [](auto &mod, auto &cls) {
@@ -80,7 +78,7 @@ void declareChebyshevFunctions(lsst::utils::python::WrapperCollection &wrappers,
     /* Chebyshev1Function1 */
 
     wrappers.wrapType(
-            py::class_<Chebyshev1Function1<ReturnT>, std::shared_ptr<Chebyshev1Function1<ReturnT>>,
+            py::class_<Chebyshev1Function1<ReturnT>,
                        Function1<ReturnT>>(wrappers.module, ("Chebyshev1Function1" + suffix).c_str()),
             [](auto &mod, auto &cls) {
                 cls.def(py::init<std::vector<double>, double, double>(), "params"_a, "minX"_a = -1,
@@ -97,7 +95,7 @@ void declareChebyshevFunctions(lsst::utils::python::WrapperCollection &wrappers,
 
                 /* Chebyshev1Function2 */
             });
-    wrappers.wrapType(py::class_<Chebyshev1Function2<ReturnT>, std::shared_ptr<Chebyshev1Function2<ReturnT>>,
+    wrappers.wrapType(py::class_<Chebyshev1Function2<ReturnT>,
                                  BasePolynomialFunction2<ReturnT>>(wrappers.module,
                                                                    ("Chebyshev1Function2" + suffix).c_str()),
                       [](auto &mod, auto &cls) {
@@ -120,7 +118,7 @@ void declareChebyshevFunctions(lsst::utils::python::WrapperCollection &wrappers,
 template <typename ReturnT>
 void declareGaussianFunctions(lsst::utils::python::WrapperCollection &wrappers, const std::string &suffix) {
     /* GaussianFunction1 */
-    wrappers.wrapType(py::class_<GaussianFunction1<ReturnT>, std::shared_ptr<GaussianFunction1<ReturnT>>,
+    wrappers.wrapType(py::class_<GaussianFunction1<ReturnT>,
                                  Function1<ReturnT>>(wrappers.module, ("GaussianFunction1" + suffix).c_str()),
                       [](auto &mod, auto &cls) {
                           cls.def(py::init<double>(), "sigma"_a);
@@ -130,7 +128,7 @@ void declareGaussianFunctions(lsst::utils::python::WrapperCollection &wrappers, 
                           cls.def("toString", &GaussianFunction1<ReturnT>::toString, "prefix"_a = "");
                       });
 
-    wrappers.wrapType(py::class_<GaussianFunction2<ReturnT>, std::shared_ptr<GaussianFunction2<ReturnT>>,
+    wrappers.wrapType(py::class_<GaussianFunction2<ReturnT>,
                                  Function2<ReturnT>>(wrappers.module, ("GaussianFunction2" + suffix).c_str()),
                       [](auto &mod, auto &cls) {
                           /* GaussianFunction2 */
@@ -146,7 +144,7 @@ void declareGaussianFunctions(lsst::utils::python::WrapperCollection &wrappers, 
     /* DoubleGaussianFunction2 */
 
     wrappers.wrapType(
-            py::class_<DoubleGaussianFunction2<ReturnT>, std::shared_ptr<DoubleGaussianFunction2<ReturnT>>,
+            py::class_<DoubleGaussianFunction2<ReturnT>,
                        Function2<ReturnT>>(wrappers.module, ("DoubleGaussianFunction2" + suffix).c_str()),
             [](auto &mod, auto &cls) {
                 cls.def(py::init<double, double, double>(), "sigma1"_a, "sigma2"_a = 0, "ampl"_a = 0);
@@ -164,7 +162,7 @@ void declareIntegerDeltaFunctions(lsst::utils::python::WrapperCollection &wrappe
     /* IntegerDeltaFunction1 */
 
     wrappers.wrapType(
-            py::class_<IntegerDeltaFunction1<ReturnT>, std::shared_ptr<IntegerDeltaFunction1<ReturnT>>,
+            py::class_<IntegerDeltaFunction1<ReturnT>,
                        Function1<ReturnT>>(wrappers.module, ("IntegerDeltaFunction1" + suffix).c_str()),
             [](auto &mod, auto &cls) {
                 cls.def(py::init<double>(), "xo"_a);
@@ -176,7 +174,7 @@ void declareIntegerDeltaFunctions(lsst::utils::python::WrapperCollection &wrappe
     /* IntegerDeltaFunction2 */
 
     wrappers.wrapType(
-            py::class_<IntegerDeltaFunction2<ReturnT>, std::shared_ptr<IntegerDeltaFunction2<ReturnT>>,
+            py::class_<IntegerDeltaFunction2<ReturnT>,
                        Function2<ReturnT>>(wrappers.module, ("IntegerDeltaFunction2" + suffix).c_str()),
             [](auto &mod, auto &cls) {
                 cls.def(py::init<double, double>(), "xo"_a, "yo"_a);
@@ -191,7 +189,7 @@ template <typename ReturnT>
 void declareLanczosFunctions(lsst::utils::python::WrapperCollection &wrappers, const std::string &suffix) {
     /* LanczosFunction1 */
 
-    wrappers.wrapType(py::class_<LanczosFunction1<ReturnT>, std::shared_ptr<LanczosFunction1<ReturnT>>,
+    wrappers.wrapType(py::class_<LanczosFunction1<ReturnT>,
                                  Function1<ReturnT>>(wrappers.module, ("LanczosFunction1" + suffix).c_str()),
                       [](auto &mod, auto &cls) {
                           cls.def(py::init<unsigned int, double>(), "n"_a, "xOffset"_a = 0.0);
@@ -203,7 +201,7 @@ void declareLanczosFunctions(lsst::utils::python::WrapperCollection &wrappers, c
                       });
     /* LanczosFunction2 */
 
-    wrappers.wrapType(py::class_<LanczosFunction2<ReturnT>, std::shared_ptr<LanczosFunction2<ReturnT>>,
+    wrappers.wrapType(py::class_<LanczosFunction2<ReturnT>,
                                  Function2<ReturnT>>(wrappers.module, ("LanczosFunction2" + suffix).c_str()),
                       [](auto &mod, auto &cls) {
                           /* LanczosFunction2 */

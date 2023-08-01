@@ -37,7 +37,7 @@ namespace lsst {
 namespace afw {
 namespace image {
 
-using PyCoaddInputs = py::class_<CoaddInputs, std::shared_ptr<CoaddInputs>, typehandling::Storable>;
+using PyCoaddInputs = py::class_<CoaddInputs, typehandling::Storable>;
 
 void wrapCoaddInputs(lsst::utils::python::WrapperCollection &wrappers) {
     wrappers.addInheritanceDependency("lsst.afw.typehandling");

@@ -41,9 +41,8 @@ namespace afw {
 namespace cameraGeom {
 namespace {
 
-using PyTransformMap = py::class_<TransformMap, std::shared_ptr<TransformMap>>;
-using PyTransformMapConnection =
-        py::class_<TransformMap::Connection, std::shared_ptr<TransformMap::Connection>>;
+using PyTransformMap = py::class_<TransformMap>;
+using PyTransformMapConnection = py::class_<TransformMap::Connection>;
 
 void declareTransformMap(lsst::utils::python::WrapperCollection &wrappers) {
     auto transformMap = wrappers.wrapType(PyTransformMap(wrappers.module, "TransformMap"), [](auto &mod,

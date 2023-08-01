@@ -52,8 +52,8 @@ LSST_EXCEPTION_TYPE(UnsupportedOperationException, pex::exceptions::RuntimeError
  * optional, and may throw UnsupportedOperationException if they are not defined.
  *
  * @note Any C++ subclass `X` of Storable that supports Python subclasses must
- *       have a %pybind11 wrapper that uses `StorableHelper<X>` (or a subclass)
- *       and lsst::utils::python::PySharedPtr.
+ *       have a %pybind11 wrapper that uses `StorableHelper<X>` (or a
+ *       subclass).
  */
 class Storable : public table::io::Persistable {
 public:

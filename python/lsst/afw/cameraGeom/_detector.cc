@@ -49,13 +49,11 @@ namespace cameraGeom {
 
 namespace {
 
-using PyDetectorBase = py::class_<DetectorBase, std::shared_ptr<DetectorBase>>;
-using PyDetector = py::class_<Detector, DetectorBase, std::shared_ptr<Detector>, typehandling::Storable>;
-using PyDetectorBuilder = py::class_<Detector::Builder, DetectorBase, std::shared_ptr<Detector::Builder>>;
-using PyDetectorPartialRebuilder = py::class_<Detector::PartialRebuilder, Detector::Builder,
-                                              std::shared_ptr<Detector::PartialRebuilder>>;
-using PyDetectorInCameraBuilder =
-        py::class_<Detector::InCameraBuilder, Detector::Builder, std::shared_ptr<Detector::InCameraBuilder>>;
+using PyDetectorBase = py::class_<DetectorBase>;
+using PyDetector = py::class_<Detector, DetectorBase, typehandling::Storable>;
+using PyDetectorBuilder = py::class_<Detector::Builder, DetectorBase>;
+using PyDetectorPartialRebuilder = py::class_<Detector::PartialRebuilder, Detector::Builder>;
+using PyDetectorInCameraBuilder = py::class_<Detector::InCameraBuilder, Detector::Builder>;
 
 // Declare Detector methods overloaded on one coordinate system class
 template <typename SysT, typename PyClass>

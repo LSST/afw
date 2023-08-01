@@ -36,8 +36,7 @@ namespace table {
 namespace python {
 
 template <typename Record>
-using PySortedCatalog =
-        pybind11::class_<SortedCatalogT<Record>, std::shared_ptr<SortedCatalogT<Record>>, CatalogT<Record>>;
+using PySortedCatalog = pybind11::class_<SortedCatalogT<Record>, CatalogT<Record>>;
 
 /**
  * Wrap an instantiation of lsst::afw::table::SortedCatalogT<Record>.

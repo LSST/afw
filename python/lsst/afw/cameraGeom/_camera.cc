@@ -37,9 +37,8 @@ namespace lsst {
 namespace afw {
 namespace cameraGeom {
 
-using PyCamera = py::class_<Camera, DetectorCollection, std::shared_ptr<Camera>>;
-using PyCameraBuilder = py::class_<Camera::Builder, DetectorCollectionBase<Detector::InCameraBuilder>,
-                                   std::shared_ptr<Camera::Builder>>;
+using PyCamera = py::class_<Camera, DetectorCollection>;
+using PyCameraBuilder = py::class_<Camera::Builder, DetectorCollectionBase<Detector::InCameraBuilder>>;
 
 // Bindings here are ordered to match the order of the declarations in
 // Camera.h to the greatest extent possible; modifications to this file should

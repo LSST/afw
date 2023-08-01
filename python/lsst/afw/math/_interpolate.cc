@@ -36,7 +36,7 @@ namespace lsst {
 namespace afw {
 namespace math {
 void wrapInterpolate(lsst::utils::python::WrapperCollection &wrappers) {
-    using PyClass = py::class_<Interpolate, std::shared_ptr<Interpolate>>;
+    using PyClass = py::class_<Interpolate>;
 
     auto clsInterpolate = wrappers.wrapType(PyClass(wrappers.module, "Interpolate"), [](auto &mod,
                                                                                         auto &cls) {

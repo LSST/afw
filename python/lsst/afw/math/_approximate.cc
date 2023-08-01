@@ -41,7 +41,7 @@ void declareApproximate(lsst::utils::python::WrapperCollection &wrappers, std::s
     using Class = Approximate<PixelT>;
 
     wrappers.wrapType(
-            py::class_<Class, std::shared_ptr<Class>>(wrappers.module, ("Approximate" + suffix).c_str()),
+            py::class_<Class>(wrappers.module, ("Approximate" + suffix).c_str()),
             [](auto &mod, auto &cls) {
                 cls.def("getImage", &Class::getImage, "orderX"_a = -1, "orderY"_a = -1);
                 cls.def("getMaskedImage", &Class::getMaskedImage, "orderX"_a = -1, "orderY"_a = -1);
@@ -56,7 +56,7 @@ void declareApproximate(lsst::utils::python::WrapperCollection &wrappers, std::s
 }
 void declareApproximate(lsst::utils::python::WrapperCollection &wrappers) {
     auto control =
-            wrappers.wrapType(py::class_<ApproximateControl, std::shared_ptr<ApproximateControl>>(
+            wrappers.wrapType(py::class_<ApproximateControl>(
                                       wrappers.module, "ApproximateControl"),
                               [](auto &mod, auto &cls) {
                                   cls.def(py::init<ApproximateControl::Style, int, int, bool>(), "style"_a,

@@ -34,7 +34,7 @@ namespace afw {
 namespace image {
 namespace {
 
-using PyDefectBase = py::class_<DefectBase, std::shared_ptr<DefectBase>>;
+using PyDefectBase = py::class_<DefectBase>;
 
 void declareDefects(lsst::utils::python::WrapperCollection &wrappers) {
     wrappers.wrapType(PyDefectBase(wrappers.module, "DefectBase"), [](auto &mod, auto &cls) {

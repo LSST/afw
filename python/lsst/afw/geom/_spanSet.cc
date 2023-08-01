@@ -46,7 +46,7 @@ namespace geom {
 
 namespace {
 
-using PySpanSet = py::class_<SpanSet, std::shared_ptr<SpanSet>>;
+using PySpanSet = py::class_<SpanSet>;
 
 template <typename Pixel, typename PyClass>
 void declareFlattenMethod(PyClass &cls) {

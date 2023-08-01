@@ -38,7 +38,7 @@ namespace afw {
 namespace geom {
 namespace {
 
-using PySipApproximation = py::class_<SipApproximation, std::shared_ptr<SipApproximation>>;
+using PySipApproximation = py::class_<SipApproximation>;
 
 void declareSipApproximation(lsst::utils::python::WrapperCollection &wrappers) {
     wrappers.wrapType(PySipApproximation(wrappers.module, "SipApproximation"), [](auto &mod, auto &cls) {

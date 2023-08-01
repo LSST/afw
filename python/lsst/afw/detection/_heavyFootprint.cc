@@ -47,7 +47,7 @@ template <typename ImagePixelT, typename MaskPixelT = lsst::afw::image::MaskPixe
 void declareHeavyFootprint(WrapperCollection &wrappers, std::string const &suffix) {
     using Class = HeavyFootprint<ImagePixelT>;
     wrappers.wrapType(
-            py::class_<Class, std::shared_ptr<Class>, Footprint>(wrappers.module,
+            py::class_<Class, Footprint>(wrappers.module,
                                                                  ("HeavyFootprint" + suffix).c_str()),
             [](auto &mod, auto &cls) {
                 cls.def(py::init<Footprint const &,

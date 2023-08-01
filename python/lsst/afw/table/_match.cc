@@ -50,7 +50,7 @@ void declareMatch2(WrapperCollection &wrappers, std::string const &prefix) {
     using MatchList = std::vector<Match<typename Catalog1::Record, typename Catalog2::Record>>;
 
     using Class = Match<Record1, Record2>;
-    using PyClass = py::class_<Class, std::shared_ptr<Class>>;
+    using PyClass = py::class_<Class>;
     wrappers.wrapType(PyClass(wrappers.module, (prefix + "Match").c_str()), [](auto &mod, auto &cls) {
         cls.def(py::init<>());
         cls.def(py::init<std::shared_ptr<Record1> const &, std::shared_ptr<Record2> const &, double>(),

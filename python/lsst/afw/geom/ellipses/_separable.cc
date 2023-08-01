@@ -43,7 +43,7 @@ template <typename Ellipticity_, typename Radius_>
 void declareSeparable(lsst::utils::python::WrapperCollection &wrappers, const std::string &suffix) {
     using Class = Separable<Ellipticity_, Radius_>;
     wrappers.wrapType(
-            py::class_<Class, std::shared_ptr<Class>, BaseCore>(wrappers.module,
+            py::class_<Class, BaseCore>(wrappers.module,
                                                                 ("Separable" + suffix).c_str()),
             [](auto &mod, auto &cls) {
                 cls.def(py::init<double, double, double, bool>(), "e1"_a = 0.0, "e2"_a = 0.0,

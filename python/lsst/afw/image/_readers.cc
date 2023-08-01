@@ -54,10 +54,10 @@ namespace {
 // ImageBaseFitsReader is an implementation detail and is not exposed directly
 // to Python, as we have better ways to share wrapper code between classes
 // at the pybind11 level (e.g. declareCommon below).
-using PyImageFitsReader = py::class_<ImageFitsReader, std::shared_ptr<ImageFitsReader>>;
-using PyMaskFitsReader = py::class_<MaskFitsReader, std::shared_ptr<MaskFitsReader>>;
-using PyMaskedImageFitsReader = py::class_<MaskedImageFitsReader, std::shared_ptr<MaskedImageFitsReader>>;
-using PyExposureFitsReader = py::class_<ExposureFitsReader, std::shared_ptr<ExposureFitsReader>>;
+using PyImageFitsReader = py::class_<ImageFitsReader>;
+using PyMaskFitsReader = py::class_<MaskFitsReader>;
+using PyMaskedImageFitsReader = py::class_<MaskedImageFitsReader>;
+using PyExposureFitsReader = py::class_<ExposureFitsReader>;
 
 // Declare attributes common to all FitsReaders.  Excludes constructors
 // because ExposureFitsReader's don't take an HDU argument.

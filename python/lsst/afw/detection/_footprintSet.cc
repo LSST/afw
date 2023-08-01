@@ -88,7 +88,7 @@ void wrapFootprintSet(utils::python::WrapperCollection &wrappers) {
     wrappers.addSignatureDependency("lsst.afw.table");
 
     wrappers.wrapType(
-            py::class_<FootprintSet, std::shared_ptr<FootprintSet>>(wrappers.module, "FootprintSet"),
+            py::class_<FootprintSet>(wrappers.module, "FootprintSet"),
             [](auto &mod, auto &cls) {
                 declareTemplatedMembers<std::uint16_t>(cls);
                 declareTemplatedMembers<int>(cls);

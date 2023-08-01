@@ -76,7 +76,7 @@ void declareAll(lsst::utils::python::WrapperCollection &wrappers) {
 }
 
 void declareConvolveImage(lsst::utils::python::WrapperCollection &wrappers) {
-    using PyClass = py::class_<ConvolutionControl, std::shared_ptr<ConvolutionControl>>;
+    using PyClass = py::class_<ConvolutionControl>;
     wrappers.wrapType(PyClass(wrappers.module, "ConvolutionControl"), [](auto &mod, auto &clsl) {
         clsl.def(py::init<bool, bool, int>(), "doNormalize"_a = true, "doCopyEdge"_a = false,
                  "maxInterpolationDistance"_a = 10);

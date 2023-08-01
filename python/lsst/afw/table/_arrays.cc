@@ -47,7 +47,7 @@ namespace {
 // define a CRTP interface in C++ and in Python that's just duck-typing.
 
 template <typename T>
-using PyArrayKey = py::class_<ArrayKey<T>, std::shared_ptr<ArrayKey<T>>>;
+using PyArrayKey = py::class_<ArrayKey<T>>;
 
 template <typename T>
 void declareArrayKey(WrapperCollection &wrappers, std::string const &suffix) {

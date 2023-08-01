@@ -38,7 +38,7 @@ namespace image {
 namespace {
 
 template <typename ImagePixelT>  // only the image type varies; mask and variance are fixed
-using PyMaskedImage = py::class_<MaskedImage<ImagePixelT>, std::shared_ptr<MaskedImage<ImagePixelT>>>;
+using PyMaskedImage = py::class_<MaskedImage<ImagePixelT>>;
 
 /**
 @internal Declare a constructor that takes a MaskedImage of FromPixelT and returns a MaskedImage cast to

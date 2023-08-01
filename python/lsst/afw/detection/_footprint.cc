@@ -80,7 +80,7 @@ void wrapFootprint(WrapperCollection &wrappers) {
     wrappers.addSignatureDependency("lsst.afw.table");
 
     wrappers.wrapType(
-            py::class_<Footprint, std::shared_ptr<Footprint>>(wrappers.module, "Footprint"),
+            py::class_<Footprint>(wrappers.module, "Footprint"),
             [](auto &mod, auto &cls) {
                 cls.def(py::init<std::shared_ptr<geom::SpanSet>, lsst::geom::Box2I const &>(), "inputSpans"_a,
                         "region"_a = lsst::geom::Box2I());

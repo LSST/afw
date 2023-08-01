@@ -40,7 +40,7 @@ static void declareImageSlice(lsst::utils::python::WrapperCollection &wrappers, 
     using Class = ImageSlice<PixelT>;
 
     wrappers.wrapType(
-            py::class_<Class, std::shared_ptr<Class>, Image<PixelT>>(wrappers.module,
+            py::class_<Class, Image<PixelT>>(wrappers.module,
                                                                      ("ImageSlice" + suffix).c_str()),
             [](auto &mod, auto &cls) {
                 cls.def(py::init<Image<PixelT> const &>(), "img"_a);

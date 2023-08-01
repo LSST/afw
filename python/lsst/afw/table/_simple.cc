@@ -44,8 +44,8 @@ using utils::python::WrapperCollection;
 
 namespace {
 
-using PySimpleTable = py::class_<SimpleTable, std::shared_ptr<SimpleTable>, BaseTable>;
-using PySimpleRecord = py::class_<SimpleRecord, std::shared_ptr<SimpleRecord>, BaseRecord>;
+using PySimpleTable = py::class_<SimpleTable, BaseTable>;
+using PySimpleRecord = py::class_<SimpleRecord, BaseRecord>;
 
 PySimpleRecord declareSimpleRecord(WrapperCollection &wrappers) {
     return wrappers.wrapType(PySimpleRecord(wrappers.module, "SimpleRecord"), [](auto &mod, auto &cls) {

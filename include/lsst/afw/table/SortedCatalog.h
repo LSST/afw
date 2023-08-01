@@ -54,7 +54,7 @@ public:
     using Base::find;
 
     SortedCatalogT(SortedCatalogT const&) = default;
-    SortedCatalogT(SortedCatalogT&&) = default;
+    SortedCatalogT(SortedCatalogT&&) noexcept = default;
     SortedCatalogT& operator=(SortedCatalogT const&) = default;
     SortedCatalogT& operator=(SortedCatalogT&&) = default;
     ~SortedCatalogT() = default;

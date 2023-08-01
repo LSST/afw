@@ -67,7 +67,7 @@ void declareAll(lsst::utils::python::WrapperCollection &wrappers) {
 }  // namespace
 
 void declareConvolve(lsst::utils::python::WrapperCollection &wrappers) {
-    using PyClass = py::class_<KernelImagesForRegion, std::shared_ptr<KernelImagesForRegion>>;
+    using PyClass = py::class_<KernelImagesForRegion>;
     auto clsKernelImagesForRegion =
             wrappers.wrapType(PyClass(wrappers.module, "KernelImagesForRegion"), [](auto &mod, auto &cls) {
                 cls.def(py::init<KernelImagesForRegion::KernelConstPtr, lsst::geom::Box2I const &,
@@ -99,7 +99,7 @@ void declareConvolve(lsst::utils::python::WrapperCollection &wrappers) {
                           enm.export_values();
                       });
 
-    wrappers.wrapType(py::class_<RowOfKernelImagesForRegion, std::shared_ptr<RowOfKernelImagesForRegion>>(
+    wrappers.wrapType(py::class_<RowOfKernelImagesForRegion>(
                               wrappers.module, "RowOfKernelImagesForRegion"),
                       [](auto &mod, auto &cls) {
                           cls.def(py::init<int, int>(), "nx"_a, "ny"_a);

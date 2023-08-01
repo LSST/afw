@@ -42,16 +42,16 @@ namespace image {
 namespace {
 
 template <typename PixelT>
-using PyImageBase = py::class_<ImageBase<PixelT>, std::shared_ptr<ImageBase<PixelT>>>;
+using PyImageBase = py::class_<ImageBase<PixelT>>;
 
 template <typename PixelT>
-using PyImage = py::class_<Image<PixelT>, std::shared_ptr<Image<PixelT>>, ImageBase<PixelT>>;
+using PyImage = py::class_<Image<PixelT>, ImageBase<PixelT>>;
 
 template <typename PixelT>
-using PyDecoratedImage = py::class_<DecoratedImage<PixelT>, std::shared_ptr<DecoratedImage<PixelT>>>;
+using PyDecoratedImage = py::class_<DecoratedImage<PixelT>>;
 
 template <typename MaskPixelT>
-using PyMask = py::class_<Mask<MaskPixelT>, std::shared_ptr<Mask<MaskPixelT>>, ImageBase<MaskPixelT>>;
+using PyMask = py::class_<Mask<MaskPixelT>, ImageBase<MaskPixelT>>;
 
 /**
 @internal Declare a constructor that takes a MaskedImage of FromPixelT and returns a MaskedImage cast to
@@ -392,7 +392,7 @@ static void declareDecoratedImage(lsst::utils::python::WrapperCollection &wrappe
 /* Declare ImageSlice operators separately since they are only instantiated for float double */
 template <typename PixelT>
 static void addImageSliceOperators(
-        py::class_<Image<PixelT>, std::shared_ptr<Image<PixelT>>, ImageBase<PixelT>> &cls) {
+        py::class_<Image<PixelT>, ImageBase<PixelT>> &cls) {
     cls.def(
             "__add__",
             [](Image<PixelT> const &self, ImageSlice<PixelT> const &other) { return self + other; },

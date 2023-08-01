@@ -41,7 +41,7 @@ namespace afw {
 namespace image {
 namespace {
 
-using PyFilterLabel = py::class_<FilterLabel, std::shared_ptr<FilterLabel>, typehandling::Storable>;
+using PyFilterLabel = py::class_<FilterLabel, typehandling::Storable>;
 
 // Macro to convert an exception without defining a global handler for it
 #define _DELEGATE_EXCEPTION(call, cpp_ex, py_ex) \

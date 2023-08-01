@@ -26,7 +26,6 @@
 #include <pybind11/pybind11.h>
 
 #include "lsst/utils/python.h"
-#include "lsst/utils/python/PySharedPtr.h"
 
 #include "lsst/geom/Point.h"
 #include "lsst/afw/image/Color.h"
@@ -37,8 +36,6 @@
 
 namespace py = pybind11;
 using namespace pybind11::literals;
-
-using lsst::utils::python::PySharedPtr;
 
 namespace lsst {
 namespace afw {
@@ -52,7 +49,7 @@ void wrapPsf(utils::python::WrapperCollection& wrappers) {
     wrappers.addSignatureDependency("lsst.afw.fits");
 
     auto clsPsf = wrappers.wrapType(
-            py::class_<Psf, PySharedPtr<Psf>, typehandling::Storable, PsfTrampoline<>>(
+            py::class_<Psf, typehandling::Storable, PsfTrampoline<>>(
                 wrappers.module, "Psf"
             ),
             [](auto& mod, auto& cls) {

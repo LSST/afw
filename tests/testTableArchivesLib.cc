@@ -128,12 +128,10 @@ void DummyPsf::write(OutputArchiveHandle& handle) const {
     handle.saveCatalog(catalog);
 }
 
-PYBIND11_DECLARE_HOLDER_TYPE(MyType, std::shared_ptr<MyType>);
-
 PYBIND11_MODULE(testTableArchivesLib, mod) {
     py::module::import("lsst.afw.detection");
 
-    py::class_<DummyPsf, std::shared_ptr<DummyPsf>, lsst::afw::detection::Psf> cls(mod, "DummyPsf");
+    py::class_<DummyPsf, lsst::afw::detection::Psf> cls(mod, "DummyPsf");
 
     cls.def(py::init<double>());
 

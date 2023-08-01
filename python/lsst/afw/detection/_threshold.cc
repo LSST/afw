@@ -40,7 +40,7 @@ namespace detection {
 
 void wrapThreshold(utils::python::WrapperCollection& wrappers) {
     auto clsThreshold = wrappers.wrapType(
-            py::class_<Threshold, std::shared_ptr<Threshold>>(wrappers.module, "Threshold"),
+            py::class_<Threshold>(wrappers.module, "Threshold"),
             [](auto& mod, auto& cls) {
                 cls.def(py::init<double const, typename Threshold::ThresholdType const, bool const,
                                  double const>(),

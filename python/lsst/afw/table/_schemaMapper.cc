@@ -40,7 +40,7 @@ namespace afw {
 namespace table {
 
 using utils::python::WrapperCollection;
-using PySchemaMapper = py::class_<SchemaMapper, std::shared_ptr<SchemaMapper>>;
+using PySchemaMapper = py::class_<SchemaMapper>;
 
 namespace {
 

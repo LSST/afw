@@ -80,7 +80,7 @@ void declareBackground(lsst::utils::python::WrapperCollection &wrappers) {
                           enm.export_values();
                       });
 
-    using PyBackgroundControl = py::class_<BackgroundControl, std::shared_ptr<BackgroundControl>>;
+    using PyBackgroundControl = py::class_<BackgroundControl>;
     wrappers.wrapType(PyBackgroundControl(wrappers.module, "BackgroundControl"), [](auto &mod, auto &cls) {
         /* Constructors */
         cls.def(py::init<int const, int const, StatisticsControl const, Property const,
@@ -128,7 +128,7 @@ void declareBackground(lsst::utils::python::WrapperCollection &wrappers) {
         cls.def("getApproximateControl", (std::shared_ptr<ApproximateControl>(BackgroundControl::*)()) &
                                                  BackgroundControl::getApproximateControl);
     });
-    using PyBackground = py::class_<Background, std::shared_ptr<Background>>;
+    using PyBackground = py::class_<Background>;
     wrappers.wrapType(PyBackground(wrappers.module, "Background"), [](auto &mod, auto &cls) {
         /* Members */
         declareGetImage<float>(cls, "F");
@@ -141,7 +141,7 @@ void declareBackground(lsst::utils::python::WrapperCollection &wrappers) {
                 (std::shared_ptr<BackgroundControl>(Background::*)()) & Background::getBackgroundControl);
     });
 
-    using PyBackgroundMI = py::class_<BackgroundMI, std::shared_ptr<BackgroundMI>, Background>;
+    using PyBackgroundMI = py::class_<BackgroundMI, Background>;
     wrappers.wrapType(PyBackgroundMI(wrappers.module, "BackgroundMI"), [](auto &mod, auto &cls) {
         /* Constructors */
         cls.def(py::init<lsst::geom::Box2I const,

@@ -117,7 +117,7 @@ template <typename Point, typename Array>
 void declareBaseEndpoint(lsst::utils::python::WrapperCollection &wrappers, std::string const &suffix) {
     using Class = BaseEndpoint<Point, Array>;
     std::string const pyClassName = "_BaseEndpoint" + suffix;
-    wrappers.wrapType(py::class_<Class, std::shared_ptr<Class>>(wrappers.module, pyClassName.c_str()),
+    wrappers.wrapType(py::class_<Class>(wrappers.module, pyClassName.c_str()),
                       [](auto &mod, auto &cls) {
                           cls.def_property_readonly("nAxes", &Class::getNAxes);
                           addDataConverters(cls);
@@ -137,7 +137,7 @@ void declareBaseVectorEndpoint(lsst::utils::python::WrapperCollection &wrappers,
     std::string const pyClassName = "_BaseVectorEndpoint" + suffix;
 
     declareBaseEndpoint<Point, Array>(wrappers, suffix);
-    wrappers.wrapType(py::class_<Class, std::shared_ptr<Class>, BaseEndpoint<Point, Array>>(
+    wrappers.wrapType(py::class_<Class, BaseEndpoint<Point, Array>>(
                               wrappers.module, pyClassName.c_str()),
                       [](auto &mod, auto &cls) { addDataConverters(cls); });
 }
@@ -150,7 +150,7 @@ void declareGenericEndpoint(lsst::utils::python::WrapperCollection &wrappers) {
 
     declareBaseEndpoint<Point, Array>(wrappers, "Generic");
 
-    wrappers.wrapType(py::class_<Class, std::shared_ptr<Class>, BaseEndpoint<Point, Array>>(
+    wrappers.wrapType(py::class_<Class, BaseEndpoint<Point, Array>>(
                               wrappers.module, "GenericEndpoint"),
                       [](auto &mod, auto &cls) {
                           cls.def(py::init<int>(), "nAxes"_a);
@@ -168,7 +168,7 @@ void declarePoint2Endpoint(lsst::utils::python::WrapperCollection &wrappers) {
 
     declareBaseVectorEndpoint<Point>(wrappers, pointNumStr);
 
-    wrappers.wrapType(py::class_<Class, std::shared_ptr<Class>, BaseVectorEndpoint<Point>>(
+    wrappers.wrapType(py::class_<Class, BaseVectorEndpoint<Point>>(
                               wrappers.module, pyClassName.c_str()),
                       [](auto &mod, auto &cls) {
                           cls.def(py::init<>());
@@ -186,7 +186,7 @@ void declareSpherePointEndpoint(lsst::utils::python::WrapperCollection &wrappers
 
     declareBaseVectorEndpoint<Point>(wrappers, "SpherePoint");
 
-    wrappers.wrapType(py::class_<Class, std::shared_ptr<Class>, BaseVectorEndpoint<Point>>(
+    wrappers.wrapType(py::class_<Class, BaseVectorEndpoint<Point>>(
                               wrappers.module, "SpherePointEndpoint"),
                       [](auto &mod, auto &cls) {
                           cls.def(py::init<>());

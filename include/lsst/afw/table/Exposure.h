@@ -354,7 +354,7 @@ public:
     ExposureCatalogT(ExposureCatalogT<OtherRecordT> const& other) : Base(other) {}
 
     ExposureCatalogT(ExposureCatalogT const&) = default;
-    ExposureCatalogT(ExposureCatalogT&&) = default;
+    ExposureCatalogT(ExposureCatalogT&&) noexcept = default;
     ExposureCatalogT& operator=(ExposureCatalogT const&) = default;
     ExposureCatalogT& operator=(ExposureCatalogT&&) = default;
     ~ExposureCatalogT() = default;

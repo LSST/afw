@@ -34,7 +34,7 @@ namespace lsst {
 namespace afw {
 namespace table {
 
-using PyAliasMap = py::class_<AliasMap, std::shared_ptr<AliasMap>>;
+using PyAliasMap = py::class_<AliasMap>;
 
 void wrapAliasMap(utils::python::WrapperCollection &wrappers) {
     wrappers.wrapType(PyAliasMap(wrappers.module, "AliasMap"), [](auto &mod, auto &cls) {
