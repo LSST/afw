@@ -152,15 +152,35 @@ class Mosaic:
 
         return len(self.images)
 
-    def makeMosaic(self, images=None, display="deferToFrame", mode=None,
+    def makeMosaic(self, images=None, display="deferToFrame", mode=None, nxMultiple=None,
                    background=None, title=""):
         """Return a mosaic of all the images provided.
 
         If none are specified, use the list accumulated with `Mosaic.append()`.
 
-        If display is specified, display the mosaic
-        """
+        If display is specified, display the mosaic.
 
+        Parameters
+        ----------
+        images : `list` of `lsst.afw.image.MaskedImage`, optional
+            List of images to mosaic.
+        display : `str`, optional
+            Display control string.
+        mode : `str`, optional
+            Mosaicing mode.  Allowed values include:
+            "square" : Make mosaic as square as possible.
+                       Obey ``nxMultiple``.
+            "x" : Make mosaic one image high.
+            "y" : Make mosaic one image wide.
+        nxMultiple : `float`
+            The number of associated images you want to line up (i.e. if your
+            images list consists of an image then an image-model, then you
+            would want an nxMultiple of 2.  Or, if you had an (image,
+            model-imgae, image-model) triplet, you'd want an nxMultibple of 3.
+            Ignored unless `mode`="square".
+        background : `float`
+           Value to set the gutters between images to.
+        """
         if images:
             if self.images:
                 raise RuntimeError(
@@ -204,7 +224,10 @@ class Mosaic:
 
             if nx > self.nImage:
                 nx = self.nImage
-
+            if nxMultiple and nx%nxMultiple != 0:
+                nx += (nxMultiple - nx%nxMultiple)
+                while nx*(ny - 1) >= self.nImage:
+                    ny -= 1
             assert nx*ny >= self.nImage
         elif mode == "x":
             nx, ny = self.nImage, 1
