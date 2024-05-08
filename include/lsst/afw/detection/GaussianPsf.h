@@ -39,7 +39,8 @@ namespace detection {
  *  various operations relating to the PSF model image (e.g. computeShape()), GaussianPsf computes
  *  these analytically.
  */
-class GaussianPsf : public afw::table::io::PersistableFacade<GaussianPsf>, public Psf {
+class GaussianPsf : public Psf {
+DECLARE_PERSISTABLE_FACADE(Psf);
 public:
     /**
      *  Constructor for a GaussianPsf

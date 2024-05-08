@@ -40,8 +40,8 @@ namespace math {
  *
  * TransformBoundedField supports arbitrary transforms.
  */
-class TransformBoundedField : public table::io::PersistableFacade<TransformBoundedField>,
-                              public BoundedField {
+class TransformBoundedField : public BoundedField {
+DECLARE_PERSISTABLE_FACADE(TransformBoundedField);
 public:
     using Transform = afw::geom::Transform<afw::geom::Point2Endpoint, afw::geom::GenericEndpoint>;
 

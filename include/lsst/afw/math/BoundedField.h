@@ -52,7 +52,8 @@ namespace math {
  *  such as aperture corrections, photometric scaling, PSF model parameters, or backgrounds, and its
  *  bounding box will be set to match the PARENT bounding box of the image.
  */
-class BoundedField : public table::io::PersistableFacade<BoundedField>, public table::io::Persistable {
+class BoundedField : public table::io::Persistable {
+DECLARE_PERSISTABLE_FACADE(BoundedField);
 public:
     /**
      *  Evaluate the field at the given point.

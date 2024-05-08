@@ -42,7 +42,8 @@ namespace image {
  *  (given the simplified interface, for instance, we could switch to unordered_map or some other
  *  underyling container in the future).
  */
-class ApCorrMap final : public table::io::PersistableFacade<ApCorrMap>, public typehandling::Storable {
+class ApCorrMap final : public typehandling::Storable {
+DECLARE_PERSISTABLE_FACADE(ApCorrMap);
     using Internal = std::map<std::string, std::shared_ptr<math::BoundedField>>;
 
 public:

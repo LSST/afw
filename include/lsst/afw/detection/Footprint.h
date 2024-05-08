@@ -59,8 +59,8 @@ namespace detection {
  * a PeakCatalog which is used to store the location and intensity of peaks in
  * the detection.
  */
-class Footprint : public afw::table::io::PersistableFacade<lsst::afw::detection::Footprint>,
-                  public afw::table::io::Persistable {
+class Footprint : public afw::table::io::Persistable {
+DECLARE_PERSISTABLE_FACADE(Footprint);
 public:
     /*
      * As a note there is no constructor which accepts a unique_ptr to a SpanSet.

@@ -65,7 +65,8 @@ enum class RotType {
  *
  * VisitInfo is immutable.
  */
-class VisitInfo : public table::io::PersistableFacade<VisitInfo>, public typehandling::Storable {
+class VisitInfo : public typehandling::Storable {
+DECLARE_PERSISTABLE_FACADE(VisitInfo);
 public:
     /**
      * Construct a VisitInfo

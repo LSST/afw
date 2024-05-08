@@ -55,7 +55,8 @@ FilterLabel makeTestFilterLabel(bool, std::string const &, bool, std::string con
  * Not all of a FilterLabel object's labels need be defined, but at least one
  * is guaranteed to be present.
  */
-class FilterLabel final : public table::io::PersistableFacade<FilterLabel>, public typehandling::Storable {
+class FilterLabel final : public typehandling::Storable {
+DECLARE_PERSISTABLE_FACADE(FilterLabel);
 public:
     /**
      * Construct a FilterLabel from specific inputs.

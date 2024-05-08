@@ -62,9 +62,9 @@ namespace image {
  * or typehandling::Storable instead. The best way to avoid this at present is
  * to call functions that, in C++, explicitly return a TransmissionCurve.
  */
-class TransmissionCurve : public table::io::PersistableFacade<TransmissionCurve>,
-                          public typehandling::Storable,
+class TransmissionCurve : public typehandling::Storable,
                           public std::enable_shared_from_this<TransmissionCurve> {
+DECLARE_PERSISTABLE_FACADE(TransmissionCurve);
 public:
     /**
      *  Create a new TranmissionCurve that has unit thoughput at all wavelengths everywhere.

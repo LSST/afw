@@ -78,11 +78,11 @@ LSST_EXCEPTION_TYPE(InvalidPsfError, lsst::pex::exceptions::InvalidParameterErro
  *  or meas::algorithms::KernelPsf, as these will provide default implementions for
  *  several member functions.
  */
-class Psf : public afw::table::io::PersistableFacade<Psf>,
-            public afw::typehandling::Storable {
+class Psf : public afw::typehandling::Storable {
     static lsst::geom::Point2D makeNullPoint() {
         return lsst::geom::Point2D(std::numeric_limits<double>::quiet_NaN());
     }
+    DECLARE_PERSISTABLE_FACADE(Psf);
 
 public:
     using Pixel = math::Kernel::Pixel;  ///< Pixel type of Image returned by computeImage

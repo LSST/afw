@@ -56,7 +56,8 @@ LSST_EXCEPTION_TYPE(SinglePolygonException, lsst::pex::exceptions::RuntimeError,
 ///
 /// Polygons are defined by a set of vertices
 
-class Polygon final : public afw::table::io::PersistableFacade<Polygon>, public afw::typehandling::Storable {
+class Polygon final : public afw::typehandling::Storable {
+DECLARE_PERSISTABLE_FACADE(Polygon);
 public:
     using Box = lsst::geom::Box2D;
     using Point = lsst::geom::Point2D;

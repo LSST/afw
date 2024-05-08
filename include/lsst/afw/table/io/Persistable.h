@@ -218,6 +218,13 @@ public:
     static std::shared_ptr<T> dynamicCast(std::shared_ptr<Persistable> const &ptr);
 };
 
+#define DECLARE_PERSISTABLE_FACADE(CLASS) \
+   private: \
+       static afw::table::io::PersistableFacade<CLASS> facade_; \
+   public: \
+       static inline auto readFits = [](auto &&...args) { return facade_.readFits(args...);}; \
+       static inline auto dynamicCast = [](auto &&...args) { return facade_.dynamicCast(args...);};
+
 /**
  *  A base class for factory classes used to reconstruct objects from records.
  *

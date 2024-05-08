@@ -107,7 +107,8 @@ namespace math {
  *
  * @ingroup afw
  */
-class Kernel : public afw::table::io::PersistableFacade<Kernel>, public afw::table::io::Persistable {
+class Kernel : public afw::table::io::Persistable {
+DECLARE_PERSISTABLE_FACADE(Kernel);
 public:
     using Pixel = double;
     using SpatialFunctionPtr = std::shared_ptr<lsst::afw::math::Function2<double>>;
@@ -468,7 +469,8 @@ using KernelList = std::vector<std::shared_ptr<Kernel>>;
  *
  * @ingroup afw
  */
-class FixedKernel : public afw::table::io::PersistableFacade<FixedKernel>, public Kernel {
+class FixedKernel : public Kernel {
+DECLARE_PERSISTABLE_FACADE(FixedKernel);
 public:
     /**
      * Construct an empty FixedKernel of size 0x0
@@ -532,7 +534,8 @@ private:
  *
  * @ingroup afw
  */
-class AnalyticKernel : public afw::table::io::PersistableFacade<AnalyticKernel>, public Kernel {
+class AnalyticKernel : public Kernel {
+DECLARE_PERSISTABLE_FACADE(AnalyticKernel);
 public:
     using KernelFunction = lsst::afw::math::Function2<Pixel>;
     using KernelFunctionPtr = std::shared_ptr<lsst::afw::math::Function2<Pixel>>;
@@ -640,7 +643,8 @@ protected:
  *
  * @ingroup afw
  */
-class DeltaFunctionKernel : public afw::table::io::PersistableFacade<DeltaFunctionKernel>, public Kernel {
+class DeltaFunctionKernel : public Kernel {
+DECLARE_PERSISTABLE_FACADE(DeltaFunctionKernel);
 public:
     // Traits values for this class of Kernel
     using kernel_fill_factor = deltafunction_kernel_tag;
@@ -700,8 +704,8 @@ private:
  *
  * @ingroup afw
  */
-class LinearCombinationKernel : public afw::table::io::PersistableFacade<LinearCombinationKernel>,
-                                public Kernel {
+class LinearCombinationKernel : public Kernel {
+DECLARE_PERSISTABLE_FACADE(LinearCombinationKernel);
 public:
     /**
      * Construct an empty LinearCombinationKernel of size 0x0
@@ -857,7 +861,8 @@ private:
  *
  * @ingroup afw
  */
-class SeparableKernel : public afw::table::io::PersistableFacade<SeparableKernel>, public Kernel {
+class SeparableKernel : public Kernel {
+DECLARE_PERSISTABLE_FACADE(SeparableKernel);
 public:
     using KernelFunction = lsst::afw::math::Function1<Pixel>;
     using KernelFunctionPtr = std::shared_ptr<KernelFunction>;

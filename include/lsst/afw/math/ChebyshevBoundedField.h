@@ -73,8 +73,8 @@ public:
  *  when the parametrization interface that is part of the Function2 class
  *  is not needed.
  */
-class ChebyshevBoundedField : public table::io::PersistableFacade<ChebyshevBoundedField>,
-                              public BoundedField {
+class ChebyshevBoundedField : public BoundedField {
+DECLARE_PERSISTABLE_FACADE(ChebyshevBoundedField);
 public:
     using Control = ChebyshevBoundedFieldControl;
 

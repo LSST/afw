@@ -40,9 +40,9 @@ namespace cameraGeom {
  * Cameras are created (and modified, when necessary) via the Camera::Builder
  * helper class.
  */
-class Camera : public DetectorCollection, public table::io::PersistableFacade<Camera> {
+class Camera : public DetectorCollection {
+DECLARE_PERSISTABLE_FACADE(Camera);
 public:
-
     class Builder;
 
     using DetectorList = DetectorCollection::List;

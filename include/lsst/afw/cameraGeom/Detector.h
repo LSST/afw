@@ -53,7 +53,7 @@ enum class DetectorType {
  * An abstract base class that provides common accessors for Detector and
  * Detector::Builder.
  */
-class DetectorBase {
+class DetectorBase : public typehandling::Storable {
 public:
 
     using CrosstalkMatrix = ndarray::Array<float const, 2>;
@@ -178,13 +178,10 @@ protected:
  * The coordinate systems and transforms known to a Detector are shared with
  * its parent Camera and all other Detectors in that Camera.
  */
-class Detector final :
-    public DetectorBase,
-    public table::io::PersistableFacade<Detector>,
-    public typehandling::Storable
+class Detector final : public DetectorBase
 {
+DECLARE_PERSISTABLE_FACADE(Detector);
 public:
-
     class Builder;
     class PartialRebuilder;
     class InCameraBuilder;

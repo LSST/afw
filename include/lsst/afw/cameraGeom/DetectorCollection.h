@@ -147,10 +147,9 @@ private:
  * An immutable collection of Detectors that can be accessed by name or ID
  */
 class DetectorCollection : public DetectorCollectionBase<Detector const>,
-                           public table::io::PersistableFacade<DetectorCollection>,
                            public table::io::Persistable {
+DECLARE_PERSISTABLE_FACADE(DetectorCollection);
 public:
-
     DetectorCollection(List const & list);
 
     virtual ~DetectorCollection() noexcept;

@@ -59,7 +59,8 @@ namespace cameraGeom {
  * @exceptsafe Unless otherwise specified, all methods guarantee only basic
  *             exception safety.
  */
-class TransformMap final : public table::io::PersistableFacade<TransformMap>, public table::io::Persistable {
+class TransformMap final : public table::io::Persistable {
+DECLARE_PERSISTABLE_FACADE(TransformMap);
 private:
 
     // Functor for boost::transform_iterator: given an entry in a std::map or unordered_map, return the key

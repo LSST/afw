@@ -272,8 +272,8 @@ std::shared_ptr<SeparableKernel> makeWarpingKernel(std::string name);
  *
  * @ingroup afw
  */
-class WarpingControl final : public table::io::PersistableFacade<WarpingControl>,
-                             public table::io::Persistable {
+class WarpingControl final : public table::io::Persistable {
+DECLARE_PERSISTABLE_FACADE(WarpingControl);
 public:
     /**
      * Construct a WarpingControl object

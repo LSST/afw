@@ -33,8 +33,8 @@ namespace math {
 /**
  *  A BoundedField that lazily multiplies a sequence of other BoundedFields.
  */
-class ProductBoundedField final : public table::io::PersistableFacade<ProductBoundedField>,
-                                  public BoundedField {
+class ProductBoundedField final : public BoundedField {
+DECLARE_PERSISTABLE_FACADE(ProductBoundedField);
 public:
 
     /**

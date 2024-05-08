@@ -64,8 +64,9 @@ class SkyWcs;
  * so it didn't seem worth the bother.
  */
 template <class FromEndpoint, class ToEndpoint>
-class Transform final : public table::io::PersistableFacade<Transform<FromEndpoint, ToEndpoint>>,
-                        public table::io::Persistable {
+class Transform final : public table::io::Persistable {
+using TransformType = Transform<FromEndpoint, ToEndpoint>;
+DECLARE_PERSISTABLE_FACADE(TransformType);
     // SkyWcs is a friend so it can call a protected Transform constructor
     friend class SkyWcs;
 

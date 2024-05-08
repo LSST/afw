@@ -114,7 +114,8 @@ Eigen::Matrix2d makeCdMatrix(lsst::geom::Angle const &scale,
  *
  * The other frames are of type ast::Frame and have 2 axes.
  */
-class SkyWcs final : public table::io::PersistableFacade<SkyWcs>, public typehandling::Storable {
+class SkyWcs final : public typehandling::Storable {
+DECLARE_PERSISTABLE_FACADE(SkyWcs);
 public:
     SkyWcs(SkyWcs const &) = default;
     SkyWcs(SkyWcs &&) = default;

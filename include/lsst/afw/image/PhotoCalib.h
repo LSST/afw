@@ -111,7 +111,8 @@ inline void assertNonNegative(double value, std::string const &name) {
  * @f]
  * Note that this is independent of referenceFlux.
  */
-class PhotoCalib final : public table::io::PersistableFacade<PhotoCalib>, public typehandling::Storable {
+class PhotoCalib final : public typehandling::Storable {
+DECLARE_PERSISTABLE_FACADE(PhotoCalib);
 public:
     // Allow move, but no copy
     PhotoCalib(PhotoCalib const &) = default;

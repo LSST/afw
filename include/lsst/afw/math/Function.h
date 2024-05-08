@@ -80,8 +80,9 @@ bool constexpr IS_NOTHROW_INIT = noexcept(static_cast<T>(1.0));
  * @ingroup afw
  */
 template <typename ReturnT>
-class Function : public afw::table::io::PersistableFacade<Function<ReturnT>>,
-                 public afw::table::io::Persistable {
+class Function : public afw::table::io::Persistable {
+using FunctionType = Function<ReturnT>;
+DECLARE_PERSISTABLE_FACADE(FunctionType);
 public:
     /**
      * Construct a Function given the number of function parameters.
@@ -199,7 +200,9 @@ protected:
  * @ingroup afw
  */
 template <typename ReturnT>
-class Function1 : public afw::table::io::PersistableFacade<Function1<ReturnT>>, public Function<ReturnT> {
+class Function1 : public Function<ReturnT> {
+using FunctionType = Function<ReturnT>;
+DECLARE_PERSISTABLE_FACADE(FunctionType);
 public:
     /**
      * Construct a Function1 given the number of function parameters.
@@ -256,7 +259,9 @@ protected:
  * @ingroup afw
  */
 template <typename ReturnT>
-class Function2 : public afw::table::io::PersistableFacade<Function2<ReturnT>>, public Function<ReturnT> {
+class Function2 : public Function<ReturnT> {
+using FunctionType = Function2<ReturnT>;
+DECLARE_PERSISTABLE_FACADE(FunctionType);
 public:
     /**
      * Construct a Function2 given the number of function parameters.

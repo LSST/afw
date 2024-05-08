@@ -44,9 +44,9 @@ class HeavyFootprintCtrl;
  */
 template <typename ImagePixelT, typename MaskPixelT = lsst::afw::image::MaskPixel,
           typename VariancePixelT = lsst::afw::image::VariancePixel>
-class HeavyFootprint
-        : public afw::table::io::PersistableFacade<HeavyFootprint<ImagePixelT, MaskPixelT, VariancePixelT> >,
-          public Footprint {
+class HeavyFootprint : public Footprint {
+using HeavyFootprintType = HeavyFootprint<ImagePixelT, MaskPixelT, VariancePixelT>;
+DECLARE_PERSISTABLE_FACADE(HeavyFootprintType);
 public:
     /**
      * Create a HeavyFootprint from a regular Footprint and the image that

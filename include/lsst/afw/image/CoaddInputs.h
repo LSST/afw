@@ -46,7 +46,8 @@ namespace image {
  *  single-depth ones, so they simply pick out the single non-coadd-Psf that is valid for each
  *  point).
  */
-class CoaddInputs final : public table::io::PersistableFacade<CoaddInputs>, public typehandling::Storable {
+class CoaddInputs final : public typehandling::Storable {
+DECLARE_PERSISTABLE_FACADE(CoaddInputs);
 public:
     table::ExposureCatalog visits;
     table::ExposureCatalog ccds;

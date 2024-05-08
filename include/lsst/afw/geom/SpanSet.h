@@ -74,8 +74,8 @@ enum class Stencil { CIRCLE, BOX, MANHATTAN };
  * the collection of pixels, and helper functions which make use of the area defined
  * to perform localized actions
  */
-class SpanSet : public afw::table::io::PersistableFacade<lsst::afw::geom::SpanSet>,
-                public afw::table::io::Persistable {
+class SpanSet : public afw::table::io::Persistable {
+DECLARE_PERSISTABLE_FACADE(SpanSet);
 public:
     using const_iterator = std::vector<Span>::const_iterator;
     using size_type = std::vector<Span>::size_type;
