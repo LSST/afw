@@ -21,27 +21,27 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
-#include "pybind11/stl.h"
+#include "nanobind/nanobind.h"
+#include "nanobind/stl/vector.h"
 #include "lsst/cpputils/python.h"
 
 #include <memory>
 
-#include "ndarray/pybind11.h"
+#include "ndarray/nanobind.h"
 
 #include "lsst/afw/typehandling/Storable.h"
 #include "lsst/afw/image/TransmissionCurve.h"
 #include "lsst/afw/table/io/python.h"
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+namespace nb = nanobind;
+using namespace nanobind::literals;
 
 namespace lsst {
 namespace afw {
 namespace image {
 
 using PyTransmissionCurve =
-        py::class_<TransmissionCurve, std::shared_ptr<TransmissionCurve>, typehandling::Storable>;
+        nb::class_<TransmissionCurve, typehandling::Storable>;
 
 void wrapTransmissionCurve(lsst::cpputils::python::WrapperCollection &wrappers) {
     wrappers.addInheritanceDependency("lsst.afw.typehandling");
@@ -54,7 +54,7 @@ void wrapTransmissionCurve(lsst::cpputils::python::WrapperCollection &wrappers) 
                        "wavelengths"_a, "throughputAtMin"_a = 0.0, "throughputAtMax"_a = 0.0);
         cls.def_static("makeRadial", &TransmissionCurve::makeRadial, "throughput"_a, "wavelengths"_a,
                        "radii"_a, "throughputAtMin"_a = 0.0, "throughputAtMax"_a = 0.0);
-        cls.def("__mul__", &TransmissionCurve::multipliedBy, py::is_operator());
+        cls.def("__mul__", &TransmissionCurve::multipliedBy, nb::is_operator());
         cls.def("multipliedBy", &TransmissionCurve::multipliedBy);
         cls.def("transformedBy", &TransmissionCurve::transformedBy, "transform"_a);
         cls.def("getWavelengthBounds", &TransmissionCurve::getWavelengthBounds);

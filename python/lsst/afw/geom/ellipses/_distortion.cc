@@ -21,26 +21,26 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <pybind11/pybind11.h>
+#include <nanobind/nanobind.h>
 #include <lsst/cpputils/python.h>
 
 #include "lsst/afw/geom/ellipses/Distortion.h"
 #include "lsst/afw/geom/ellipses/EllipticityBase.h"
 
-namespace py = pybind11;
+namespace nb = nanobind;
 
-using namespace py::literals;
+using namespace nb::literals;
 namespace lsst {
 namespace afw {
 namespace geom {
 namespace ellipses {
 
 void wrapDistortion(lsst::cpputils::python::WrapperCollection &wrappers) {
-    wrappers.wrapType(py::class_<Distortion, detail::EllipticityBase>(wrappers.module, "Distortion"),
+    wrappers.wrapType(nb::class_<Distortion, detail::EllipticityBase>(wrappers.module, "Distortion"),
                       [](auto &mod, auto &cls) {
                           /* Constructors */
-                          cls.def(py::init<std::complex<double> const &>());
-                          cls.def(py::init<double, double>(), "e1"_a = 0.0, "e2"_a = 0.0);
+                          cls.def(nb::init<std::complex<double> const &>());
+                          cls.def(nb::init<double, double>(), "e1"_a = 0.0, "e2"_a = 0.0);
 
                           /* Members */
                           //    cls.def("dAssign", (Jacobian (Distortion::*)(Distortion const &))
@@ -50,7 +50,7 @@ void wrapDistortion(lsst::cpputils::python::WrapperCollection &wrappers) {
                           cls.def("normalize", &Distortion::normalize);
                           cls.def("getName", &Distortion::getName);
                           cls.def("__repr__", [](Distortion const &self) {
-                              return py::str("{}({}, {})").format(self.getName(), self.getE1(), self.getE2());
+                              return nb::str("{}({}, {})").format(self.getName(), self.getE1(), self.getE2());
                           });
                       });
 }

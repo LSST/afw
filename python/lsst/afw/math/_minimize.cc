@@ -20,13 +20,13 @@
  * see <https://www.lsstcorp.org/LegalNotices/>.
  */
 
-#include <pybind11/pybind11.h>
+#include <nanobind/nanobind.h>
 #include <lsst/cpputils/python.h>
-#include <pybind11/stl.h>
+#include <nanobind/stl/vector.h>
 
 #include "lsst/afw/math/minimize.h"
 
-namespace py = pybind11;
+namespace nb = nanobind;
 
 using namespace lsst::afw::math;
 namespace lsst {
@@ -49,11 +49,11 @@ void declareFitResults(lsst::cpputils::python::WrapperCollection &wrappers) {
 };
 
 void declareMinimize(lsst::cpputils::python::WrapperCollection &wrappers) {
-    wrappers.wrapType(py::class_<FitResults>(wrappers.module, "FitResults"), [](auto &mod, auto &cls) {
-        cls.def_readwrite("isValid", &FitResults::isValid);
-        cls.def_readwrite("chiSq", &FitResults::chiSq);
-        cls.def_readwrite("parameterList", &FitResults::parameterList);
-        cls.def_readwrite("parameterErrorList", &FitResults::parameterErrorList);
+    wrappers.wrapType(nb::class_<FitResults>(wrappers.module, "FitResults"), [](auto &mod, auto &cls) {
+        cls.def_rw("isValid", &FitResults::isValid);
+        cls.def_rw("chiSq", &FitResults::chiSq);
+        cls.def_rw("parameterList", &FitResults::parameterList);
+        cls.def_rw("parameterErrorList", &FitResults::parameterErrorList);
     });
 }
 }  // namespace

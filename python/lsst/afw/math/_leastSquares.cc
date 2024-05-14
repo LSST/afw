@@ -20,15 +20,15 @@
  * see <https://www.lsstcorp.org/LegalNotices/>.
  */
 
-#include <pybind11/pybind11.h>
+#include <nanobind/nanobind.h>
 #include <lsst/cpputils/python.h>
 
-#include "ndarray/pybind11.h"
+#include "ndarray/nanobind.h"
 
 #include "lsst/afw/math/LeastSquares.h"
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+namespace nb = nanobind;
+using namespace nanobind::literals;
 
 using namespace lsst::afw::math;
 namespace lsst {
@@ -37,8 +37,15 @@ namespace math {
 namespace {
 template <typename T1, typename T2, int C1, int C2>
 void declareLeastSquares(lsst::cpputils::python::WrapperCollection &wrappers) {
-    auto clsLeastSquares = wrappers.wrapType(
-            py::class_<LeastSquares>(wrappers.module, "LeastSquares"), [](auto &mod, auto &cls) {
+   auto clsLeastSquares = nb::class_<LeastSquares>(wrappers.module, "LeastSquares"); 
+    wrappers.wrapType(nb::enum_<LeastSquares::Factorization>(clsLeastSquares, "Factorization"),
+                      [](auto &mod, auto &enm) {
+                          enm.value("NORMAL_EIGENSYSTEM", LeastSquares::Factorization::NORMAL_EIGENSYSTEM);
+                          enm.value("NORMAL_CHOLESKY", LeastSquares::Factorization::NORMAL_CHOLESKY);
+                          enm.value("DIRECT_SVD", LeastSquares::Factorization::DIRECT_SVD);
+                          enm.export_values();
+                      });	
+    wrappers.wrapType(clsLeastSquares, [](auto &mod, auto &cls) {
                 cls.def_static(
                         "fromDesignMatrix",
                         (LeastSquares(*)(ndarray::Array<T1, 2, C1> const &, ndarray::Array<T2, 1, C2> const &,
@@ -67,13 +74,6 @@ void declareLeastSquares(lsst::cpputils::python::WrapperCollection &wrappers) {
                 cls.def("getThreshold", &LeastSquares::getThreshold);
                 cls.def("setThreshold", &LeastSquares::setThreshold);
             });
-    wrappers.wrapType(py::enum_<LeastSquares::Factorization>(clsLeastSquares, "Factorization"),
-                      [](auto &mod, auto &enm) {
-                          enm.value("NORMAL_EIGENSYSTEM", LeastSquares::Factorization::NORMAL_EIGENSYSTEM);
-                          enm.value("NORMAL_CHOLESKY", LeastSquares::Factorization::NORMAL_CHOLESKY);
-                          enm.value("DIRECT_SVD", LeastSquares::Factorization::DIRECT_SVD);
-                          enm.export_values();
-                      });
 };
 }  // namespace
 

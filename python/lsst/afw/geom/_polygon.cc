@@ -23,11 +23,12 @@
 
 #include <memory>
 
-#include <pybind11/pybind11.h>
-#include <pybind11/numpy.h>
+#include <nanobind/nanobind.h>
+#include <nanobind/ndarray.h>
 #include <lsst/cpputils/python.h>
-
-#include <pybind11/stl.h>
+#include <lsst/sphgeom/python.h>
+#include <nanobind/stl/vector.h>
+#include <nanobind/stl/shared_ptr.h>
 
 #include "lsst/pex/exceptions/Runtime.h"
 #include "lsst/pex/exceptions/python/Exception.h"
@@ -39,8 +40,8 @@
 #include "lsst/afw/geom/polygon/Polygon.h"
 #include "lsst/afw/table/io/python.h"  // for addPersistableMethods
 
-namespace py = pybind11;
-using namespace py::literals;
+namespace nb = nanobind;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
@@ -49,23 +50,23 @@ namespace polygon {
 namespace {
 void declarePolygon(lsst::cpputils::python::WrapperCollection &wrappers) {
     wrappers.wrapType(
-            py::class_<Polygon, std::shared_ptr<Polygon>, typehandling::Storable>(wrappers.module, "Polygon"),
+            nb::class_<Polygon, typehandling::Storable>(wrappers.module, "Polygon"),
             [](auto &mod, auto &cls) {
                 /* Constructors */
-                cls.def(py::init<Polygon::Box const &>());
-                cls.def(py::init<Polygon::Box const &, TransformPoint2ToPoint2 const &>());
-                cls.def(py::init<Polygon::Box const &, lsst::geom::AffineTransform const &>());
-                cls.def(py::init<std::vector<Polygon::Point> const &>());
+                cls.def(nb::init<Polygon::Box const &>());
+                cls.def(nb::init<Polygon::Box const &, TransformPoint2ToPoint2 const &>());
+                cls.def(nb::init<Polygon::Box const &, lsst::geom::AffineTransform const &>());
+                cls.def(nb::init<std::vector<Polygon::Point> const &>());
 
                 table::io::python::addPersistableMethods<Polygon>(cls);
 
                 /* Operators */
                 cls.def(
                         "__eq__", [](Polygon const &self, Polygon const &other) { return self == other; },
-                        py::is_operator());
+                        nb::is_operator());
                 cls.def(
                         "__ne__", [](Polygon const &self, Polygon const &other) { return self != other; },
-                        py::is_operator());
+                        nb::is_operator());
 
                 /* Members */
                 cls.def("getNumEdges", &Polygon::getNumEdges);
@@ -79,9 +80,9 @@ void declarePolygon(lsst::cpputils::python::WrapperCollection &wrappers) {
                 cls.def("contains", (bool (Polygon::*)(Polygon::Point const&) const) &Polygon::contains);
                 cls.def("contains", (std::vector<bool> (Polygon::*)(std::vector<Polygon::Point> const&) const) &Polygon::contains);
                 cls.def("contains", (std::vector<bool> (Polygon::*)(std::vector<lsst::geom::Point2I> const&) const) &Polygon::contains);
-                cls.def("contains", py::vectorize((bool (Polygon::*)(double x, double y) const) &Polygon::contains<double, double>));
-                cls.def("contains", py::vectorize((bool (Polygon::*)(float x, float y) const) &Polygon::contains<float, float>));
-                cls.def("contains", py::vectorize((bool (Polygon::*)(int x, int y) const) &Polygon::contains<int, int>));
+               cls.def("contains", nb::vectorize((bool (Polygon::*)(double x, double y) const) &Polygon::contains<double, double>));
+               cls.def("contains", nb::vectorize((bool (Polygon::*)(float x, float y) const) &Polygon::contains<float, float>));
+               cls.def("contains", nb::vectorize((bool (Polygon::*)(int x, int y) const) &Polygon::contains<int, int>));
 
                 cls.def("overlaps", (bool (Polygon::*)(Polygon const &) const) & Polygon::overlaps);
                 cls.def("overlaps", (bool (Polygon::*)(Polygon::Box const &) const) & Polygon::overlaps);

@@ -24,7 +24,10 @@
 #ifndef LSST_AFW_TYPEHANDLING_PYTHON_H
 #define LSST_AFW_TYPEHANDLING_PYTHON_H
 
-#include "pybind11/pybind11.h"
+#include "nanobind/nanobind.h"
+#include "nanobind/stl/string.h"
+#include "nanobind/stl/shared_ptr.h"
+#include <nanobind/trampoline.h>
 
 #include <string>
 
@@ -41,20 +44,20 @@ namespace typehandling {
 /**
  * "Trampoline" for Storable to let it be used as a base class in Python.
  *
- * Subclasses of Storable that are wrapped in %pybind11 should have a similar
+ * Subclasses of Storable that are wrapped in %nanobind should have a similar
  * helper that subclasses `StorableHelper<subclass>`. This helper can be
  * skipped if the subclass neither adds any virtual methods nor implements
  * any abstract methods.
  *
  * @tparam Base the exact (most specific) class being wrapped
  *
- * @see [pybind11 documentation](https://pybind11.readthedocs.io/en/stable/advanced/classes.html)
+ * @see [nanobind documentation](https://nanobind.readthedocs.io/en/stable/advanced/classes.html)
  */
 template <class Base = Storable>
 class StorableHelper : public Base {
 public:
-    using Base::Base;
 
+    NB_TRAMPOLINE(Base, 20);
     /**
      * Delegating constructor for wrapped class.
      *
@@ -71,39 +74,39 @@ public:
     explicit StorableHelper<Base>(Args... args) : Base(args...) {}
 
     std::shared_ptr<Storable> cloneStorable() const override {
-        /* __deepcopy__ takes an optional dict, but PYBIND11_OVERLOAD_* won't
+        /* __deepcopy__ takes an optional dict, but nanobind_OVERLOAD_* won't
          * compile unless you give it arguments that work for the C++ method
          */
-        PYBIND11_OVERLOAD_NAME(std::shared_ptr<Storable>, Base, "__deepcopy__", cloneStorable, );
+        NB_OVERRIDE_NAME("__deepcopy__", cloneStorable);
     }
 
     std::string toString() const override {
-        PYBIND11_OVERLOAD_NAME(std::string, Base, "__repr__", toString, );
+        NB_OVERRIDE_NAME( "__repr__", toString);
     }
 
     std::size_t hash_value() const override {
-        PYBIND11_OVERLOAD_NAME(std::size_t, Base, "__hash__", hash_value, );
+        NB_OVERRIDE_NAME("__hash__", hash_value);
     }
 
     bool equals(Storable const& other) const noexcept override {
-        PYBIND11_OVERLOAD_NAME(bool, Base, "__eq__", equals, other);
+        NB_OVERRIDE_NAME("__eq__", equals, other);
     }
 
     bool isPersistable() const noexcept override {
-        PYBIND11_OVERLOAD(
-            bool, Base, isPersistable
+        NB_OVERRIDE(
+            isPersistable
         );
     }
 
     std::string getPersistenceName() const override {
-        PYBIND11_OVERLOAD_NAME(
-            std::string, Base, "_getPersistenceName", getPersistenceName
+        NB_OVERRIDE_NAME(
+            "_getPersistenceName", getPersistenceName
         );
     }
 
     std::string getPythonModule() const override {
-        PYBIND11_OVERLOAD_NAME(
-            std::string, Base, "_getPythonModule", getPythonModule
+        NB_OVERRIDE_NAME(
+                "_getPythonModule", getPythonModule
         );
     }
 
@@ -116,7 +119,7 @@ std::string declareGenericMapRestrictions(std::string const& className, std::str
  * StorableHelper persistence.
  *
  * We cannot directly override `StorableHelper::write` or `StorableHelperFactory::read` in python using
- * PYBIND11_OVERLOAD* macros as the required argument c++ types (OutputArchiveHandle, InputArchive,
+ * nanobind_OVERLOAD* macros as the required argument c++ types (OutputArchiveHandle, InputArchive,
  * CatalogVector) are not bound to python types.  Instead, we allow python subclasses of Storable to define
  * `_write` and `_read` methods that return/accept a string serialization of the object.  The `_write` method
  * should take no arguments (besides self) and return a byte string.  The `_read` method should be a static
@@ -169,16 +172,16 @@ public:
         InputArchive const &archive,
         CatalogVector const &catalogs
     ) const override {
-        pybind11::gil_scoped_acquire gil;
+        nanobind::gil_scoped_acquire gil;
         auto const &keys = StorableHelperPersistenceHelper::get();
         LSST_ARCHIVE_ASSERT(catalogs.size() == 1u);
         LSST_ARCHIVE_ASSERT(catalogs.front().size() == 1u);
         LSST_ARCHIVE_ASSERT(catalogs.front().getSchema() == keys.schema);
         auto const &record = catalogs.front().front();
         std::string stringRep = formatters::bytesToString(record.get(keys.bytes));
-        auto cls = pybind11::module::import(_module.c_str()).attr(_name.c_str());
-        auto pyobj = cls.attr("_read")(pybind11::bytes(stringRep));
-        return pyobj.cast<std::shared_ptr<Storable>>();
+        auto cls = nanobind::module_::import_(_module.c_str()).attr(_name.c_str());
+        auto pyobj = cls.attr("_read")(nanobind::bytes(stringRep.c_str()));
+        return nanobind::cast<std::shared_ptr<Storable>>(pyobj);
     }
 
 private:
@@ -188,14 +191,13 @@ private:
 
 }  // namespace
 
-
 template <typename Base>
 void StorableHelper<Base>::write(table::io::OutputArchiveHandle& handle) const {
-    pybind11::gil_scoped_acquire gil;
-    pybind11::function overload = pybind11::get_overload(static_cast<const Base *>(this), "_write");
-    if (!overload)
+    nanobind::gil_scoped_acquire gil;
+    nanobind::detail::ticket nb_ticket(nb_trampoline, "_write", false);
+    if (!nb_ticket.key.is_valid())
         throw std::runtime_error("Cannot find StorableHelper _write overload");
-    auto o = overload().cast<std::string>();
+    auto o = nanobind::cast<std::string>(nb_trampoline.base().attr(nb_ticket.key)());
     auto const &keys = StorableHelperPersistenceHelper::get();
     table::BaseCatalog cat = handle.makeCatalog(keys.schema);
     std::shared_ptr<table::BaseRecord> record = cat.addNew();

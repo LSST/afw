@@ -24,15 +24,15 @@
 #include <iostream>
 #include <iomanip>
 
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
+#include <nanobind/nanobind.h>
+#include <nanobind/stl/vector.h>
 
 #include "lsst/cpputils/python.h"
 
 #include "lsst/afw/detection/Threshold.h"
 
-namespace py = pybind11;
-using namespace py::literals;
+namespace nb = nanobind;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
@@ -40,11 +40,11 @@ namespace detection {
 
 void wrapThreshold(cpputils::python::WrapperCollection& wrappers) {
     auto clsThreshold = wrappers.wrapType(
-            py::class_<Threshold, std::shared_ptr<Threshold>>(wrappers.module, "Threshold"),
+            nb::class_<Threshold>(wrappers.module, "Threshold"),
             [](auto& mod, auto& cls) {
-                cls.def(py::init<double const, typename Threshold::ThresholdType const, bool const,
+                cls.def(nb::init<double const, typename Threshold::ThresholdType const, bool const,
                                  double const>(),
-                        "value"_a, "type"_a = Threshold::VALUE, "polarity"_a = true,
+                        "value"_a, "type"_a = int(Threshold::VALUE), "polarity"_a = true,
                         "includeMultiplier"_a = 1.0);
 
                 cls.def("getType", &Threshold::getType);
@@ -64,7 +64,7 @@ void wrapThreshold(cpputils::python::WrapperCollection& wrappers) {
                 cls.def("__str__", [](Threshold const& self) {
                     std::ostringstream os;
                     std::string polarity = (self.getPolarity() == true) ? "positive" : "negative";
-                    os << py::cast(self.getType()).attr("name").cast<std::string>() << std::setprecision(8)
+                    os << nb::cast<std::string>(nb::cast(self.getType()).attr("__name__")) << std::setprecision(8)
                        << " value=" << self.getValue(1.0) << " (" << polarity << ")";
                     if (self.getIncludeMultiplier() != 1.0) {
                         os << " multiplier=" << self.getIncludeMultiplier();
@@ -74,14 +74,14 @@ void wrapThreshold(cpputils::python::WrapperCollection& wrappers) {
                 cls.def("__repr__", [](Threshold const& self) {
                     std::ostringstream os;
                     os << std::setprecision(16) << "Threshold(value=" << self.getValue(1.0)
-                       << ", type=" << py::cast(self.getType()).attr("name").cast<std::string>()
+                       << ", type=" << nb::cast<std::string>(nb::cast(self.getType()).attr("__name__"))
                        << ", polarity=" << self.getPolarity()
                        << ", includeMultiplier=" << self.getIncludeMultiplier() << ")";
                     return os.str();
                 });
             });
 
-    wrappers.wrapType(py::enum_<Threshold::ThresholdType>(clsThreshold, "ThresholdType"),
+    wrappers.wrapType(nb::enum_<Threshold::ThresholdType>(clsThreshold, "ThresholdType"),
                       [](auto& mod, auto& enm) {
                           enm.value("VALUE", Threshold::ThresholdType::VALUE);
                           enm.value("BITMASK", Threshold::ThresholdType::BITMASK);

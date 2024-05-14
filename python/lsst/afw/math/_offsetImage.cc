@@ -20,16 +20,16 @@
  * see <https://www.lsstcorp.org/LegalNotices/>.
  */
 
-#include <pybind11/pybind11.h>
+#include <nanobind/nanobind.h>
 #include <lsst/cpputils/python.h>
 
 #include "lsst/afw/image/Image.h"
 #include "lsst/afw/image/Mask.h"
 #include "lsst/afw/math/offsetImage.h"
 
-namespace py = pybind11;
+namespace nb = nanobind;
 
-using namespace py::literals;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {

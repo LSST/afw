@@ -25,6 +25,7 @@
 
 #include <memory>
 #include <vector>
+#include <lsst/geom/polynomials/PolynomialFunction2d.h>
 
 #include "Eigen/Core"
 
@@ -352,9 +353,38 @@ public:
     std::pair<double, double> computeMaxDeviation() const noexcept;
 
 private:
+    struct Grid {
 
-    struct Grid;
-    struct Solution;
+        // Set up the grid.
+        Grid(lsst::geom::Extent2I const & shape_, SipApproximation const & parent);
+
+        lsst::geom::Extent2I const shape;  //  number of grid points in each dimension
+        std::vector<lsst::geom::Point2D> dpix1; //  [pixel coords] - CRPIX
+        std::vector<lsst::geom::Point2D> siwc;  //  CD^{-1}([intermediate world coords])
+        std::vector<lsst::geom::Point2D> dpix2; //  round-tripped version of dpix1 if useInverse, or exactly dpix1
+    };
+
+    struct Solution {
+        static std::unique_ptr<Solution> fit(int order_, double svdThreshold, SipApproximation const &parent);
+
+        Solution(lsst::geom::polynomials::PolynomialFunction2dYX const &a_,
+                 lsst::geom::polynomials::PolynomialFunction2dYX const &b_,
+                 lsst::geom::polynomials::PolynomialFunction2dYX const &ap_,
+                 lsst::geom::polynomials::PolynomialFunction2dYX const &bp_);
+
+        using Workspace = lsst::geom::polynomials::PolynomialFunction2dYX::Workspace;
+
+        Workspace makeWorkspace() const;
+
+        lsst::geom::Point2D applyForward(lsst::geom::Point2D const & dpix, Workspace & ws) const;
+
+        lsst::geom::Point2D applyInverse(lsst::geom::Point2D const & siwc, Workspace & ws) const;
+
+        lsst::geom::polynomials::PolynomialFunction2dYX a;
+        lsst::geom::polynomials::PolynomialFunction2dYX b;
+        lsst::geom::polynomials::PolynomialFunction2dYX ap;
+        lsst::geom::polynomials::PolynomialFunction2dYX bp;
+    };
 
     bool _useInverse;
     std::shared_ptr<TransformPoint2ToPoint2> _pixelToIwc;

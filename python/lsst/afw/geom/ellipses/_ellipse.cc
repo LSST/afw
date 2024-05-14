@@ -21,12 +21,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
-#include "pybind11/eigen.h"
-#include "pybind11/stl.h"
+#include "nanobind/nanobind.h"
+#include "nanobind/eigen/dense.h"
+#include "nanobind/stl/vector.h"
 #include <lsst/cpputils/python.h>
 
-#include "ndarray/pybind11.h"
+#include "ndarray/nanobind.h"
 
 #include "lsst/afw/geom/ellipses/BaseCore.h"
 #include "lsst/afw/geom/ellipses/Convolution.h"
@@ -34,8 +34,8 @@
 #include "lsst/afw/geom/ellipses/Ellipse.h"
 #include "lsst/afw/geom/ellipses/Transformer.h"
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+namespace nb = nanobind;
+using namespace nanobind::literals;
 
 namespace lsst {
 namespace afw {
@@ -43,15 +43,15 @@ namespace geom {
 namespace ellipses {
 void wrapEllipse(lsst::cpputils::python::WrapperCollection &wrappers) {
     wrappers.wrapType(
-            py::class_<Ellipse, std::shared_ptr<Ellipse>>(wrappers.module, "Ellipse"),
+            nb::class_<Ellipse>(wrappers.module, "Ellipse"),
             [](auto &mod, auto &cls) {
                 /* Constructors */
-                cls.def(py::init<BaseCore const &, lsst::geom::Point2D const &>(), "core"_a,
+                cls.def(nb::init<BaseCore const &, lsst::geom::Point2D const &>(), "core"_a,
                         "center"_a = lsst::geom::Point2D());
-                cls.def(py::init<Ellipse const &>());
-                cls.def(py::init<Ellipse::Convolution const &>());
+                cls.def(nb::init<Ellipse const &>());
+                cls.def(nb::init<Ellipse::Convolution const &>());
 
-                py::implicitly_convertible<Ellipse::Convolution, Ellipse>();
+                nb::implicitly_convertible<Ellipse::Convolution, Ellipse>();
 
                 /* Operators */
 

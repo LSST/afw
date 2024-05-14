@@ -21,7 +21,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
+#include "nanobind/nanobind.h"
 
 #include <memory>
 #include <sstream>
@@ -34,8 +34,8 @@
 #include "lsst/afw/table/python/catalog.h"
 #include "lsst/afw/table/python/columnView.h"
 
-namespace py = pybind11;
-using namespace py::literals;
+namespace nb = nanobind;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
@@ -43,15 +43,15 @@ namespace detection {
 
 namespace {
 
-using PyPeakRecord = py::class_<PeakRecord, std::shared_ptr<PeakRecord>, table::BaseRecord>;
-using PyPeakTable = py::class_<PeakTable, std::shared_ptr<PeakTable>, table::BaseTable>;
+using PyPeakRecord = nb::class_<PeakRecord, table::BaseRecord>;
+using PyPeakTable = nb::class_<PeakTable, table::BaseTable>;
 
 /**
-@internal Declare constructors and member and static functions for a pybind11 PeakRecord
+@internal Declare constructors and member and static functions for a nanobind PeakRecord
 */
 void declarePeakRecord(PyPeakRecord &cls) {
     cls.def("getTable", &PeakRecord::getTable);
-    cls.def_property_readonly("table", &PeakRecord::getTable);
+    cls.def_prop_ro("table", &PeakRecord::getTable);
     cls.def("getId", &PeakRecord::getId);
     cls.def("setId", &PeakRecord::setId);
     cls.def("getIx", &PeakRecord::getIx);
@@ -73,7 +73,7 @@ void declarePeakRecord(PyPeakRecord &cls) {
 }
 
 /**
-@internal Declare constructors and member and static functions for a pybind11 PeakTable
+@internal Declare constructors and member and static functions for a nanobind PeakTable
 */
 void declarePeakTable(PyPeakTable &cls) {
     cls.def_static("make", &PeakTable::make, "schema"_a, "forceNew"_a = false);

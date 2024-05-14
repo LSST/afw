@@ -21,7 +21,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
+#include "nanobind/nanobind.h"
+#include "nanobind/stl/string.h"
+#include "nanobind/stl/shared_ptr.h"
 #include "lsst/cpputils/python.h"
 
 #include "lsst/daf/base/PropertySet.h"
@@ -38,23 +40,23 @@
 #include "lsst/afw/image/ExposureInfo.h"
 #include "lsst/afw/typehandling/Storable.h"
 
-namespace py = pybind11;
-using namespace py::literals;
+namespace nb = nanobind;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
 namespace image {
 namespace {
 
-using PyExposureInfo = py::class_<ExposureInfo, std::shared_ptr<ExposureInfo>>;
+using PyExposureInfo = nb::class_<ExposureInfo>;
 
-// Template methods where we can use pybind11's overload resolution (T is input)
+// Template methods where we can use nanobind's overload resolution (T is input)
 template <class T>
 void declareGenericMethods(PyExposureInfo &cls) {
-    using Class = PyExposureInfo::type;
+    using Class = PyExposureInfo::Type;
     cls.def(
             "setComponent",
-            [](PyExposureInfo::type &self, std::string const &key, T const &object) {
+            [](PyExposureInfo::Type &self, std::string const &key, T const &object) {
                 self.setComponent(typehandling::makeKey<T>(key), object);
             },
             "key"_a, "object"_a);
@@ -62,7 +64,7 @@ void declareGenericMethods(PyExposureInfo &cls) {
 // Template methods where we need to provide a unified interface (T is not input)
 void declareGenericMethodsMerged(PyExposureInfo &cls) {
     using typehandling::Storable;
-    using Class = PyExposureInfo::type;
+    using Class = PyExposureInfo::Type;
     cls.def(
             "hasComponent",
             [](Class const &self, std::string const &key) {
@@ -71,13 +73,13 @@ void declareGenericMethodsMerged(PyExposureInfo &cls) {
             "key"_a);
     cls.def(
             "getComponent",
-            [](Class const &self, std::string const &key) -> py::object {
+            [](Class const &self, std::string const &key) -> nb::object {
                 auto sharedKey = typehandling::makeKey<std::shared_ptr<Storable const>>(key);
                 // Cascading if-elses to support other types in the future
                 if (self.hasComponent(sharedKey)) {
-                    return py::cast(self.getComponent(sharedKey));
+                    return nb::cast(self.getComponent(sharedKey));
                 } else {
-                    return py::none();
+                    return nb::none();
                 }
             },
             "key"_a);
@@ -92,7 +94,7 @@ void declareGenericMethodsMerged(PyExposureInfo &cls) {
 void declareExposureInfo(lsst::cpputils::python::WrapperCollection &wrappers) {
     wrappers.wrapType(PyExposureInfo(wrappers.module, "ExposureInfo"), [](auto &mod, auto &cls) {
         /* Constructors */
-        cls.def(py::init<std::shared_ptr<geom::SkyWcs const> const &,
+        cls.def(nb::init<std::shared_ptr<geom::SkyWcs const> const &,
                          std::shared_ptr<detection::Psf const> const &,
                          std::shared_ptr<PhotoCalib const> const &,
                          std::shared_ptr<cameraGeom::Detector const> const &,
@@ -110,9 +112,9 @@ void declareExposureInfo(lsst::cpputils::python::WrapperCollection &wrappers) {
                 "coaddInputs"_a = std::shared_ptr<CoaddInputs>(),
                 "apCorrMap"_a = std::shared_ptr<ApCorrMap>(),
                 "visitInfo"_a = std::shared_ptr<VisitInfo const>(), "transmissionCurve"_a = nullptr);
-        cls.def(py::init<>());
-        cls.def(py::init<ExposureInfo>(), "other"_a);
-        cls.def(py::init<ExposureInfo, bool>(), "other"_a, "copyMetadata"_a);
+        cls.def(nb::init<>());
+        cls.def(nb::init<ExposureInfo>(), "other"_a);
+        cls.def(nb::init<ExposureInfo, bool>(), "other"_a, "copyMetadata"_a);
 
         /* Members */
         cls.attr("KEY_WCS") = ExposureInfo::KEY_WCS.getId();
@@ -125,11 +127,11 @@ void declareExposureInfo(lsst::cpputils::python::WrapperCollection &wrappers) {
         cls.def("getDetector", &ExposureInfo::getDetector);
         cls.def(
                 "setDetector",
-                [](ExposureInfo &self, py::object detector) {
-                    if (detector.is(py::none())) {
+                [](ExposureInfo &self, nb::object detector) {
+                    if (detector.is(nb::none())) {
                         self.setDetector(nullptr);
                     } else {
-                        self.setDetector(py::cast<std::shared_ptr<afw::cameraGeom::Detector>>(detector));
+                        self.setDetector(nb::cast<std::shared_ptr<afw::cameraGeom::Detector>>(detector));
                     }
                 },
                 "detector"_a);
@@ -150,24 +152,24 @@ void declareExposureInfo(lsst::cpputils::python::WrapperCollection &wrappers) {
         cls.def("hasId", &ExposureInfo::hasId);
         // Use exception handler to avoid overhead of calling hasId twice, and
         // because asking for a nonexistent ID should be rare.
-        auto getId = [](ExposureInfo const &self) -> py::object {
+        auto getId = [](ExposureInfo const &self) -> nb::object {
             try {
-                return py::cast(self.getId());
+                return nb::cast(self.getId());
             } catch (pex::exceptions::NotFoundError const &) {
-                return py::none();
+                return nb::none();
             }
         };
-        auto setId = [](ExposureInfo &self, py::object id) {
+        auto setId = [](ExposureInfo &self, nb::object id) {
             if (id.is_none()) {
                 self.clearId();
             } else {
-                self.setId(id.cast<table::RecordId>());
+                self.setId(nb::cast<table::RecordId>(id));
             }
         };
         cls.def("getId", getId);
-        cls.def("setId", setId, "id"_a);
+        cls.def("setId", setId, "id"_a = nb::none());
         cls.def("clearId", &ExposureInfo::clearId);
-        cls.def_property("id", getId, setId);
+        cls.def_prop_rw("id", getId, setId, nb::arg("id") = nb::none());
 
         cls.def("getMetadata", &ExposureInfo::getMetadata);
         cls.def("setMetadata", &ExposureInfo::setMetadata, "metadata"_a);
@@ -177,11 +179,11 @@ void declareExposureInfo(lsst::cpputils::python::WrapperCollection &wrappers) {
         cls.def("getPsf", &ExposureInfo::getPsf);
         cls.def(
                 "setPsf",
-                [](ExposureInfo &self, py::object psf) {
-                    if (psf.is(py::none())) {
+                [](ExposureInfo &self, nb::object psf) {
+                    if (psf.is(nb::none())) {
                         self.setPsf(nullptr);
                     } else {
-                        self.setPsf(py::cast<std::shared_ptr<afw::detection::Psf>>(psf));
+                        self.setPsf(nb::cast<std::shared_ptr<afw::detection::Psf>>(psf));
                     }
                 },
                 "psf"_a);
@@ -191,11 +193,11 @@ void declareExposureInfo(lsst::cpputils::python::WrapperCollection &wrappers) {
         cls.def("getValidPolygon", &ExposureInfo::getValidPolygon);
         cls.def(
                 "setValidPolygon",
-                [](ExposureInfo &self, py::object polygon) {
-                    if (polygon.is(py::none())) {
+                [](ExposureInfo &self, nb::object polygon) {
+                    if (polygon.is(nb::none())) {
                         self.setValidPolygon(nullptr);
                     } else {
-                        self.setValidPolygon(py::cast<std::shared_ptr<afw::geom::polygon::Polygon>>(polygon));
+                        self.setValidPolygon(nb::cast<std::shared_ptr<afw::geom::polygon::Polygon>>(polygon));
                     }
                 },
                 "polygon"_a);

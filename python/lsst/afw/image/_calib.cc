@@ -21,18 +21,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
+#include "nanobind/nanobind.h"
+#include "nanobind/ndarray.h"
 #include "lsst/cpputils/python.h"
 
 #include <memory>
 #include <vector>
 
-#include "ndarray/pybind11.h"
+#include "ndarray/nanobind.h"
 
 #include "lsst/afw/image/Calib.h"
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+namespace nb = nanobind;
+using namespace nanobind::literals;
 
 namespace lsst {
 namespace afw {
@@ -44,7 +45,7 @@ void declareVectorOperations(lsst::cpputils::python::WrapperCollection &wrappers
     wrappers.wrap([](auto &mod) {
         using Array = ndarray::Array<T, 1>;
         using ConstArray = ndarray::Array<const T, 1>;
-        mod.def("abMagFromFlux", (Array(*)(ConstArray const &)) & abMagFromFlux<T>, "flux"_a);
+        mod.def("abMagFromFlux", (Array(*)(ConstArray const &)) & abMagFromFlux<T>, "flux"_a, nb::rv_policy::automatic_reference);
         mod.def("abMagErrFromFluxErr",
                 (Array(*)(ConstArray const &, ConstArray const &)) & abMagErrFromFluxErr<T>, "fluxErr"_a,
                 "flux"_a);
@@ -69,7 +70,7 @@ void declareCalib(lsst::cpputils::python::WrapperCollection &wrappers) {
 void wrapCalib(lsst::cpputils::python::WrapperCollection &wrappers) {
     /* Module level */
     declareCalib(wrappers);
-    declareVectorOperations<float>(wrappers);
+    //declareVectorOperations<float>(wrappers);
     declareVectorOperations<double>(wrappers);
 }
 }  // namespace image

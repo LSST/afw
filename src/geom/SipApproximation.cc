@@ -103,25 +103,11 @@ poly::PolynomialFunction2dYX makePolynomialFromCoeffMatrix(ndarray::Array<double
 
 } // anonymous
 
-// Private implementation object for SipApproximation that manages the grid of points on which
-// we evaluate the exact transform.
-struct SipApproximation::Grid {
-
-    // Set up the grid.
-    Grid(lsst::geom::Extent2I const & shape_, SipApproximation const & parent);
-
-    lsst::geom::Extent2I const shape;  //  number of grid points in each dimension
-    std::vector<lsst::geom::Point2D> dpix1; //  [pixel coords] - CRPIX
-    std::vector<lsst::geom::Point2D> siwc;  //  CD^{-1}([intermediate world coords])
-    std::vector<lsst::geom::Point2D> dpix2; //  round-tripped version of dpix1 if useInverse, or exactly dpix1
-};
 
 // Private implementation object for SipApproximation that manages the solution
-struct SipApproximation::Solution {
 
-    static std::unique_ptr<Solution> fit(int order_, double svdThreshold, SipApproximation const & parent);
 
-    Solution(poly::PolynomialFunction2dYX const & a_,
+    SipApproximation::Solution::Solution(poly::PolynomialFunction2dYX const & a_,
              poly::PolynomialFunction2dYX const & b_,
              poly::PolynomialFunction2dYX const & ap_,
              poly::PolynomialFunction2dYX const & bp_) :
@@ -140,21 +126,16 @@ struct SipApproximation::Solution {
 
     using Workspace = poly::PolynomialFunction2dYX::Workspace;
 
-    Workspace makeWorkspace() const { return a.makeWorkspace(); }
+    Workspace SipApproximation::Solution::makeWorkspace() const { return a.makeWorkspace(); }
 
-    lsst::geom::Point2D applyForward(lsst::geom::Point2D const & dpix, Workspace & ws) const {
+    lsst::geom::Point2D SipApproximation::Solution::applyForward(lsst::geom::Point2D const & dpix, Workspace & ws) const {
         return dpix + lsst::geom::Extent2D(a(dpix, ws), b(dpix, ws));
     }
 
-    lsst::geom::Point2D applyInverse(lsst::geom::Point2D const & siwc, Workspace & ws) const {
+    lsst::geom::Point2D SipApproximation::Solution::applyInverse(lsst::geom::Point2D const & siwc, Workspace & ws) const {
         return siwc + lsst::geom::Extent2D(ap(siwc, ws), bp(siwc, ws));
     }
 
-    poly::PolynomialFunction2dYX a;
-    poly::PolynomialFunction2dYX b;
-    poly::PolynomialFunction2dYX ap;
-    poly::PolynomialFunction2dYX bp;
-};
 
 SipApproximation::Grid::Grid(lsst::geom::Extent2I const & shape_, SipApproximation const & parent) :
     shape(shape_),

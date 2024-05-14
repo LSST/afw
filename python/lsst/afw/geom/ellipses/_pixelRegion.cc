@@ -21,29 +21,30 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
+#include "nanobind/nanobind.h"
 #include <lsst/cpputils/python.h>
+#include <nanobind/make_iterator.h>
 
 #include "lsst/afw/geom/ellipses/PixelRegion.h"
 
-namespace py = pybind11;
+namespace nb = nanobind;
 
 namespace lsst {
 namespace afw {
 namespace geom {
 namespace ellipses {
 void wrapPixelRegion(lsst::cpputils::python::WrapperCollection &wrappers) {
-    wrappers.wrapType(py::class_<PixelRegion>(wrappers.module, "PixelRegion"), [](auto &mod, auto &cls) {
+    wrappers.wrapType(nb::class_<PixelRegion>(wrappers.module, "PixelRegion"), [](auto &mod, auto &cls) {
         /* Constructors */
-        cls.def(py::init<Ellipse const &>());
+        cls.def(nb::init<Ellipse const &>());
 
         /* Members */
-        cls.def("getBBox", &PixelRegion::getBBox, py::return_value_policy::copy);
+        cls.def("getBBox", &PixelRegion::getBBox, nb::rv_policy::copy);
         cls.def("getSpanAt", &PixelRegion::getSpanAt);
         cls.def(
                 "__iter__",
-                [](const PixelRegion &self) { return py::make_iterator(self.begin(), self.end()); },
-                py::keep_alive<0, 1>() /* Essential: keep object alive while iterator exists */);
+                [](const PixelRegion &self) { return nb::make_iterator(nb::type<PixelRegion>(), "iterator",self.begin(), self.end()); },
+                nb::keep_alive<0, 1>() /* Essential: keep object alive while iterator exists */);
     });
 }
 }  // namespace ellipses

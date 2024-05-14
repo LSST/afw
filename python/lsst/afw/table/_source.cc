@@ -21,12 +21,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
-#include "pybind11/eigen.h"
+#include "nanobind/nanobind.h"
+#include "nanobind/eigen/dense.h"
+#include "nanobind/stl/map.h"
 
 #include <memory>
 
-#include "ndarray/pybind11.h"
+#include "ndarray/nanobind.h"
 
 #include "lsst/cpputils/python.h"
 
@@ -40,8 +41,8 @@
 #include "lsst/afw/table/python/columnView.h"
 #include "lsst/afw/table/python/sortedCatalog.h"
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+namespace nb = nanobind;
+using namespace nanobind::literals;
 
 namespace lsst {
 namespace afw {
@@ -51,21 +52,21 @@ using cpputils::python::WrapperCollection;
 
 namespace {
 
-using PySourceRecord = py::class_<SourceRecord, std::shared_ptr<SourceRecord>, SimpleRecord>;
-using PySourceTable = py::class_<SourceTable, std::shared_ptr<SourceTable>, SimpleTable>;
+using PySourceRecord = nb::class_<SourceRecord, SimpleRecord>;
+using PySourceTable = nb::class_<SourceTable, SimpleTable>;
 using PySourceColumnView =
-        py::class_<SourceColumnViewT<SourceRecord>, std::shared_ptr<SourceColumnViewT<SourceRecord>>,
+        nb::class_<SourceColumnViewT<SourceRecord>,
                    ColumnViewT<SourceRecord>>;
 
 /*
-Declare member and static functions for a pybind11 wrapper of SourceRecord
+Declare member and static functions for a nanobind wrapper of SourceRecord
 */
 PySourceRecord declareSourceRecord(WrapperCollection &wrappers) {
     return wrappers.wrapType(PySourceRecord(wrappers.module, "SourceRecord"), [](auto &mod, auto &cls) {
         cls.def("getFootprint", &SourceRecord::getFootprint);
         cls.def("setFootprint", &SourceRecord::setFootprint);
         cls.def("getTable", &SourceRecord::getTable);
-        cls.def_property_readonly("table", &SourceRecord::getTable);
+        cls.def_prop_ro("table", &SourceRecord::getTable);
 
         cls.def("getParent", &SourceRecord::getParent);
         cls.def("setParent", &SourceRecord::setParent, "id"_a);
@@ -113,7 +114,7 @@ PySourceRecord declareSourceRecord(WrapperCollection &wrappers) {
 }
 
 /*
-Declare member and static functions for a pybind11 wrapper of SourceTable
+Declare member and static functions for a nanobind wrapper of SourceTable
 */
 PySourceTable declareSourceTable(WrapperCollection &wrappers) {
     return wrappers.wrapType(PySourceTable(wrappers.module, "SourceTable"), [](auto &mod, auto &cls) {
@@ -184,7 +185,7 @@ void wrapSource(WrapperCollection &wrappers) {
     // wrappers.addSignatureDependency("lsst.afw.geom.ellipses");
 
     // SourceFitsFlags enum values are used as integer masks, so wrap as attributes instead of an enum
-    // static_cast is required to avoid an import error (py::cast and py::int_ do not work by themselves
+    // static_cast is required to avoid an import error (nb::cast and nb::int_ do not work by themselves
     // and are not required with the static_cast)
     auto &mod = wrappers.module;
     mod.attr("SOURCE_IO_NO_FOOTPRINTS") = static_cast<int>(SourceFitsFlags::SOURCE_IO_NO_FOOTPRINTS);

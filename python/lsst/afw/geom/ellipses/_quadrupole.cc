@@ -21,16 +21,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
-#include "pybind11/eigen.h"
-#include "pybind11/stl.h"
+#include "nanobind/nanobind.h"
+#include "nanobind/eigen/dense.h"
+#include "nanobind/stl/vector.h"
 #include <lsst/cpputils/python.h>
 
 #include "lsst/afw/geom/ellipses/BaseCore.h"
 #include "lsst/afw/geom/ellipses/Quadrupole.h"
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+namespace nb = nanobind;
+using namespace nanobind::literals;
 
 namespace lsst {
 namespace afw {
@@ -38,30 +38,30 @@ namespace geom {
 namespace ellipses {
 void wrapQuadrupole(lsst::cpputils::python::WrapperCollection &wrappers) {
     wrappers.wrapType(
-            py::class_<Quadrupole, std::shared_ptr<Quadrupole>, BaseCore>(wrappers.module, "Quadrupole"),
+            nb::class_<Quadrupole, BaseCore>(wrappers.module, "Quadrupole"),
             [](auto &mod, auto &cls) {
                 /* Member types and enums */
                 using Matrix = Eigen::Matrix<double, 2, 2, Eigen::DontAlign>;
 
                 /* Constructors */
-                cls.def(py::init<double, double, double, bool>(), "ixx"_a = 1.0, "iyy"_a = 1.0, "ixy"_a = 0.0,
+                cls.def(nb::init<double, double, double, bool>(), "ixx"_a = 1.0, "iyy"_a = 1.0, "ixy"_a = 0.0,
                         "normalize"_a = false);
-                cls.def(py::init<BaseCore::ParameterVector const &, bool>(), "vector"_a,
+                cls.def(nb::init<BaseCore::ParameterVector const &, bool>(), "vector"_a,
                         "normalize"_a = false);
-                cls.def(py::init<Matrix const &, bool>(), "matrix"_a, "normalize"_a = true);
-                cls.def(py::init<Quadrupole const &>());
-                cls.def(py::init<BaseCore const &>());
-                cls.def(py::init<BaseCore::Convolution const &>());
+                cls.def(nb::init<Matrix const &, bool>(), "matrix"_a, "normalize"_a = true);
+                cls.def(nb::init<Quadrupole const &>());
+                cls.def(nb::init<BaseCore const &>());
+                cls.def(nb::init<BaseCore::Convolution const &>());
 
-                py::implicitly_convertible<BaseCore::Convolution, Quadrupole>();
+                nb::implicitly_convertible<BaseCore::Convolution, Quadrupole>();
 
                 /* Operators */
                 cls.def(
                         "__eq__", [](Quadrupole &self, Quadrupole &other) { return self == other; },
-                        py::is_operator());
+                        nb::is_operator());
                 cls.def(
                         "__ne__", [](Quadrupole &self, Quadrupole &other) { return self != other; },
-                        py::is_operator());
+                        nb::is_operator());
 
                 /* Members */
                 cls.def("getIxx", &Quadrupole::getIxx);
@@ -78,7 +78,7 @@ void wrapQuadrupole(lsst::cpputils::python::WrapperCollection &wrappers) {
                 cls.def("transformInPlace", [](Quadrupole &self, lsst::geom::LinearTransform const &t) {
                     self.transform(t).inPlace();
                 });
-                // TODO: pybind11 based on swig wrapper for now. Hopefully can be removed once pybind11 gets
+                // TODO: nanobind based on swig wrapper for now. Hopefully can be removed once nanobind gets
                 // smarter handling of implicit conversions
                 cls.def("convolve", [](Quadrupole &self, BaseCore const &other) {
                     return Quadrupole(self.convolve(other));

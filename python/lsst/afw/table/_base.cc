@@ -22,16 +22,16 @@
  */
 
 /*
-Unlike most pybind11 wrapper classes, which have one .cc file per header file,
+Unlike most nanobind wrapper classes, which have one .cc file per header file,
 this module wraps both BaseRecord.h and BaseTable.h (as well as CatalogT<BaseRecord> from Catalog.h).
 
 This allows us to define BaseCatalog.Table = clsBaseTable, which is needed to support `cast` in Python,
 and makes wrapping Base catalogs more similar to all other types of catalog.
 */
 
-#include "pybind11/pybind11.h"
+#include "nanobind/nanobind.h"
 
-#include "ndarray/pybind11.h"
+#include "ndarray/nanobind.h"
 
 #include "lsst/cpputils/python.h"
 
@@ -43,8 +43,8 @@ and makes wrapping Base catalogs more similar to all other types of catalog.
 #include "lsst/afw/table/python/catalog.h"
 #include "lsst/afw/table/python/columnView.h"
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+namespace nb = nanobind;
+using namespace nanobind::literals;
 
 namespace lsst {
 namespace afw {
@@ -54,8 +54,8 @@ using cpputils::python::WrapperCollection;
 
 namespace {
 
-using PyBaseRecord = py::class_<BaseRecord, std::shared_ptr<BaseRecord>>;
-using PyBaseTable = py::class_<BaseTable, std::shared_ptr<BaseTable>>;
+using PyBaseRecord = nb::class_<BaseRecord>;
+using PyBaseTable = nb::class_<BaseTable>;
 
 template <typename T>
 void declareBaseRecordOverloads(PyBaseRecord &cls, std::string const &suffix) {
@@ -70,16 +70,16 @@ void declareBaseRecordArrayOverloads(PyBaseRecord &cls, std::string const &suffi
     auto getter = [](BaseRecord &self, Key<Array<T>> const &key) -> ndarray::Array<T, 1, 1> {
         return self[key];
     };
-    auto setter = [](BaseRecord &self, Key<Array<T>> const &key, py::object const &value) {
+    auto setter = [](BaseRecord &self, Key<Array<T>> const &key, nb::object const &value) {
         if (key.getSize() == 0) {
             // Variable-length array field: do a shallow copy, which requires a non-const
             // contiguous array.
-            self.set(key, py::cast<ndarray::Array<T, 1, 1>>(value));
+            self.set(key, nb::cast<ndarray::Array<T, 1, 1>>(value));
         } else {
             // Fixed-length array field: do a deep copy, which can work with a const
             // noncontiguous array.  But we need to check the size first, since the
             // penalty for getting that wrong is assert->abort.
-            auto v = py::cast<ndarray::Array<T const, 1, 0>>(value);
+            auto v = nb::cast<ndarray::Array<T const, 1, 0>>(value);
             ndarray::ArrayRef<T, 1, 1> ref = self[key];
             if (v.size() != ref.size()) {
                 throw LSST_EXCEPT(
@@ -102,8 +102,8 @@ PyBaseRecord declareBaseRecord(WrapperCollection &wrappers) {
                 (void (BaseRecord::*)(BaseRecord const &, SchemaMapper const &)) & BaseRecord::assign);
         cls.def("getSchema", &BaseRecord::getSchema);
         cls.def("getTable", &BaseRecord::getTable);
-        cls.def_property_readonly("schema", &BaseRecord::getSchema);
-        cls.def_property_readonly("table", &BaseRecord::getTable);
+        cls.def_prop_ro("schema", &BaseRecord::getSchema);
+        cls.def_prop_ro("table", &BaseRecord::getTable);
 
         declareBaseRecordOverloads<double>(cls, "D");
         declareBaseRecordOverloads<float>(cls, "F");
@@ -123,16 +123,16 @@ PyBaseRecord declareBaseRecord(WrapperCollection &wrappers) {
 
         // These are master getters and setters that can take either strings, Keys, or
         // FunctorKeys, and dispatch to key.get.
-        auto getter = [](py::object const &self, py::object key) -> py::object {
-            py::object schema = self.attr("schema");
-            if (py::isinstance<py::str>(key) || py::isinstance<py::bytes>(key)) {
+        auto getter = [](nb::object const &self, nb::object key) -> nb::object {
+            nb::object schema = self.attr("schema");
+            if (nb::isinstance<nb::str>(key) || nb::isinstance<nb::bytes>(key)) {
                 key = schema.attr("find")(key).attr("key");
             }
             return key.attr("get")(self);
         };
-        auto setter = [](py::object const &self, py::object key, py::object const &value) -> void {
-            py::object schema = self.attr("schema");
-            if (py::isinstance<py::str>(key) || py::isinstance<py::bytes>(key)) {
+        auto setter = [](nb::object const &self, nb::object key, nb::object const &value) -> void {
+            nb::object schema = self.attr("schema");
+            if (nb::isinstance<nb::str>(key) || nb::isinstance<nb::bytes>(key)) {
                 key = schema.attr("find")(key).attr("key");
             }
             key.attr("set")(self, value);
@@ -142,7 +142,7 @@ PyBaseRecord declareBaseRecord(WrapperCollection &wrappers) {
         // operates by returning an object that can be assigned to.
         // But there's no meaningful difference between get/set and __getitem__/__setitem__.
         cls.def("get", getter);
-        cls.def("__getitem__", getter);
+        cls.def("__getitem__", getter, nb::rv_policy::reference);
         cls.def("set", setter);
         cls.def("__setitem__", setter);
     });
@@ -155,7 +155,7 @@ PyBaseTable declareBaseTable(WrapperCollection &wrappers) {
         cls.def("getMetadata", &BaseTable::getMetadata);
         cls.def("setMetadata", &BaseTable::setMetadata, "metadata"_a);
         cls.def("popMetadata", &BaseTable::popMetadata);
-        cls.def_property("metadata", &BaseTable::getMetadata, &BaseTable::setMetadata);
+        cls.def_prop_rw("metadata", &BaseTable::getMetadata, &BaseTable::setMetadata);
         cls.def("makeRecord", &BaseTable::makeRecord);
         cls.def("copyRecord",
                 (std::shared_ptr<BaseRecord>(BaseTable::*)(BaseRecord const &)) & BaseTable::copyRecord);
@@ -163,7 +163,7 @@ PyBaseTable declareBaseTable(WrapperCollection &wrappers) {
                 (std::shared_ptr<BaseRecord>(BaseTable::*)(BaseRecord const &, SchemaMapper const &)) &
                         BaseTable::copyRecord);
         cls.def("getSchema", &BaseTable::getSchema);
-        cls.def_property_readonly("schema", &BaseTable::getSchema);
+        cls.def_prop_ro("schema", &BaseTable::getSchema);
         cls.def("getBufferSize", &BaseTable::getBufferSize);
         cls.def("clone", &BaseTable::clone);
         cls.def("preallocate", &BaseTable::preallocate);

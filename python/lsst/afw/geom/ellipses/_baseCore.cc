@@ -21,27 +21,27 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
-#include "pybind11/eigen.h"
-#include "pybind11/stl.h"
+#include "nanobind/nanobind.h"
+#include "nanobind/eigen/dense.h"
+#include "nanobind/stl/vector.h"
 #include <lsst/cpputils/python.h>
 
-#include "ndarray/pybind11.h"
+#include "ndarray/nanobind.h"
 
 #include "lsst/afw/geom/ellipses/BaseCore.h"
 #include "lsst/afw/geom/ellipses/Convolution.h"
 #include "lsst/afw/geom/ellipses/Transformer.h"
 
-namespace py = pybind11;
+namespace nb = nanobind;
 namespace lsst {
 namespace afw {
 namespace geom {
 namespace ellipses {
 void wrapBaseCore(lsst::cpputils::python::WrapperCollection &wrappers) {
-    wrappers.wrapType(py::class_<BaseCore, std::shared_ptr<BaseCore>>(wrappers.module, "BaseCore"),
+    wrappers.wrapType(nb::class_<BaseCore>(wrappers.module, "BaseCore"),
                       [](auto &mod, auto &cls) {
-                          cls.def("__eq__", &BaseCore::operator==, py::is_operator());
-                          cls.def("__nq__", &BaseCore::operator!=, py::is_operator());
+                          cls.def("__eq__", &BaseCore::operator==, nb::is_operator());
+                          cls.def("__nq__", &BaseCore::operator!=, nb::is_operator());
                           /* Members */
                           cls.def("getName", &BaseCore::getName);
                           cls.def("clone", &BaseCore::clone);

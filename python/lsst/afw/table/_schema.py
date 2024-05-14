@@ -157,8 +157,12 @@ class Schema:  # noqa: F811
             Result of the `Field` addition.
         """
         if isinstance(field, str):
-            field = Field[type](field, doc=doc, units=units,
-                                size=size, parse_strict=parse_strict)
+            if size is None:
+                field = Field[type](field, doc=doc, units=units,
+                                    parse_strict=parse_strict)
+            else:
+                field = Field[type](field, doc=doc, units=units,
+                                    size=size, parse_strict=parse_strict)
         return field._addTo(self, doReplace)
 
     def extract(self, *patterns, **kwargs):

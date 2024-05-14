@@ -63,8 +63,12 @@ class SchemaMapper:  # noqa: F811
             The key of the field added.
         """
         if isinstance(field, str):
-            field = Field[type](field, doc=doc, units=units,
-                                size=size, parse_strict=parse_strict)
+            if size is None:
+                field = Field[type](field, doc=doc, units=units,
+                                    parse_strict=parse_strict)
+            else:    
+                field = Field[type](field, doc=doc, units=units,
+                                    size=size, parse_strict=parse_strict)
         return field._addTo(self.editOutputSchema(), doReplace)
 
     def addMapping(self, input, output=None, doReplace=True):
@@ -95,7 +99,10 @@ class SchemaMapper:  # noqa: F811
         if output is True or output is False:
             doReplace = output
             output = None
-        return input._addMappingTo(self, output, doReplace)
+        if output is None:
+            return input._addMappingTo(self, doReplace)
+        else:
+            return input._addMappingTo(self, output, doReplace)
 
     def __eq__(self, other):
         """SchemaMappers are equal if their respective input and output

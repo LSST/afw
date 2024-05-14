@@ -21,10 +21,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
-#include "pybind11/stl.h"
+#include "nanobind/nanobind.h"
+#include "nanobind/stl/vector.h"
+#include "nanobind/stl/shared_ptr.h"
+#include "nanobind/ndarray.h"
+#include "nanobind/stl/string.h"
+#include "nanobind/stl/map.h"
 #include "lsst/cpputils/python.h"
-#include "ndarray/pybind11.h"
+#include "ndarray/nanobind.h"
 
 #include "lsst/afw/image/Image.h"
 #include "lsst/afw/image/ImageSlice.h"
@@ -32,8 +36,8 @@
 #include "lsst/afw/fits.h"
 #include "lsst/afw/image/python/indexing.h"
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+namespace nb = nanobind;
+using namespace nanobind::literals;
 
 namespace lsst {
 namespace afw {
@@ -42,16 +46,16 @@ namespace image {
 namespace {
 
 template <typename PixelT>
-using PyImageBase = py::class_<ImageBase<PixelT>, std::shared_ptr<ImageBase<PixelT>>>;
+using PyImageBase = nb::class_<ImageBase<PixelT>>;
 
 template <typename PixelT>
-using PyImage = py::class_<Image<PixelT>, std::shared_ptr<Image<PixelT>>, ImageBase<PixelT>>;
+using PyImage = nb::class_<Image<PixelT>, ImageBase<PixelT>>;
 
 template <typename PixelT>
-using PyDecoratedImage = py::class_<DecoratedImage<PixelT>, std::shared_ptr<DecoratedImage<PixelT>>>;
+using PyDecoratedImage = nb::class_<DecoratedImage<PixelT>>;
 
 template <typename MaskPixelT>
-using PyMask = py::class_<Mask<MaskPixelT>, std::shared_ptr<Mask<MaskPixelT>>, ImageBase<MaskPixelT>>;
+using PyMask = nb::class_<Mask<MaskPixelT>, ImageBase<MaskPixelT>>;
 
 /**
 @internal Declare a constructor that takes a MaskedImage of FromPixelT and returns a MaskedImage cast to
@@ -59,11 +63,11 @@ ToPixelT
 
 The mask and variance must be of the standard types.
 
-@param[in] cls  The pybind11 class to which add the constructor
+@param[in] cls  The nanobind class to which add the constructor
 */
 template <typename FromPixelT, typename ToPixelT>
 static void declareCastConstructor(PyImage<ToPixelT> &cls) {
-    cls.def(py::init<Image<FromPixelT> const &, bool const>(), "src"_a, "deep"_a);
+    cls.def(nb::init<Image<FromPixelT> const &, bool const>(), "src"_a, "deep"_a);
 }
 
 template <typename PixelT>
@@ -71,16 +75,16 @@ static void declareImageBase(lsst::cpputils::python::WrapperCollection &wrappers
     using Array = typename ImageBase<PixelT>::Array;
     wrappers.wrapType(PyImageBase<PixelT>(wrappers.module, ("ImageBase" + suffix).c_str()), [](auto &mod,
                                                                                                auto &cls) {
-        cls.def(py::init<lsst::geom::Extent2I const &>(), "dimensions"_a = lsst::geom::Extent2I());
-        cls.def(py::init<ImageBase<PixelT> const &, bool>(), "src"_a, "deep"_a = false);
-        cls.def(py::init<ImageBase<PixelT> const &, lsst::geom::Box2I const &, ImageOrigin, bool>(), "src"_a,
+        cls.def(nb::init<lsst::geom::Extent2I const &>(), "dimensions"_a = lsst::geom::Extent2I());
+        cls.def(nb::init<ImageBase<PixelT> const &, bool>(), "src"_a, "deep"_a = false);
+        cls.def(nb::init<ImageBase<PixelT> const &, lsst::geom::Box2I const &, ImageOrigin, bool>(), "src"_a,
                 "bbox"_a, "origin"_a = PARENT, "deep"_a = false);
-        cls.def(py::init<Array const &, bool, lsst::geom::Point2I const &>(), "array"_a, "deep"_a = false,
+        cls.def(nb::init<Array const &, bool, lsst::geom::Point2I const &>(), "array"_a, "deep"_a = false,
                 "xy0"_a = lsst::geom::Point2I());
 
         cls.def("assign", &ImageBase<PixelT>::assign, "rhs"_a, "bbox"_a = lsst::geom::Box2I(),
                 "origin"_a = PARENT,
-                py::is_operator());  // py::is_operator is a workaround for code in slicing.py
+                nb::is_operator());  // nb::is_operator is a workaround for code in slicing.py
         // that expects NotImplemented to be returned on failure.
         cls.def("getWidth", &ImageBase<PixelT>::getWidth);
         cls.def("getHeight", &ImageBase<PixelT>::getHeight);
@@ -91,14 +95,14 @@ static void declareImageBase(lsst::cpputils::python::WrapperCollection &wrappers
         cls.def("indexToPosition", &ImageBase<PixelT>::indexToPosition, "index"_a, "xOrY"_a);
         cls.def("getDimensions", &ImageBase<PixelT>::getDimensions);
         cls.def("getArray", (Array(ImageBase<PixelT>::*)()) & ImageBase<PixelT>::getArray);
-        cls.def_property("array", (Array(ImageBase<PixelT>::*)()) & ImageBase<PixelT>::getArray,
+        cls.def_prop_rw("array", (Array(ImageBase<PixelT>::*)()) & ImageBase<PixelT>::getArray,
                          [](ImageBase<PixelT> &self, ndarray::Array<PixelT const, 2, 0> const &array) {
                              // Avoid self-assignment, which is invoked when a Python in-place operator is
                              // used.
                              if (array.shallow() != self.getArray().shallow()) {
                                  self.getArray().deep() = array;
                              }
-                         });
+                         }, nb::rv_policy::automatic_reference);
         cls.def("setXY0",
                 (void (ImageBase<PixelT>::*)(lsst::geom::Point2I const)) & ImageBase<PixelT>::setXY0,
                 "xy0"_a);
@@ -129,41 +133,41 @@ static void declareMask(lsst::cpputils::python::WrapperCollection &wrappers, std
     wrappers.wrapType(PyMask<MaskPixelT>(wrappers.module, ("Mask" + suffix).c_str()), [](auto &mod,
                                                                                          auto &cls) {
         /* Constructors */
-        cls.def(py::init<unsigned int, unsigned int, typename Mask<MaskPixelT>::MaskPlaneDict const &>(),
+        cls.def(nb::init<unsigned int, unsigned int, typename Mask<MaskPixelT>::MaskPlaneDict const &>(),
                 "width"_a, "height"_a, "planeDefs"_a = typename Mask<MaskPixelT>::MaskPlaneDict());
-        cls.def(py::init<unsigned int, unsigned int, MaskPixelT,
+        cls.def(nb::init<unsigned int, unsigned int, MaskPixelT,
                          typename Mask<MaskPixelT>::MaskPlaneDict const &>(),
                 "width"_a, "height"_a, "initialValue"_a,
                 "planeDefs"_a = typename Mask<MaskPixelT>::MaskPlaneDict());
-        cls.def(py::init<lsst::geom::Extent2I const &, typename Mask<MaskPixelT>::MaskPlaneDict const &>(),
+        cls.def(nb::init<lsst::geom::Extent2I const &, typename Mask<MaskPixelT>::MaskPlaneDict const &>(),
                 "dimensions"_a = lsst::geom::Extent2I(),
                 "planeDefs"_a = typename Mask<MaskPixelT>::MaskPlaneDict());
-        cls.def(py::init<lsst::geom::Extent2I const &, MaskPixelT,
+        cls.def(nb::init<lsst::geom::Extent2I const &, MaskPixelT,
                          typename Mask<MaskPixelT>::MaskPlaneDict const &>(),
                 "dimensions"_a = lsst::geom::Extent2I(), "initialValue"_a,
                 "planeDefs"_a = typename Mask<MaskPixelT>::MaskPlaneDict());
-        cls.def(py::init<lsst::geom::Box2I const &, typename Mask<MaskPixelT>::MaskPlaneDict const &>(),
+        cls.def(nb::init<lsst::geom::Box2I const &, typename Mask<MaskPixelT>::MaskPlaneDict const &>(),
                 "bbox"_a, "planeDefs"_a = typename Mask<MaskPixelT>::MaskPlaneDict());
-        cls.def(py::init<lsst::geom::Box2I const &, MaskPixelT,
+        cls.def(nb::init<lsst::geom::Box2I const &, MaskPixelT,
                          typename Mask<MaskPixelT>::MaskPlaneDict const &>(),
                 "bbox"_a, "initialValue"_a, "planeDefs"_a = typename Mask<MaskPixelT>::MaskPlaneDict());
-        cls.def(py::init<const Mask<MaskPixelT> &, const bool>(), "src"_a, "deep"_a = false);
-        cls.def(py::init<const Mask<MaskPixelT> &, const lsst::geom::Box2I &, ImageOrigin const,
+        cls.def(nb::init<const Mask<MaskPixelT> &, const bool>(), "src"_a, "deep"_a = false);
+        cls.def(nb::init<const Mask<MaskPixelT> &, const lsst::geom::Box2I &, ImageOrigin const,
                          const bool>(),
                 "src"_a, "bbox"_a, "origin"_a = PARENT, "deep"_a = false);
-        cls.def(py::init<ndarray::Array<MaskPixelT, 2, 1> const &, bool, lsst::geom::Point2I const &>(),
+        cls.def(nb::init<ndarray::Array<MaskPixelT, 2, 1> const &, bool, lsst::geom::Point2I const &>(),
                 "array"_a, "deep"_a = false, "xy0"_a = lsst::geom::Point2I());
-        cls.def(py::init<std::string const &, int, std::shared_ptr<lsst::daf::base::PropertySet>,
+        cls.def(nb::init<std::string const &, int, std::shared_ptr<lsst::daf::base::PropertySet>,
                          lsst::geom::Box2I const &, ImageOrigin, bool, bool>(),
                 "fileName"_a, "hdu"_a = fits::DEFAULT_HDU, "metadata"_a = nullptr,
                 "bbox"_a = lsst::geom::Box2I(), "origin"_a = PARENT, "conformMasks"_a = false,
                 "allowUnsafe"_a = false);
-        cls.def(py::init<fits::MemFileManager &, int, std::shared_ptr<lsst::daf::base::PropertySet>,
+        cls.def(nb::init<fits::MemFileManager &, int, std::shared_ptr<lsst::daf::base::PropertySet>,
                          lsst::geom::Box2I const &, ImageOrigin, bool, bool>(),
                 "manager"_a, "hdu"_a = fits::DEFAULT_HDU, "metadata"_a = nullptr,
                 "bbox"_a = lsst::geom::Box2I(), "origin"_a = PARENT, "conformMasks"_a = false,
                 "allowUnsafe"_a = false);
-        cls.def(py::init<fits::Fits &, std::shared_ptr<lsst::daf::base::PropertySet>,
+        cls.def(nb::init<fits::Fits &, std::shared_ptr<lsst::daf::base::PropertySet>,
                          lsst::geom::Box2I const &, ImageOrigin, bool, bool>(),
                 "fitsFile"_a, "metadata"_a = nullptr, "bbox"_a = lsst::geom::Box2I(), "origin"_a = PARENT,
                 "conformMasks"_a = false, "allowUnsafe"_a = false);
@@ -254,23 +258,23 @@ static PyImage<PixelT> declareImage(lsst::cpputils::python::WrapperCollection &w
     return wrappers.wrapType(PyImage<PixelT>(wrappers.module, ("Image" + suffix).c_str()), [](auto &mod,
                                                                                               auto &cls) {
         /* Constructors */
-        cls.def(py::init<unsigned int, unsigned int, PixelT>(), "width"_a, "height"_a, "intialValue"_a = 0);
-        cls.def(py::init<lsst::geom::Extent2I const &, PixelT>(), "dimensions"_a = lsst::geom::Extent2I(),
+        cls.def(nb::init<unsigned int, unsigned int, PixelT>(), "width"_a, "height"_a, "intialValue"_a = 0);
+        cls.def(nb::init<lsst::geom::Extent2I const &, PixelT>(), "dimensions"_a = lsst::geom::Extent2I(),
                 "initialValue"_a = 0);
-        cls.def(py::init<lsst::geom::Box2I const &, PixelT>(), "bbox"_a, "initialValue"_a = 0);
-        cls.def(py::init<Image<PixelT> const &, lsst::geom::Box2I const &, ImageOrigin const, const bool>(),
+        cls.def(nb::init<lsst::geom::Box2I const &, PixelT>(), "bbox"_a, "initialValue"_a = 0);
+        cls.def(nb::init<Image<PixelT> const &, lsst::geom::Box2I const &, ImageOrigin const, const bool>(),
                 "rhs"_a, "bbox"_a, "origin"_a = PARENT, "deep"_a = false);
-        cls.def(py::init<ndarray::Array<PixelT, 2, 1> const &, bool, lsst::geom::Point2I const &>(),
+        cls.def(nb::init<ndarray::Array<PixelT, 2, 1> const &, bool, lsst::geom::Point2I const &>(),
                 "array"_a, "deep"_a = false, "xy0"_a = lsst::geom::Point2I());
-        cls.def(py::init<std::string const &, int, std::shared_ptr<daf::base::PropertySet>,
+        cls.def(nb::init<std::string const &, int, std::shared_ptr<daf::base::PropertySet>,
                          lsst::geom::Box2I const &, ImageOrigin, bool>(),
                 "fileName"_a, "hdu"_a = fits::DEFAULT_HDU, "metadata"_a = nullptr,
                 "bbox"_a = lsst::geom::Box2I(), "origin"_a = PARENT, "allowUnsafe"_a = false);
-        cls.def(py::init<fits::MemFileManager &, int, std::shared_ptr<daf::base::PropertySet>,
+        cls.def(nb::init<fits::MemFileManager &, int, std::shared_ptr<daf::base::PropertySet>,
                          lsst::geom::Box2I const &, ImageOrigin, bool>(),
                 "manager"_a, "hdu"_a = fits::DEFAULT_HDU, "metadata"_a = nullptr,
                 "bbox"_a = lsst::geom::Box2I(), "origin"_a = PARENT, "allowUnsafe"_a = false);
-        cls.def(py::init<fits::Fits &, std::shared_ptr<daf::base::PropertySet>, lsst::geom::Box2I const &,
+        cls.def(nb::init<fits::Fits &, std::shared_ptr<daf::base::PropertySet>, lsst::geom::Box2I const &,
                          ImageOrigin, bool>(),
                 "fitsFile"_a, "metadata"_a = nullptr, "bbox"_a = lsst::geom::Box2I(), "origin"_a = PARENT,
                 "allowUnsafe"_a = false);
@@ -353,11 +357,11 @@ static void declareDecoratedImage(lsst::cpputils::python::WrapperCollection &wra
     wrappers.wrapType(
             PyDecoratedImage<PixelT>(wrappers.module, ("DecoratedImage" + suffix).c_str()),
             [](auto &mod, auto &cls) {
-                cls.def(py::init<const lsst::geom::Extent2I &>(), "dimensions"_a = lsst::geom::Extent2I());
-                cls.def(py::init<const lsst::geom::Box2I &>(), "bbox"_a);
-                cls.def(py::init<std::shared_ptr<Image<PixelT>>>(), "rhs"_a);
-                cls.def(py::init<DecoratedImage<PixelT> const &, const bool>(), "rhs"_a, "deep"_a = false);
-                cls.def(py::init<std::string const &, const int, lsst::geom::Box2I const &, ImageOrigin const,
+                cls.def(nb::init<const lsst::geom::Extent2I &>(), "dimensions"_a = lsst::geom::Extent2I());
+                cls.def(nb::init<const lsst::geom::Box2I &>(), "bbox"_a);
+                cls.def(nb::init<std::shared_ptr<Image<PixelT>>>(), "rhs"_a);
+                cls.def(nb::init<DecoratedImage<PixelT> const &, const bool>(), "rhs"_a, "deep"_a = false);
+                cls.def(nb::init<std::string const &, const int, lsst::geom::Box2I const &, ImageOrigin const,
                                  bool>(),
                         "fileName"_a, "hdu"_a = fits::DEFAULT_HDU, "bbox"_a = lsst::geom::Box2I(),
                         "origin"_a = PARENT, "allowUnsafe"_a = false);
@@ -371,19 +375,19 @@ static void declareDecoratedImage(lsst::cpputils::python::WrapperCollection &wra
                 cls.def("getDimensions", &DecoratedImage<PixelT>::getDimensions);
                 cls.def("swap", &DecoratedImage<PixelT>::swap);
                 cls.def("writeFits",
-                        py::overload_cast<std::string const &, daf::base::PropertySet const *,
+                        nb::overload_cast<std::string const &, daf::base::PropertySet const *,
                                           std::string const &>(&DecoratedImage<PixelT>::writeFits,
-                                                               py::const_),
+                                                               nb::const_),
                         "filename"_a, "metadata"_a = nullptr,
                         "mode"_a = "w");
                 cls.def("writeFits",
-                        py::overload_cast<std::string const &, fits::ImageWriteOptions const &,
+                        nb::overload_cast<std::string const &, fits::ImageWriteOptions const &,
                                           daf::base::PropertySet const *, std::string const &>(
-                                &DecoratedImage<PixelT>::writeFits, py::const_),
+                                &DecoratedImage<PixelT>::writeFits, nb::const_),
                         "filename"_a, "options"_a, "metadata"_a = nullptr,
                         "mode"_a = "w");
-                cls.def("getImage", py::overload_cast<>(&DecoratedImage<PixelT>::getImage));
-                cls.def_property_readonly("image", py::overload_cast<>(&DecoratedImage<PixelT>::getImage));
+                cls.def("getImage", nb::overload_cast<>(&DecoratedImage<PixelT>::getImage));
+                cls.def_prop_ro("image", nb::overload_cast<>(&DecoratedImage<PixelT>::getImage));
                 cls.def("getGain", &DecoratedImage<PixelT>::getGain);
                 cls.def("setGain", &DecoratedImage<PixelT>::setGain);
             });
@@ -392,23 +396,23 @@ static void declareDecoratedImage(lsst::cpputils::python::WrapperCollection &wra
 /* Declare ImageSlice operators separately since they are only instantiated for float double */
 template <typename PixelT>
 static void addImageSliceOperators(
-        py::class_<Image<PixelT>, std::shared_ptr<Image<PixelT>>, ImageBase<PixelT>> &cls) {
+        nb::class_<Image<PixelT>, ImageBase<PixelT>> &cls) {
     cls.def(
             "__add__",
             [](Image<PixelT> const &self, ImageSlice<PixelT> const &other) { return self + other; },
-            py::is_operator());
+            nb::is_operator());
     cls.def(
             "__sub__",
             [](Image<PixelT> const &self, ImageSlice<PixelT> const &other) { return self - other; },
-            py::is_operator());
+            nb::is_operator());
     cls.def(
             "__mul__",
             [](Image<PixelT> const &self, ImageSlice<PixelT> const &other) { return self * other; },
-            py::is_operator());
+            nb::is_operator());
     cls.def(
             "__truediv__",
             [](Image<PixelT> const &self, ImageSlice<PixelT> const &other) { return self / other; },
-            py::is_operator());
+            nb::is_operator());
     cls.def("__iadd__", [](Image<PixelT> &self, ImageSlice<PixelT> const &other) {
         self += other;
         return self;
@@ -429,11 +433,11 @@ static void addImageSliceOperators(
 
 template <typename PixelT, typename PyClass>
 static void addGeneralizedCopyConstructors(PyClass &cls) {
-    cls.def(py::init<Image<int> const &, const bool>(), "rhs"_a, "deep"_a = false);
-    cls.def(py::init<Image<float> const &, const bool>(), "rhs"_a, "deep"_a = false);
-    cls.def(py::init<Image<double> const &, const bool>(), "rhs"_a, "deep"_a = false);
-    cls.def(py::init<Image<std::uint16_t> const &, const bool>(), "rhs"_a, "deep"_a = false);
-    cls.def(py::init<Image<std::uint64_t> const &, const bool>(), "rhs"_a, "deep"_a = false);
+    cls.def(nb::init<Image<int> const &, const bool>(), "rhs"_a, "deep"_a = false);
+    cls.def(nb::init<Image<float> const &, const bool>(), "rhs"_a, "deep"_a = false);
+    cls.def(nb::init<Image<double> const &, const bool>(), "rhs"_a, "deep"_a = false);
+    cls.def(nb::init<Image<std::uint16_t> const &, const bool>(), "rhs"_a, "deep"_a = false);
+    cls.def(nb::init<Image<std::uint64_t> const &, const bool>(), "rhs"_a, "deep"_a = false);
 
     cls.def("convertI", [](Image<PixelT> const &self) { return Image<int>(self, true); });
     cls.def("convertF", [](Image<PixelT> const &self) { return Image<float>(self, true); });
@@ -448,7 +452,7 @@ static void addGeneralizedCopyConstructors(PyClass &cls) {
 void wrapImage(lsst::cpputils::python::WrapperCollection &wrappers) {
     wrappers.addSignatureDependency("lsst.daf.base");
     wrappers.addSignatureDependency("lsst.geom");
-    wrappers.wrapType(py::enum_<ImageOrigin>(wrappers.module, "ImageOrigin"), [](auto &mod, auto &enm) {
+    wrappers.wrapType(nb::enum_<ImageOrigin>(wrappers.module, "ImageOrigin"), [](auto &mod, auto &enm) {
         enm.value("PARENT", ImageOrigin::PARENT);
         enm.value("LOCAL", ImageOrigin::LOCAL);
         enm.export_values();

@@ -20,11 +20,11 @@
  * see <https://www.lsstcorp.org/LegalNotices/>.
  */
 
-#include <pybind11/pybind11.h>
+#include <nanobind/nanobind.h>
 #include <lsst/cpputils/python.h>
-#include <pybind11/stl.h>
+#include <nanobind/stl/vector.h>
 
-#include "ndarray/pybind11.h"
+#include "ndarray/nanobind.h"
 
 #include "lsst/pex/config/python.h"    // defines LSST_DECLARE_CONTROL_FIELD
 #include "lsst/afw/table/io/python.h"  // for addPersistableMethods
@@ -32,24 +32,24 @@
 #include "lsst/afw/math/BoundedField.h"
 #include "lsst/afw/math/TransformBoundedField.h"
 
-namespace py = pybind11;
-using namespace py::literals;
+namespace nb = nanobind;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
 namespace math {
 
-using ClsField = py::class_<TransformBoundedField, std::shared_ptr<TransformBoundedField>, BoundedField>;
+using ClsField = nb::class_<TransformBoundedField, BoundedField>;
 
 void declareTransformBoundedField(lsst::cpputils::python::WrapperCollection &wrappers) {
     wrappers.wrapType(ClsField(wrappers.module, "TransformBoundedField"), [](auto &mod, auto &cls) {
-        cls.def(py::init<lsst::geom::Box2I const &, TransformBoundedField::Transform const &>(), "bbox"_a,
+        cls.def(nb::init<lsst::geom::Box2I const &, TransformBoundedField::Transform const &>(), "bbox"_a,
                 "transform"_a);
 
         table::io::python::addPersistableMethods<TransformBoundedField>(cls);
 
-        cls.def("__mul__", &TransformBoundedField::operator*, py::is_operator());
-        cls.def("__eq__", &TransformBoundedField::operator==, py::is_operator());
+        cls.def("__mul__", &TransformBoundedField::operator*, nb::is_operator());
+        cls.def("__eq__", &TransformBoundedField::operator==, nb::is_operator());
 
         cls.def("getTransform", &TransformBoundedField::getTransform);
         cls.def("evaluate", (double (BoundedField::*)(double, double) const) & BoundedField::evaluate);

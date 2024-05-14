@@ -20,13 +20,13 @@
  * see <https://www.lsstcorp.org/LegalNotices/>.
  */
 
-#include <pybind11/pybind11.h>
+#include <nanobind/nanobind.h>
 #include <lsst/cpputils/python.h>
 
 #include "lsst/afw/math/ConvolveImage.h"
 
-namespace py = pybind11;
-using namespace py::literals;
+namespace nb = nanobind;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
@@ -76,9 +76,9 @@ void declareAll(lsst::cpputils::python::WrapperCollection &wrappers) {
 }
 
 void declareConvolveImage(lsst::cpputils::python::WrapperCollection &wrappers) {
-    using PyClass = py::class_<ConvolutionControl, std::shared_ptr<ConvolutionControl>>;
+    using PyClass = nb::class_<ConvolutionControl>;
     wrappers.wrapType(PyClass(wrappers.module, "ConvolutionControl"), [](auto &mod, auto &clsl) {
-        clsl.def(py::init<bool, bool, int>(), "doNormalize"_a = true, "doCopyEdge"_a = false,
+        clsl.def(nb::init<bool, bool, int>(), "doNormalize"_a = true, "doCopyEdge"_a = false,
                  "maxInterpolationDistance"_a = 10);
 
         clsl.def("getDoNormalize", &ConvolutionControl::getDoNormalize);

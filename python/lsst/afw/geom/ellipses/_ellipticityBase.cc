@@ -21,24 +21,24 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <pybind11/pybind11.h>
+#include <nanobind/nanobind.h>
 #include <lsst/cpputils/python.h>
 
 #include "lsst/afw/geom/ellipses/EllipticityBase.h"
 
-namespace py = pybind11;
+namespace nb = nanobind;
 
-using namespace py::literals;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
 namespace geom {
 namespace ellipses {
 void wrapEllipticityBase(lsst::cpputils::python::WrapperCollection &wrappers) {
-    wrappers.wrapType(py::class_<detail::EllipticityBase>(wrappers.module, "EllipticityBase"),
+    wrappers.wrapType(nb::class_<detail::EllipticityBase>(wrappers.module, "EllipticityBase"),
                       [](auto &mod, auto &cls) {
                           /* Member types and enums */
-                          py::enum_<detail::EllipticityBase::ParameterEnum>(cls, "ParameterEnum")
+                          nb::enum_<detail::EllipticityBase::ParameterEnum>(cls, "ParameterEnum")
                                   .value("E1", detail::EllipticityBase::ParameterEnum::E1)
                                   .value("E2", detail::EllipticityBase::ParameterEnum::E2)
                                   .export_values();
@@ -53,7 +53,7 @@ void wrapEllipticityBase(lsst::cpputils::python::WrapperCollection &wrappers) {
                           cls.def("setE2", &detail::EllipticityBase::setE2);
                           cls.def("getTheta", &detail::EllipticityBase::getTheta);
                           cls.def("__str__", [](detail::EllipticityBase const &self) {
-                              return py::str("({}, {})").format(self.getE1(), self.getE2());
+                              return nb::str("({}, {})").format(self.getE1(), self.getE2());
                           });
                       });
 }

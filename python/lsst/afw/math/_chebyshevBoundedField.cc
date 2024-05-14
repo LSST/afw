@@ -20,12 +20,12 @@
  * see <https://www.lsstcorp.org/LegalNotices/>.
  */
 
-#include <pybind11/pybind11.h>
+#include <nanobind/nanobind.h>
 #include <lsst/cpputils/python.h>
-#include <pybind11/operators.h>
-#include <pybind11/stl.h>
+#include <nanobind/operators.h>
+#include <nanobind/stl/vector.h>
 
-#include "ndarray/pybind11.h"
+#include "ndarray/nanobind.h"
 
 #include "lsst/pex/config/python.h"  // defines LSST_DECLARE_CONTROL_FIELD
 #include "lsst/afw/table/io/python.h"
@@ -33,14 +33,14 @@
 #include "lsst/afw/math/BoundedField.h"
 #include "lsst/afw/math/ChebyshevBoundedField.h"
 
-namespace py = pybind11;
+namespace nb = nanobind;
 
 using namespace lsst::afw::math;
 namespace lsst {
 namespace afw {
 namespace math {
 namespace {
-using ClsField = py::class_<ChebyshevBoundedField, std::shared_ptr<ChebyshevBoundedField>, BoundedField>;
+using ClsField = nb::class_<ChebyshevBoundedField, BoundedField>;
 
 template <typename PixelT>
 void declareTemplates(ClsField &cls) {
@@ -52,9 +52,9 @@ void declareChebyshevBoundedField(lsst::cpputils::python::WrapperCollection &wra
     /* Module level */
 
     wrappers.wrapType(
-            py::class_<ChebyshevBoundedFieldControl>(wrappers.module, "ChebyshevBoundedFieldControl"),
+            nb::class_<ChebyshevBoundedFieldControl>(wrappers.module, "ChebyshevBoundedFieldControl"),
             [](auto &mod, auto &cls) {
-                cls.def(py::init<>());
+                cls.def(nb::init<>());
                 LSST_DECLARE_CONTROL_FIELD(cls, ChebyshevBoundedFieldControl, orderX);
                 LSST_DECLARE_CONTROL_FIELD(cls, ChebyshevBoundedFieldControl, orderY);
                 LSST_DECLARE_CONTROL_FIELD(cls, ChebyshevBoundedFieldControl, triangular);
@@ -63,7 +63,7 @@ void declareChebyshevBoundedField(lsst::cpputils::python::WrapperCollection &wra
 
     wrappers.wrapType(ClsField(wrappers.module, "ChebyshevBoundedField"), [](auto &mod, auto &cls) {
         using Control = ChebyshevBoundedFieldControl;
-        cls.def(py::init<lsst::geom::Box2I const &, ndarray::Array<double const, 2, 2> const &>());
+        cls.def(nb::init<lsst::geom::Box2I const &, ndarray::Array<double const, 2, 2> const &>());
         cls.def("getCoefficients", &ChebyshevBoundedField::getCoefficients);
         cls.def_static("fit", (std::shared_ptr<ChebyshevBoundedField>(*)(
                                       lsst::geom::Box2I const &, ndarray::Array<double const, 1> const &,

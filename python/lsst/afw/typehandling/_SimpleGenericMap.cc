@@ -23,15 +23,16 @@
 
 #include <memory>
 
-#include "pybind11/pybind11.h"
+#include "nanobind/nanobind.h"
+#include "nanobind/stl/string.h"
 
 #include "lsst/cpputils/python.h"
 
 #include "lsst/afw/typehandling/SimpleGenericMap.h"
 #include "lsst/afw/typehandling/python.h"
 
-namespace py = pybind11;
-using namespace py::literals;
+namespace nb = nanobind;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
@@ -42,7 +43,7 @@ template <typename K>
 void declareSimpleGenericMap(cpputils::python::WrapperCollection& wrappers, std::string const& suffix,
                              std::string const& key) {
     using Class = SimpleGenericMap<K>;
-    using PyClass = py::class_<Class, std::shared_ptr<Class>, MutableGenericMap<K>>;
+    using PyClass = nb::class_<Class, MutableGenericMap<K>>;
 
     std::string className = "SimpleGenericMap" + suffix;
     // Give the class a custom docstring to avoid confusing Python users
@@ -63,11 +64,11 @@ iterable : iterable, optional
                           // Don't rewrap members of MutableGenericMap
 
                           /* need __init__(**kw), __init__(mapping, **kw), __init__(iterable, **kw)
-                           * can't find a good way to insert a py::handle value from C++
+                           * can't find a good way to insert a nb::handle value from C++
                            * can't call MutableGenericMap.__setitem__ without its class_ object, which
-                           *    is in a different pybind11 module but can't be imported (yet)
+                           *    is in a different nanobind module but can't be imported (yet)
                            */
-                          cls.def(py::init<>());
+                          cls.def(nb::init<>());
                           cls.def("copy", [](Class const& self) { return Class(self); });
 
                           // fromkeys easier to implement in Python

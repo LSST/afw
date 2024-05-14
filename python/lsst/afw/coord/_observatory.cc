@@ -21,13 +21,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <pybind11/pybind11.h>
+#include <nanobind/nanobind.h>
 #include <lsst/cpputils/python.h>
 
 #include "lsst/afw/coord/Observatory.h"
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+namespace nb = nanobind;
+using namespace nanobind::literals;
 
 namespace lsst {
 namespace afw {
@@ -35,20 +35,20 @@ namespace coord {
 
 void wrapObservatory(lsst::cpputils::python::WrapperCollection& wrappers) {
     wrappers.wrapType(
-            py::class_<Observatory, std::shared_ptr<Observatory>>(wrappers.module, "Observatory"),
+            nb::class_<Observatory>(wrappers.module, "Observatory"),
             [](auto& mod, auto& cls) {
                 /* Constructors */
-                cls.def(py::init<lsst::geom::Angle const, lsst::geom::Angle const, double const>());
+                cls.def(nb::init<lsst::geom::Angle const, lsst::geom::Angle const, double const>());
 
                 /* Operators */
                 cls.def(
                         "__eq__",
                         [](Observatory const& self, Observatory const& other) { return self == other; },
-                        py::is_operator());
+                        nb::is_operator());
                 cls.def(
                         "__ne__",
                         [](Observatory const& self, Observatory const& other) { return self != other; },
-                        py::is_operator());
+                        nb::is_operator());
                 cls.def("__str__", &Observatory::toString);
                 cls.def("__repr__", &Observatory::toString);
 

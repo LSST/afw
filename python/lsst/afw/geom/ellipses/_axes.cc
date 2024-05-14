@@ -21,14 +21,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <pybind11/pybind11.h>
+#include <nanobind/nanobind.h>
 #include <lsst/cpputils/python.h>
 
 #include "lsst/afw/geom/ellipses/Axes.h"
 
-namespace py = pybind11;
+namespace nb = nanobind;
 
-using namespace py::literals;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
@@ -36,19 +36,19 @@ namespace geom {
 namespace ellipses {
 void wrapAxes(lsst::cpputils::python::WrapperCollection &wrappers) {
     wrappers.wrapType(
-            py::class_<Axes, std::shared_ptr<Axes>, BaseCore>(wrappers.module, "Axes"),
+            nb::class_<Axes, BaseCore>(wrappers.module, "Axes"),
             [](auto &mod, auto &cls) {
                 /* Constructors */
-                cls.def(py::init<double, double, double, bool>(), "a"_a = 1.0, "b"_a = 1.0, "theta"_a = 0.0,
+                cls.def(nb::init<double, double, double, bool>(), "a"_a = 1.0, "b"_a = 1.0, "theta"_a = 0.0,
                         "normalize"_a = false);
-                cls.def(py::init<Axes const &>());
-                cls.def(py::init<BaseCore const &>());
+                cls.def(nb::init<Axes const &>());
+                cls.def(nb::init<BaseCore const &>());
 
                 /* Operators */
                 cls.def(
-                        "__eq__", [](Axes &self, Axes &other) { return self == other; }, py::is_operator());
+                        "__eq__", [](Axes &self, Axes &other) { return self == other; }, nb::is_operator());
                 cls.def(
-                        "__ne__", [](Axes &self, Axes &other) { return self != other; }, py::is_operator());
+                        "__ne__", [](Axes &self, Axes &other) { return self != other; }, nb::is_operator());
 
                 /* Members */
                 cls.def("getA", &Axes::getA);

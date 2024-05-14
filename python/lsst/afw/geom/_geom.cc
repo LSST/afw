@@ -21,7 +21,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
+#include "nanobind/nanobind.h"
 #include "lsst/cpputils/python.h"
 
 namespace lsst {
@@ -43,7 +43,7 @@ namespace detail {
 void wrapFrameSetUtils(lsst::cpputils::python::WrapperCollection &);
 }
 
-PYBIND11_MODULE(_geom, mod) {
+NB_MODULE(_geom, mod) {
     lsst::cpputils::python::WrapperCollection wrappers(mod, "lsst.afw.geom");
     wrapEndpoint(wrappers);
     polygon::wrapPolygon(wrappers);

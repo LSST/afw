@@ -21,15 +21,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
-#include "pybind11/eigen.h"
+#include "nanobind/nanobind.h"
+#include "nanobind/eigen/dense.h"
 
 #include "lsst/cpputils/python.h"
 
 #include "lsst/afw/table/slots.h"
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+namespace nb = nanobind;
+using namespace nanobind::literals;
 
 namespace lsst {
 namespace afw {
@@ -40,7 +40,7 @@ using cpputils::python::WrapperCollection;
 namespace {
 
 // tiny classes only used in afw::table: no need for shared_ptr.
-using PySlotDefinition = py::class_<SlotDefinition>;
+using PySlotDefinition = nb::class_<SlotDefinition>;
 
 void declareSlotDefinition(WrapperCollection &wrappers) {
     wrappers.wrapType(PySlotDefinition(wrappers.module, "SlotDefinition"), [](auto &mod, auto &cls) {
@@ -54,9 +54,9 @@ Declare standard methods for subclasses of SlotDefinition (but not SlotDefinitio
 */
 template <typename Class>
 void declareSlotDefinitionSubclass(WrapperCollection &wrappers, std::string const &name) {
-    wrappers.wrapType(py::class_<Class, SlotDefinition>(wrappers.module, name.c_str()),
+    wrappers.wrapType(nb::class_<Class, SlotDefinition>(wrappers.module, name.c_str()),
                       [](auto &mod, auto &cls) {
-                          cls.def(py::init<std::string const &>(), "name"_a);
+                          cls.def(nb::init<std::string const &>(), "name"_a);
                           cls.def("isValid", &Class::isValid);
                           cls.def("getMeasKey", &Class::getMeasKey);
                           cls.def("getErrKey", &Class::getErrKey);

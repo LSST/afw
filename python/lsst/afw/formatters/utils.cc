@@ -20,23 +20,23 @@
  * see <https://www.lsstcorp.org/LegalNotices/>.
  */
 
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
+#include <nanobind/nanobind.h>
+#include <nanobind/stl/string.h>
 
-#include "ndarray/pybind11.h"
+#include "ndarray/nanobind.h"
 
 #include "lsst/afw/formatters/Utils.h"
 
-namespace py = pybind11;
-using namespace py::literals;
+namespace nb = nanobind;
+using namespace nb::literals;
 
-namespace py = pybind11;
+namespace nb = nanobind;
 namespace lsst {
 namespace afw {
 namespace formatters {
 namespace {
 
-PYBIND11_MODULE(utils, mod) {
+NB_MODULE(utils, mod) {
     mod.def("stringToBytes", stringToBytes);
     mod.def("bytesToString", bytesToString);
 }

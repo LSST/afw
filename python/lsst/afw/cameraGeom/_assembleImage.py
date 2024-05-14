@@ -209,15 +209,15 @@ class AmplifierIsolator:
             result.setMaskedImage(
                 flipImage(
                     subimage.getMaskedImage(),
-                    self._amplifier_comparison & self._amplifier_comparison.FLIPPED_X,
-                    self._amplifier_comparison & self._amplifier_comparison.FLIPPED_Y,
+                    bool(self._amplifier_comparison & self._amplifier_comparison.FLIPPED_X),
+                    bool(self._amplifier_comparison & self._amplifier_comparison.FLIPPED_Y),
                 )
             )
         else:
             result = flipImage(
                 subimage,
-                self._amplifier_comparison & self._amplifier_comparison.FLIPPED_X,
-                self._amplifier_comparison & self._amplifier_comparison.FLIPPED_Y,
+                bool(self._amplifier_comparison & self._amplifier_comparison.FLIPPED_X),
+                bool(self._amplifier_comparison & self._amplifier_comparison.FLIPPED_Y),
             )
         if self._is_parent_trimmed:
             result.setXY0(self._amplifier.getBBox().getMin())

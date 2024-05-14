@@ -20,22 +20,22 @@
  * see <https://www.lsstcorp.org/LegalNotices/>.
  */
 
-#include <pybind11/pybind11.h>
+#include <nanobind/nanobind.h>
 #include <lsst/cpputils/python.h>
-#include <pybind11/stl.h>
+#include <nanobind/stl/vector.h>
 
 #include "lsst/afw/image/Image.h"
 #include "lsst/afw/image/MaskedImage.h"
 #include "Rgb.h"
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+namespace nb = nanobind;
+using namespace nanobind::literals;
 
 namespace lsst {
 namespace afw {
 namespace display {
 
-PYBIND11_MODULE(_rgb, mod) {
+NB_MODULE(_rgb, mod) {
     /* Module level */
     lsst::cpputils::python::WrapperCollection wrappers(mod, "lsst.afw.display.rbg");
     wrappers.wrap([](auto &mod) {

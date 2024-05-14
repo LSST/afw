@@ -21,7 +21,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
+#include "nanobind/nanobind.h"
 #include "lsst/cpputils/python.h"
 
 #include <memory>
@@ -40,8 +40,8 @@
 #include "lsst/afw/typehandling/Storable.h"
 #include "lsst/afw/image/VisitInfo.h"
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+namespace nb = nanobind;
+using namespace nanobind::literals;
 
 namespace lsst {
 namespace afw {
@@ -56,11 +56,11 @@ static lsst::geom::Angle const nanAngle(nan);
 
 void declareVisitInfo(lsst::cpputils::python::WrapperCollection &wrappers) {
     wrappers.wrapType(
-            py::class_<VisitInfo, std::shared_ptr<VisitInfo>, typehandling::Storable>(wrappers.module,
+            nb::class_<VisitInfo, typehandling::Storable>(wrappers.module,
                                                                                       "VisitInfo"),
             [](auto &mod, auto &cls) {
                 /* Constructors */
-                cls.def(py::init<double, double, daf::base::DateTime const &, double,
+                cls.def(nb::init<double, double, daf::base::DateTime const &, double,
                                  lsst::geom::Angle const &, lsst::geom::SpherePoint const &,
                                  lsst::geom::SpherePoint const &, double, lsst::geom::Angle const &,
                                  RotType const &, coord::Observatory const &, coord::Weather const &,
@@ -77,18 +77,18 @@ void declareVisitInfo(lsst::cpputils::python::WrapperCollection &wrappers) {
                         "focusZ"_a = nan, "observationType"_a = "", "scienceProgram"_a = "",
                         // default hasSimulatedContent=false for backwards compatibility
                         "observationReason"_a = "", "object"_a = "", "hasSimulatedContent"_a = false);
-                cls.def(py::init<daf::base::PropertySet const &>(), "metadata"_a);
-                cls.def(py::init<VisitInfo const &>(), "visitInfo"_a);
+                cls.def(nb::init<daf::base::PropertySet const &>(), "metadata"_a);
+                cls.def(nb::init<VisitInfo const &>(), "visitInfo"_a);
 
                 table::io::python::addPersistableMethods<VisitInfo>(cls);
 
                 /* Operators */
                 cls.def(
                         "__eq__", [](VisitInfo const &self, VisitInfo const &other) { return self == other; },
-                        py::is_operator());
+                        nb::is_operator());
                 cls.def(
                         "__ne__", [](VisitInfo const &self, VisitInfo const &other) { return self != other; },
-                        py::is_operator());
+                        nb::is_operator());
 
                 /* Members */
                 cls.def("getExposureTime", &VisitInfo::getExposureTime);
@@ -117,36 +117,36 @@ void declareVisitInfo(lsst::cpputils::python::WrapperCollection &wrappers) {
                 cls.def("getHasSimulatedContent", &VisitInfo::getHasSimulatedContent);
 
                 /* readonly property accessors */
-                cls.def_property_readonly("exposureTime", &VisitInfo::getExposureTime);
-                cls.def_property_readonly("darkTime", &VisitInfo::getDarkTime);
-                cls.def_property_readonly("date", &VisitInfo::getDate);
-                cls.def_property_readonly("ut1", &VisitInfo::getUt1);
-                cls.def_property_readonly("era", &VisitInfo::getEra);
-                cls.def_property_readonly("boresightRaDec", &VisitInfo::getBoresightRaDec);
-                cls.def_property_readonly("boresightAzAlt", &VisitInfo::getBoresightAzAlt);
-                cls.def_property_readonly("boresightAirmass", &VisitInfo::getBoresightAirmass);
-                cls.def_property_readonly("boresightParAngle", &VisitInfo::getBoresightParAngle);
-                cls.def_property_readonly("boresightRotAngle", &VisitInfo::getBoresightRotAngle);
-                cls.def_property_readonly("rotType", &VisitInfo::getRotType);
-                cls.def_property_readonly("observatory", &VisitInfo::getObservatory);
-                cls.def_property_readonly("weather", &VisitInfo::getWeather);
-                cls.def_property_readonly("isPersistable", &VisitInfo::isPersistable);
-                cls.def_property_readonly("localEra", &VisitInfo::getLocalEra);
-                cls.def_property_readonly("boresightHourAngle", &VisitInfo::getBoresightHourAngle);
-                cls.def_property_readonly("instrumentLabel", &VisitInfo::getInstrumentLabel);
-                cls.def_property_readonly("id", &VisitInfo::getId);
-                cls.def_property_readonly("focusZ", &VisitInfo::getFocusZ);
-                cls.def_property_readonly("observationType", &VisitInfo::getObservationType);
-                cls.def_property_readonly("scienceProgram", &VisitInfo::getScienceProgram);
-                cls.def_property_readonly("observationReason", &VisitInfo::getObservationReason);
-                cls.def_property_readonly("object", &VisitInfo::getObject);
-                cls.def_property_readonly("hasSimulatedContent", &VisitInfo::getHasSimulatedContent);
+                cls.def_prop_ro("exposureTime", &VisitInfo::getExposureTime);
+                cls.def_prop_ro("darkTime", &VisitInfo::getDarkTime);
+                cls.def_prop_ro("date", &VisitInfo::getDate);
+                cls.def_prop_ro("ut1", &VisitInfo::getUt1);
+                cls.def_prop_ro("era", &VisitInfo::getEra);
+                cls.def_prop_ro("boresightRaDec", &VisitInfo::getBoresightRaDec);
+                cls.def_prop_ro("boresightAzAlt", &VisitInfo::getBoresightAzAlt);
+                cls.def_prop_ro("boresightAirmass", &VisitInfo::getBoresightAirmass);
+                cls.def_prop_ro("boresightParAngle", &VisitInfo::getBoresightParAngle);
+                cls.def_prop_ro("boresightRotAngle", &VisitInfo::getBoresightRotAngle);
+                cls.def_prop_ro("rotType", &VisitInfo::getRotType);
+                cls.def_prop_ro("observatory", &VisitInfo::getObservatory);
+                cls.def_prop_ro("weather", &VisitInfo::getWeather);
+                cls.def_prop_ro("isPersistable", &VisitInfo::isPersistable);
+                cls.def_prop_ro("localEra", &VisitInfo::getLocalEra);
+                cls.def_prop_ro("boresightHourAngle", &VisitInfo::getBoresightHourAngle);
+                cls.def_prop_ro("instrumentLabel", &VisitInfo::getInstrumentLabel);
+                cls.def_prop_ro("id", &VisitInfo::getId);
+                cls.def_prop_ro("focusZ", &VisitInfo::getFocusZ);
+                cls.def_prop_ro("observationType", &VisitInfo::getObservationType);
+                cls.def_prop_ro("scienceProgram", &VisitInfo::getScienceProgram);
+                cls.def_prop_ro("observationReason", &VisitInfo::getObservationReason);
+                cls.def_prop_ro("object", &VisitInfo::getObject);
+                cls.def_prop_ro("hasSimulatedContent", &VisitInfo::getHasSimulatedContent);
 
                 cpputils::python::addOutputOp(cls, "__repr__");
             });
 }
 void declareRotType(lsst::cpputils::python::WrapperCollection &wrappers) {
-    wrappers.wrapType(py::enum_<RotType>(wrappers.module, "RotType"), [](auto &mod, auto &enm) {
+    wrappers.wrapType(nb::enum_<RotType>(wrappers.module, "RotType"), [](auto &mod, auto &enm) {
         enm.value("UNKNOWN", RotType::UNKNOWN);
         enm.value("SKY", RotType::SKY);
         enm.value("HORIZON", RotType::HORIZON);

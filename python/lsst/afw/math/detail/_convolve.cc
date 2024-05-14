@@ -20,14 +20,14 @@
  * see <https://www.lsstcorp.org/LegalNotices/>.
  */
 
-#include <pybind11/pybind11.h>
+#include <nanobind/nanobind.h>
 #include <lsst/cpputils/python.h>
 
 #include "lsst/afw/math/detail/Convolve.h"
 
-namespace py = pybind11;
+namespace nb = nanobind;
 
-using namespace py::literals;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
@@ -67,13 +67,13 @@ void declareAll(lsst::cpputils::python::WrapperCollection &wrappers) {
 }  // namespace
 
 void declareConvolve(lsst::cpputils::python::WrapperCollection &wrappers) {
-    using PyClass = py::class_<KernelImagesForRegion, std::shared_ptr<KernelImagesForRegion>>;
+    using PyClass = nb::class_<KernelImagesForRegion>;
     auto clsKernelImagesForRegion =
             wrappers.wrapType(PyClass(wrappers.module, "KernelImagesForRegion"), [](auto &mod, auto &cls) {
-                cls.def(py::init<KernelImagesForRegion::KernelConstPtr, lsst::geom::Box2I const &,
+                cls.def(nb::init<KernelImagesForRegion::KernelConstPtr, lsst::geom::Box2I const &,
                                  lsst::geom::Point2I const &, bool>(),
                         "kernelPtr"_a, "bbox"_a, "xy0"_a, "doNormalize"_a);
-                cls.def(py::init<KernelImagesForRegion::KernelConstPtr, lsst::geom::Box2I const &,
+                cls.def(nb::init<KernelImagesForRegion::KernelConstPtr, lsst::geom::Box2I const &,
                                  lsst::geom::Point2I const &, bool, KernelImagesForRegion::ImagePtr,
                                  KernelImagesForRegion::ImagePtr, KernelImagesForRegion::ImagePtr,
                                  KernelImagesForRegion::ImagePtr>(),
@@ -90,7 +90,7 @@ void declareConvolve(lsst::cpputils::python::WrapperCollection &wrappers) {
                 cls.def_static("getMinInterpolationSize", KernelImagesForRegion::getMinInterpolationSize);
             });
 
-    wrappers.wrapType(py::enum_<KernelImagesForRegion::Location>(clsKernelImagesForRegion, "Location"),
+    wrappers.wrapType(nb::enum_<KernelImagesForRegion::Location>(clsKernelImagesForRegion, "Location"),
                       [](auto &mod, auto &enm) {
                           enm.value("BOTTOM_LEFT", KernelImagesForRegion::Location::BOTTOM_LEFT);
                           enm.value("BOTTOM_RIGHT", KernelImagesForRegion::Location::BOTTOM_RIGHT);
@@ -99,10 +99,10 @@ void declareConvolve(lsst::cpputils::python::WrapperCollection &wrappers) {
                           enm.export_values();
                       });
 
-    wrappers.wrapType(py::class_<RowOfKernelImagesForRegion, std::shared_ptr<RowOfKernelImagesForRegion>>(
+    wrappers.wrapType(nb::class_<RowOfKernelImagesForRegion>(
                               wrappers.module, "RowOfKernelImagesForRegion"),
                       [](auto &mod, auto &cls) {
-                          cls.def(py::init<int, int>(), "nx"_a, "ny"_a);
+                          cls.def(nb::init<int, int>(), "nx"_a, "ny"_a);
 
                           cls.def("front", &RowOfKernelImagesForRegion::front);
                           cls.def("back", &RowOfKernelImagesForRegion::back);

@@ -20,8 +20,9 @@
  * see <https://www.lsstcorp.org/LegalNotices/>.
  */
 
-#include <pybind11/pybind11.h>
+#include <nanobind/nanobind.h>
 #include <lsst/cpputils/python.h>
+
 namespace lsst {
 namespace afw {
 namespace math {
@@ -48,15 +49,16 @@ void wrapStatistics(lsst::cpputils::python::WrapperCollection &);
 void wrapTransformBoundedField(lsst::cpputils::python::WrapperCollection &);
 void wrapWarpExposure(lsst::cpputils::python::WrapperCollection &);
 
-PYBIND11_MODULE(_math, mod) {
+NB_MODULE(_math, mod) {
     lsst::cpputils::python::WrapperCollection wrappers(mod, "lsst.afw.math");
+    wrapFunction(wrappers);
+    wrapFunctionLibrary(wrappers);
     wrapApproximate(wrappers);
+    wrapStatistics(wrappers);
     wrapBackground(wrappers);
     wrapBoundedField(wrappers);
     wrapChebyshevBoundedField(wrappers);
     wrapConvolveImage(wrappers);
-    wrapFunction(wrappers);
-    wrapFunctionLibrary(wrappers);
     wrapGaussianProcess(wrappers);
     wrapInterpolate(wrappers);
     wrapKernel(wrappers);
@@ -68,7 +70,6 @@ PYBIND11_MODULE(_math, mod) {
     wrapRandom(wrappers);
     wrapSpatialCell(wrappers);
     wrapStack(wrappers);
-    wrapStatistics(wrappers);
     wrapTransformBoundedField(wrappers);
     wrapWarpExposure(wrappers);
     wrappers.finish();

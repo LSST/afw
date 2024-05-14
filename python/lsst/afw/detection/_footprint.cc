@@ -21,12 +21,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
-#include "pybind11/stl.h"
+#include "nanobind/nanobind.h"
+#include "nanobind/stl/vector.h"
 
 #include <cstdint>
 
-#include "ndarray/pybind11.h"
+#include "ndarray/nanobind.h"
 
 #include "lsst/cpputils/python.h"
 
@@ -35,8 +35,8 @@
 #include "lsst/afw/table/io/python.h"  // for addPersistableMethods
 #include "lsst/afw/detection/Footprint.h"
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+namespace nb = nanobind;
+using namespace nanobind::literals;
 
 namespace lsst {
 namespace afw {
@@ -80,23 +80,23 @@ void wrapFootprint(WrapperCollection &wrappers) {
     wrappers.addSignatureDependency("lsst.afw.table");
 
     wrappers.wrapType(
-            py::class_<Footprint, std::shared_ptr<Footprint>>(wrappers.module, "Footprint"),
+            nb::class_<Footprint>(wrappers.module, "Footprint"),
             [](auto &mod, auto &cls) {
-                cls.def(py::init<std::shared_ptr<geom::SpanSet>, lsst::geom::Box2I const &>(), "inputSpans"_a,
+                cls.def(nb::init<std::shared_ptr<geom::SpanSet>, lsst::geom::Box2I const &>(), "inputSpans"_a,
                         "region"_a = lsst::geom::Box2I());
 
-                cls.def(py::init<std::shared_ptr<geom::SpanSet>, afw::table::Schema const &,
+                cls.def(nb::init<std::shared_ptr<geom::SpanSet>, afw::table::Schema const &,
                                  lsst::geom::Box2I const &>(),
                         "inputSpans"_a, "peakSchema"_a, "region"_a = lsst::geom::Box2I());
-                cls.def(py::init<Footprint const &>());
-                cls.def(py::init<>());
+                cls.def(nb::init<Footprint const &>());
+                cls.def(nb::init<>());
 
                 table::io::python::addPersistableMethods<Footprint>(cls);
 
                 cls.def("getSpans", &Footprint::getSpans);
                 cls.def("setSpans", &Footprint::setSpans);
                 cls.def("getPeaks", (PeakCatalog & (Footprint::*)()) & Footprint::getPeaks,
-                        py::return_value_policy::reference_internal);
+                        nb::rv_policy::reference_internal);
                 cls.def("addPeak", &Footprint::addPeak);
                 cls.def("sortPeaks", &Footprint::sortPeaks, "key"_a = afw::table::Key<float>());
                 cls.def("setPeakSchema", &Footprint::setPeakSchema);
@@ -137,27 +137,27 @@ void wrapFootprint(WrapperCollection &wrappers) {
                 cls.def("erode", (void (Footprint::*)(geom::SpanSet const &)) & Footprint::erode);
                 cls.def("removeOrphanPeaks", &Footprint::removeOrphanPeaks);
                 cls.def("updatePeakSignificance",
-                        py::overload_cast<double>(&Footprint::updatePeakSignificance));
-                cls.def("updatePeakSignificance", py::overload_cast<image::Image<float> const &, int>(
+                        nb::overload_cast<double>(&Footprint::updatePeakSignificance));
+                cls.def("updatePeakSignificance", nb::overload_cast<image::Image<float> const &, int>(
                                                           &Footprint::updatePeakSignificance));
                 cls.def("isContiguous", &Footprint::isContiguous);
                 cls.def("isHeavy", &Footprint::isHeavy);
                 cls.def("assign", (Footprint & (Footprint::*)(Footprint const &)) & Footprint::operator=);
 
-                cls.def("split", [](Footprint const &self) -> py::list {
+                cls.def("split", [](Footprint const &self) -> nb::list {
                     /* This is a work around for pybind not properly
                      * handling converting a vector of unique pointers
                      * to python lists of shared pointers */
-                    py::list l;
+                    nb::list l;
                     for (auto &ptr : self.split()) {
-                        l.append(py::cast(std::shared_ptr<Footprint>(std::move(ptr))));
+                        l.append(nb::cast(std::shared_ptr<Footprint>(std::move(ptr))));
                     }
                     return l;
                 });
 
-                cls.def_property("spans", &Footprint::getSpans, &Footprint::setSpans);
-                cls.def_property_readonly("peaks", (PeakCatalog & (Footprint::*)()) & Footprint::getPeaks,
-                                          py::return_value_policy::reference_internal);
+                cls.def_prop_rw("spans", &Footprint::getSpans, &Footprint::setSpans);
+                cls.def_prop_ro("peaks", (PeakCatalog & (Footprint::*)()) & Footprint::getPeaks,
+                                          nb::rv_policy::reference_internal);
 
                 cls.def("__contains__", [](Footprint const &self, lsst::geom::Point2I const &point) -> bool {
                     return self.contains(point);
@@ -165,7 +165,7 @@ void wrapFootprint(WrapperCollection &wrappers) {
                 cls.def(
                         "__eq__",
                         [](Footprint const &self, Footprint const &other) -> bool { return self == other; },
-                        py::is_operator());
+                        nb::is_operator());
                 cpputils::python::addOutputOp(cls, "__repr__");
             });
 

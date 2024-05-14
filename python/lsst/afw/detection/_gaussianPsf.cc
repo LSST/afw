@@ -21,15 +21,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <pybind11/pybind11.h>
+#include <nanobind/nanobind.h>
 
 #include "lsst/afw/table/io/python.h"  // for addPersistableMethods
 #include "lsst/afw/detection/GaussianPsf.h"
 
 #include "lsst/cpputils/python.h"
 
-namespace py = pybind11;
-using namespace py::literals;
+namespace nb = nanobind;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
@@ -37,12 +37,12 @@ namespace detection {
 
 void wrapGaussianPsf(cpputils::python::WrapperCollection& wrappers) {
     wrappers.wrapType(
-            py::class_<GaussianPsf, std::shared_ptr<GaussianPsf>, Psf>(wrappers.module, "GaussianPsf"),
+            nb::class_<GaussianPsf, Psf>(wrappers.module, "GaussianPsf"),
             [](auto& mod, auto& cls) {
                 table::io::python::addPersistableMethods<GaussianPsf>(cls);
 
-                cls.def(py::init<int, int, double>(), "width"_a, "height"_a, "sigma"_a);
-                cls.def(py::init<lsst::geom::Extent2I const&, double>(), "dimensions"_a, "sigma"_a);
+                cls.def(nb::init<int, int, double>(), "width"_a, "height"_a, "sigma"_a);
+                cls.def(nb::init<lsst::geom::Extent2I const&, double>(), "dimensions"_a, "sigma"_a);
 
                 cls.def("clone", &GaussianPsf::clone);
                 cls.def("resized", &GaussianPsf::resized, "width"_a, "height"_a);

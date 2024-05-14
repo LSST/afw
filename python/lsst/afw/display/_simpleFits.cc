@@ -23,15 +23,15 @@
 
 #include <cstdint>
 
-#include <pybind11/pybind11.h>
+#include <nanobind/nanobind.h>
 #include <lsst/cpputils/python.h>
 
 #include "lsst/afw/image/Image.h"
 #include "lsst/afw/image/Mask.h"
 #include "simpleFits.h"
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+namespace nb = nanobind;
+using namespace nanobind::literals;
 
 namespace lsst {
 namespace afw {
@@ -55,7 +55,7 @@ void declareAll(lsst::cpputils::python::WrapperCollection &wrappers) {
 
 }  // namespace
 
-PYBIND11_MODULE(_simpleFits, mod) {
+NB_MODULE(_simpleFits, mod) {
     lsst::cpputils::python::WrapperCollection wrappers(mod, "lsst.afw.display");
     declareAll<image::Image<std::uint16_t>>(wrappers);
     declareAll<image::Image<std::uint64_t>>(wrappers);

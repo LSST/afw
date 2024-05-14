@@ -20,17 +20,18 @@
  * see <https://www.lsstcorp.org/LegalNotices/>.
  */
 
-#include <pybind11/pybind11.h>
+#include <nanobind/nanobind.h>
 #include <lsst/cpputils/python.h>
-#include <pybind11/stl.h>
+#include <nanobind/stl/vector.h>
+#include <nanobind/stl/string.h>
 
 #include "lsst/afw/image/Image.h"
 #include "lsst/afw/math/Random.h"
 
-namespace py = pybind11;
+namespace nb = nanobind;
 
 using namespace lsst::afw::math;
-using namespace pybind11::literals;
+using namespace nanobind::literals;
 namespace lsst {
 namespace afw {
 namespace math {
@@ -50,12 +51,33 @@ void declareRandomImage(lsst::cpputils::python::WrapperCollection &wrappers) {
 }
 
 void declareRandom(lsst::cpputils::python::WrapperCollection &wrappers) {
-    auto clsRandom = wrappers.wrapType(py::class_<Random>(wrappers.module, "Random"), [](auto &mod,
+    
+    auto clsRandom = nb::class_<Random>(wrappers.module, "Random");
+    wrappers.wrapType(nb::enum_<Random::Algorithm>(clsRandom, "Algorithm"), [](auto &mod, auto &enm) {
+        enm.value("MT19937", Random::Algorithm::MT19937);
+        enm.value("RANLXS0", Random::Algorithm::RANLXS0);
+        enm.value("RANLXS1", Random::Algorithm::RANLXS1);
+        enm.value("RANLXS2", Random::Algorithm::RANLXS2);
+        enm.value("RANLXD1", Random::Algorithm::RANLXD1);
+        enm.value("RANLXD2", Random::Algorithm::RANLXD2);
+        enm.value("RANLUX", Random::Algorithm::RANLUX);
+        enm.value("RANLUX389", Random::Algorithm::RANLUX389);
+        enm.value("CMRG", Random::Algorithm::CMRG);
+        enm.value("MRG", Random::Algorithm::MRG);
+        enm.value("TAUS", Random::Algorithm::TAUS);
+        enm.value("TAUS2", Random::Algorithm::TAUS2);
+        enm.value("GFSR4", Random::Algorithm::GFSR4);
+        enm.value("NUM_ALGORITHMS", Random::Algorithm::NUM_ALGORITHMS);
+        enm.export_values();
+    });
+
+    wrappers.wrapType(clsRandom, [](auto &mod,
+>>>>>>> b7d9a91a8 (Save for rebase)
                                                                                          auto &cls) {
         /* Constructors */
-        cls.def(py::init<Random::Algorithm, unsigned long>(), "algorithm"_a = Random::Algorithm::MT19937,
+        cls.def(nb::init<Random::Algorithm, unsigned long>(), "algorithm"_a = Random::Algorithm::MT19937,
                 "seed"_a = 1);
-        cls.def(py::init<std::string const &, unsigned long>(), "algorithm"_a, "seed"_a = 1);
+        cls.def(nb::init<std::string const &, unsigned long>(), "algorithm"_a, "seed"_a = 1);
 
         /* Members */
         cls.def("deepCopy", &Random::deepCopy);
@@ -74,29 +96,11 @@ void declareRandom(lsst::cpputils::python::WrapperCollection &wrappers) {
         // getState and setState are special, their std::string cannot
         // be converted to a Python string (needs to go to bytes instead)
         // thus use the same solution as employed with Swig
-        cls.def("getState", [](Random &self) -> py::object {
+        cls.def("getState", [](Random &self) -> nb::object {
             std::string state = self.getState();
-            return py::reinterpret_steal<py::object>(PyBytes_FromStringAndSize(state.data(), state.size()));
+            return nb::steal<nb::object>(PyBytes_FromStringAndSize(state.data(), state.size()));
         });
-        cls.def("setState", [](Random &self, py::bytes const &state) { self.setState(state); });
-    });
-    /* Member types and enums */
-    wrappers.wrapType(py::enum_<Random::Algorithm>(clsRandom, "Algorithm"), [](auto &mod, auto &enm) {
-        enm.value("MT19937", Random::Algorithm::MT19937);
-        enm.value("RANLXS0", Random::Algorithm::RANLXS0);
-        enm.value("RANLXS1", Random::Algorithm::RANLXS1);
-        enm.value("RANLXS2", Random::Algorithm::RANLXS2);
-        enm.value("RANLXD1", Random::Algorithm::RANLXD1);
-        enm.value("RANLXD2", Random::Algorithm::RANLXD2);
-        enm.value("RANLUX", Random::Algorithm::RANLUX);
-        enm.value("RANLUX389", Random::Algorithm::RANLUX389);
-        enm.value("CMRG", Random::Algorithm::CMRG);
-        enm.value("MRG", Random::Algorithm::MRG);
-        enm.value("TAUS", Random::Algorithm::TAUS);
-        enm.value("TAUS2", Random::Algorithm::TAUS2);
-        enm.value("GFSR4", Random::Algorithm::GFSR4);
-        enm.value("NUM_ALGORITHMS", Random::Algorithm::NUM_ALGORITHMS);
-        enm.export_values();
+        cls.def("setState", [](Random &self, nb::bytes const &state) { self.setState(std::string(state.c_str(), state.size())); });
     });
 }
 

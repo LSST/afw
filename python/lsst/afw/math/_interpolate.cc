@@ -20,27 +20,39 @@
  * see <https://www.lsstcorp.org/LegalNotices/>.
  */
 
-#include <pybind11/pybind11.h>
+#include <nanobind/nanobind.h>
 #include <lsst/cpputils/python.h>
-#include <pybind11/stl.h>
+#include <nanobind/stl/vector.h>
+#include <nanobind/stl/shared_ptr.h>
 
-#include "ndarray/pybind11.h"
+#include "ndarray/nanobind.h"
 
 #include "lsst/afw/math/Interpolate.h"
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+namespace nb = nanobind;
+using namespace nanobind::literals;
 
 using namespace lsst::afw::math;
 namespace lsst {
 namespace afw {
 namespace math {
 void wrapInterpolate(lsst::cpputils::python::WrapperCollection &wrappers) {
-    using PyClass = py::class_<Interpolate, std::shared_ptr<Interpolate>>;
-
-    auto clsInterpolate = wrappers.wrapType(PyClass(wrappers.module, "Interpolate"), [](auto &mod,
-                                                                                        auto &cls) {
-        cls.def("interpolate", [](Interpolate &t, double const x) {
+    using PyClass = nb::class_<Interpolate>;
+    auto clsdef = PyClass(wrappers.module, "Interpolate");
+    wrappers.wrapType(nb::enum_<Interpolate::Style>(clsdef, "Style"), [](auto &mod, auto &enm) {
+        enm.value("UNKNOWN", Interpolate::Style::UNKNOWN);
+        enm.value("CONSTANT", Interpolate::Style::CONSTANT);
+        enm.value("LINEAR", Interpolate::Style::LINEAR);
+        enm.value("NATURAL_SPLINE", Interpolate::Style::NATURAL_SPLINE);
+        enm.value("CUBIC_SPLINE", Interpolate::Style::CUBIC_SPLINE);
+        enm.value("CUBIC_SPLINE_PERIODIC", Interpolate::Style::CUBIC_SPLINE_PERIODIC);
+        enm.value("AKIMA_SPLINE", Interpolate::Style::AKIMA_SPLINE);
+        enm.value("AKIMA_SPLINE_PERIODIC", Interpolate::Style::AKIMA_SPLINE_PERIODIC);
+        enm.value("NUM_STYLES", Interpolate::Style::NUM_STYLES);
+        enm.export_values();
+        });
+    auto clsInterpolate = wrappers.wrapType(clsdef, [&](auto &mod, auto &cls) {
+        cls.def("interpolate", [](Interpolate &t, double const x) { 
             /*
             We use a lambda function here because interpolate (with a double) is a virtual function
             and therefor cannot be wrapped directly.
@@ -68,7 +80,8 @@ void wrapInterpolate(lsst::cpputils::python::WrapperCollection &wrappers) {
         mod.def("lookupMaxInterpStyle", lookupMaxInterpStyle, "n"_a);
         mod.def("lookupMinInterpPoints", lookupMinInterpPoints, "style"_a);
     });
-    wrappers.wrapType(py::enum_<Interpolate::Style>(clsInterpolate, "Style"), [](auto &mod, auto &enm) {
+#if 0
+    wrappers.wrapType(nb::enum_<Interpolate::Style>(clsInterpolate, "Style"), [](auto &mod, auto &enm) {
         enm.value("UNKNOWN", Interpolate::Style::UNKNOWN);
         enm.value("CONSTANT", Interpolate::Style::CONSTANT);
         enm.value("LINEAR", Interpolate::Style::LINEAR);
@@ -80,6 +93,7 @@ void wrapInterpolate(lsst::cpputils::python::WrapperCollection &wrappers) {
         enm.value("NUM_STYLES", Interpolate::Style::NUM_STYLES);
         enm.export_values();
     });
+#endif    
 }
 }  // namespace math
 }  // namespace afw

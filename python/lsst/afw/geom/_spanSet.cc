@@ -21,24 +21,25 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
+#include "nanobind/nanobind.h"
 #include <lsst/cpputils/python.h>
-#include "pybind11/stl.h"
-
+#include "nanobind/stl/vector.h"
+#include "nanobind/stl/shared_ptr.h"
 #include <cstdint>
 #include <sstream>
 #include <string>
 #include <iostream>
+#include <nanobind/make_iterator.h>
 
-#include "ndarray/pybind11.h"
+#include "ndarray/nanobind.h"
 #include "ndarray/Array.h"
 
 #include "lsst/afw/geom/ellipses/Quadrupole.h"
 #include "lsst/afw/geom/SpanSet.h"
 #include "lsst/afw/table/io/python.h"  // for addPersistableMethods
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+namespace nb = nanobind;
+using namespace nanobind::literals;
 
 namespace lsst {
 namespace afw {
@@ -46,20 +47,27 @@ namespace geom {
 
 namespace {
 
-using PySpanSet = py::class_<SpanSet, std::shared_ptr<SpanSet>>;
+using PySpanSet = nb::class_<SpanSet>;
 
 template <typename Pixel, typename PyClass>
 void declareFlattenMethod(PyClass &cls) {
-    cls.def("flatten",
-            (ndarray::Array<Pixel, 1, 1>(SpanSet::*)(ndarray::Array<Pixel, 2, 0> const &,
-                                                     lsst::geom::Point2I const &) const) &
-                    SpanSet::flatten<Pixel, 2, 0>,
-            "input"_a, "xy0"_a = lsst::geom::Point2I());
-    cls.def("flatten",
-            (ndarray::Array<Pixel, 2, 2>(SpanSet::*)(ndarray::Array<Pixel, 3, 0> const &,
-                                                     lsst::geom::Point2I const &) const) &
-                    SpanSet::flatten<Pixel, 3, 0>,
-            "input"_a, "xy0"_a = lsst::geom::Point2I());
+    cls.def("flatten", [](SpanSet &self, ndarray::Array<Pixel, 2, 0> const &array, lsst::geom::Point2I const &point) {
+            std::cout << "+++++++++++++++\n";
+            static_assert(!std::is_same_v<Pixel, bool>);
+            std::cout << array;
+            auto result = self.flatten<Pixel, 2, 0>(array, point);
+            std::cout << "+++++++++++++++\n";
+            //std::cout << result;
+            return result;
+        }, "input"_a, "xy0"_a = lsst::geom::Point2I(), nb::rv_policy::reference);
+    cls.def("flatten", [](SpanSet &self, ndarray::Array<Pixel, 3, 0> const & array, lsst::geom::Point2I const &point) {
+            std::cout << "+++++++++++++++\n";
+            std::cout << array;
+            auto result =  self.flatten<Pixel, 3, 0>(array, point);
+            std::cout << "+++++++++++++++\n";
+            //std::cout << result;
+            return result;
+        },"input"_a, "xy0"_a = lsst::geom::Point2I(), nb::rv_policy::reference);
     cls.def("flatten",
             (void (SpanSet::*)(ndarray::Array<Pixel, 1, 0> const &, ndarray::Array<Pixel, 2, 0> const &,
                                lsst::geom::Point2I const &) const) &
@@ -76,10 +84,10 @@ template <typename Pixel, typename PyClass>
 void declareUnflattenMethod(PyClass &cls) {
     cls.def("unflatten",
             (ndarray::Array<Pixel, 2, 2>(SpanSet::*)(ndarray::Array<Pixel, 1, 0> const &input) const) &
-                    SpanSet::unflatten<Pixel, 1, 0>);
+                    SpanSet::unflatten<Pixel, 1, 0>, nb::rv_policy::move);
     cls.def("unflatten",
             (ndarray::Array<Pixel, 3, 3>(SpanSet::*)(ndarray::Array<Pixel, 2, 0> const &input) const) &
-                    SpanSet::unflatten<Pixel, 2, 0>);
+                    SpanSet::unflatten<Pixel, 2, 0>, nb::rv_policy::move);
     cls.def("unflatten",
             (void (SpanSet::*)(ndarray::Array<Pixel, 2, 0> const &, ndarray::Array<Pixel, 1, 0> const &,
                                lsst::geom::Point2I const &) const) &
@@ -196,7 +204,7 @@ void declareImageTypes(PyClass &cls) {
 }
 
 void declareStencil(lsst::cpputils::python::WrapperCollection &wrappers) {
-    wrappers.wrapType(py::enum_<Stencil>(wrappers.module, "Stencil"), [](auto &mod, auto &enm) {
+    wrappers.wrapType(nb::enum_<Stencil>(wrappers.module, "Stencil"), [](auto &mod, auto &enm) {
         enm.value("CIRCLE", Stencil::CIRCLE);
         enm.value("BOX", Stencil::BOX);
         enm.value("MANHATTAN", Stencil::MANHATTAN);
@@ -208,9 +216,9 @@ void declareSpanSet(lsst::cpputils::python::WrapperCollection &wrappers) {
 
     wrappers.wrapType(PySpanSet(wrappers.module, "SpanSet"), [](auto &mod, auto &cls) {
         /* SpanSet Constructors */
-        cls.def(py::init<>());
-        cls.def(py::init<lsst::geom::Box2I>(), "box"_a);
-        cls.def(py::init<std::vector<Span>, bool>(), "spans"_a, "normalize"_a = true);
+        cls.def(nb::init<>());
+        cls.def(nb::init<lsst::geom::Box2I>(), "box"_a);
+        cls.def(nb::init<std::vector<Span>, bool>(), "spans"_a, "normalize"_a = true);
 
         table::io::python::addPersistableMethods<SpanSet>(cls);
 
@@ -278,13 +286,13 @@ void declareSpanSet(lsst::cpputils::python::WrapperCollection &wrappers) {
         /* SpanSet Operators */
         cls.def(
                 "__eq__", [](SpanSet const &self, SpanSet const &other) -> bool { return self == other; },
-                py::is_operator());
+                nb::is_operator());
         cls.def(
                 "__ne__", [](SpanSet const &self, SpanSet const &other) -> bool { return self != other; },
-                py::is_operator());
+                nb::is_operator());
         cls.def(
-                "__iter__", [](SpanSet &self) { return py::make_iterator(self.begin(), self.end()); },
-                py::keep_alive<0, 1>());
+                "__iter__", [](SpanSet const &self) { return nb::make_iterator(nb::type<SpanSet>(), "iterator", self.begin(), self.end()); },
+                nb::keep_alive<0, 1>());
         cls.def("__len__", [](SpanSet const &self) -> decltype(self.size()) { return self.size(); });
         cls.def("__contains__",
                 [](SpanSet &self, SpanSet const &other) -> bool { return self.contains(other); });

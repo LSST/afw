@@ -19,7 +19,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
+#include "nanobind/nanobind.h"
 
 #include "lsst/cpputils/python.h"
 
@@ -27,21 +27,21 @@
 #include "lsst/afw/fits.h"
 #include "lsst/afw/table/io/Persistable.h"
 
-namespace py = pybind11;
-using namespace py::literals;
+namespace nb = nanobind;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
 namespace table {
 namespace io {
 
-using PyOutputArchive = py::class_<OutputArchive, std::shared_ptr<OutputArchive>>;
+using PyOutputArchive = nb::class_<OutputArchive>;
 
 void wrapOutputArchive(cpputils::python::WrapperCollection &wrappers) {
     wrappers.wrapType(PyOutputArchive(wrappers.module, "OutputArchive"), [](auto &mod, auto &cls) {
-        cls.def(py::init<>());
+        cls.def(nb::init<>());
         cls.def("put",
-                py::overload_cast<std::shared_ptr<Persistable const>, bool>(&OutputArchive::put),
+                nb::overload_cast<std::shared_ptr<Persistable const>, bool>(&OutputArchive::put),
                 "obj"_a, "permissive"_a=false
                 );
         cls.def("writeFits", &OutputArchive::writeFits);

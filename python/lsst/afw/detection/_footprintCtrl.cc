@@ -21,27 +21,27 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
+#include <nanobind/nanobind.h>
+#include <nanobind/stl/vector.h>
 
 #include "lsst/cpputils/python.h"
 
 #include "lsst/afw/detection/FootprintCtrl.h"
 
-namespace py = pybind11;
+namespace nb = nanobind;
 
-using namespace py::literals;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
 namespace detection {
 
 void wrapFootprintCtrl(cpputils::python::WrapperCollection& wrappers) {
-    wrappers.wrapType(py::class_<FootprintControl>(wrappers.module, "FootprintControl"),
+    wrappers.wrapType(nb::class_<FootprintControl>(wrappers.module, "FootprintControl"),
                       [](auto& mod, auto& cls) {
-                          cls.def(py::init<>());
-                          cls.def(py::init<bool, bool>(), "circular"_a, "isotropic"_a = false);
-                          cls.def(py::init<bool, bool, bool, bool>(), "left"_a, "right"_a, "up"_a, "down"_a);
+                          cls.def(nb::init<>());
+                          cls.def(nb::init<bool, bool>(), "circular"_a, "isotropic"_a = false);
+                          cls.def(nb::init<bool, bool, bool, bool>(), "left"_a, "right"_a, "up"_a, "down"_a);
 
                           cls.def("growCircular", &FootprintControl::growCircular);
                           cls.def("growIsotropic", &FootprintControl::growIsotropic);
@@ -59,9 +59,9 @@ void wrapFootprintCtrl(cpputils::python::WrapperCollection& wrappers) {
                       });
 
     auto clsHeavyFootprintCtrl = wrappers.wrapType(
-            py::class_<HeavyFootprintCtrl>(wrappers.module, "HeavyFootprintCtrl"), [](auto& mod, auto& cls) {
-                cls.def(py::init<HeavyFootprintCtrl::ModifySource>(),
-                        "modifySource"_a = HeavyFootprintCtrl::ModifySource::NONE);
+            nb::class_<HeavyFootprintCtrl>(wrappers.module, "HeavyFootprintCtrl"), [](auto& mod, auto& cls) {
+                cls.def(nb::init<HeavyFootprintCtrl::ModifySource>(),
+                        "modifySource"_a = int(HeavyFootprintCtrl::ModifySource::NONE));
 
                 cls.def("getModifySource", &HeavyFootprintCtrl::getModifySource);
                 cls.def("setModifySource", &HeavyFootprintCtrl::setModifySource);
@@ -73,7 +73,7 @@ void wrapFootprintCtrl(cpputils::python::WrapperCollection& wrappers) {
                 cls.def("setVarianceVal", &HeavyFootprintCtrl::setVarianceVal);
             });
 
-    wrappers.wrapType(py::enum_<HeavyFootprintCtrl::ModifySource>(clsHeavyFootprintCtrl, "ModifySource"),
+    wrappers.wrapType(nb::enum_<HeavyFootprintCtrl::ModifySource>(clsHeavyFootprintCtrl, "ModifySource"),
                       [](auto& mod, auto& enm) {
                           enm.value("NONE", HeavyFootprintCtrl::ModifySource::NONE);
                           enm.value("SET", HeavyFootprintCtrl::ModifySource::SET);

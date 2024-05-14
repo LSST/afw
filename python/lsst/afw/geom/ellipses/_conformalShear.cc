@@ -21,27 +21,27 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <pybind11/pybind11.h>
+#include <nanobind/nanobind.h>
 
 #include <lsst/cpputils/python.h>
 
 #include "lsst/afw/geom/ellipses/ConformalShear.h"
 #include "lsst/afw/geom/ellipses/EllipticityBase.h"
 
-namespace py = pybind11;
+namespace nb = nanobind;
 
-using namespace py::literals;
+using namespace nb::literals;
 namespace lsst {
 namespace afw {
 namespace geom {
 namespace ellipses {
 
 void wrapConformalShear(lsst::cpputils::python::WrapperCollection &wrappers) {
-    wrappers.wrapType(py::class_<ConformalShear, detail::EllipticityBase>(wrappers.module, "ConformalShear"),
+    wrappers.wrapType(nb::class_<ConformalShear, detail::EllipticityBase>(wrappers.module, "ConformalShear"),
                       [](auto &mod, auto &cls) {
                           /* Constructors */
-                          cls.def(py::init<std::complex<double> const &>());
-                          cls.def(py::init<double, double>(), "e1"_a = 0.0, "e2"_a = 0.0);
+                          cls.def(nb::init<std::complex<double> const &>());
+                          cls.def(nb::init<double, double>(), "e1"_a = 0.0, "e2"_a = 0.0);
 
                           /* Members */
                           //    cls.def("dAssign", (Jacobian (ConformalShear::*)(Distortion const &))
@@ -51,7 +51,7 @@ void wrapConformalShear(lsst::cpputils::python::WrapperCollection &wrappers) {
                           cls.def("normalize", &ConformalShear::normalize);
                           cls.def("getName", &ConformalShear::getName);
                           cls.def("__repr__", [](ConformalShear const &self) {
-                              return py::str("{}({}, {})").format(self.getName(), self.getE1(), self.getE2());
+                              return nb::str("{}({}, {})").format(self.getName(), self.getE1(), self.getE2());
                           });
                       });
 }

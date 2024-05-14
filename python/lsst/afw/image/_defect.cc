@@ -21,25 +21,25 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
+#include "nanobind/nanobind.h"
 #include "lsst/cpputils/python.h"
 
 #include "lsst/afw/image/Defect.h"
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+namespace nb = nanobind;
+using namespace nanobind::literals;
 
 namespace lsst {
 namespace afw {
 namespace image {
 namespace {
 
-using PyDefectBase = py::class_<DefectBase, std::shared_ptr<DefectBase>>;
+using PyDefectBase = nb::class_<DefectBase>;
 
 void declareDefects(lsst::cpputils::python::WrapperCollection &wrappers) {
     wrappers.wrapType(PyDefectBase(wrappers.module, "DefectBase"), [](auto &mod, auto &cls) {
         /* Constructors */
-        cls.def(py::init<const lsst::geom::Box2I &>(), "bbox"_a);
+        cls.def(nb::init<const lsst::geom::Box2I &>(), "bbox"_a);
 
         /* Members */
         cls.def("getBBox", &DefectBase::getBBox);

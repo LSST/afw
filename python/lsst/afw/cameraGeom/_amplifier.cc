@@ -21,34 +21,34 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
+#include "nanobind/nanobind.h"
 #include <lsst/cpputils/python.h>
-#include "pybind11/stl.h"
+#include "nanobind/stl/vector.h"
 
-#include "ndarray/pybind11.h"
+#include "ndarray/nanobind.h"
 
 #include "lsst/afw/table/BaseRecord.h"
 #include "lsst/afw/cameraGeom/Amplifier.h"
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+namespace nb = nanobind;
+using namespace nanobind::literals;
 
 namespace lsst {
 namespace afw {
 namespace cameraGeom {
 
-using PyAmplifier = py::class_<Amplifier, std::shared_ptr<Amplifier>>;
-using PyAmplifierBuilder = py::class_<Amplifier::Builder, Amplifier, std::shared_ptr<Amplifier::Builder>>;
+using PyAmplifier = nb::class_<Amplifier>;
+using PyAmplifierBuilder = nb::class_<Amplifier::Builder, Amplifier>;
 
 void wrapAmplifier(lsst::cpputils::python::WrapperCollection &wrappers) {
     wrappers.addInheritanceDependency("lsst.afw.table");
-    wrappers.wrapType(py::enum_<ReadoutCorner>(wrappers.module, "ReadoutCorner"), [](auto &mod, auto &enm) {
+    wrappers.wrapType(nb::enum_<ReadoutCorner>(wrappers.module, "ReadoutCorner"), [](auto &mod, auto &enm) {
         enm.value("LL", ReadoutCorner::LL);
         enm.value("LR", ReadoutCorner::LR);
         enm.value("UR", ReadoutCorner::UR);
         enm.value("UL", ReadoutCorner::UL);
     });
-    wrappers.wrapType(py::enum_<AssemblyState>(wrappers.module, "AssemblyState"), [](auto &mod, auto &enm) {
+    wrappers.wrapType(nb::enum_<AssemblyState>(wrappers.module, "AssemblyState"), [](auto &mod, auto &enm) {
         enm.value("RAW", AssemblyState::RAW);
         enm.value("SCIENCE", AssemblyState::SCIENCE);
     });
@@ -83,7 +83,7 @@ void wrapAmplifier(lsst::cpputils::python::WrapperCollection &wrappers) {
     });
     wrappers.wrapType(PyAmplifierBuilder(amplifier, "Builder"), [](auto &mod, auto &cls) {
         cls.def_static("fromRecord", &Amplifier::Builder::fromRecord);
-        cls.def(py::init());
+        cls.def(nb::init());
         cls.def("finish", &Amplifier::Builder::finish);
         cls.def("assign", [](Amplifier::Builder &self, Amplifier const &other) { self = other; });
         cls.def("setName", &Amplifier::Builder::setName, "name"_a);

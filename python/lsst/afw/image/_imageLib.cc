@@ -21,8 +21,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
-#include "lsst/cpputils/python.h"
+#include <nanobind/nanobind.h>
+#include <lsst/cpputils/python.h>
 
 namespace lsst {
 namespace afw {
@@ -41,7 +41,7 @@ void wrapReaders(lsst::cpputils::python::WrapperCollection &);
 void wrapTransmissionCurve(lsst::cpputils::python::WrapperCollection &);
 void wrapVisitInfo(lsst::cpputils::python::WrapperCollection &);
 
-PYBIND11_MODULE(_imageLib, mod) {
+NB_MODULE(_imageLib, mod) {
     lsst::cpputils::python::WrapperCollection wrappers(mod, "lsst.afw.image");
     wrapCalib(wrappers);
     wrapColor(wrappers);

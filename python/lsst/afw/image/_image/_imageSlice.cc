@@ -21,14 +21,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
+#include "nanobind/nanobind.h"
 #include "lsst/cpputils/python.h"
 
 #include "lsst/afw/image/ImageSlice.h"
 
-namespace py = pybind11;
+namespace nb = nanobind;
 
-using namespace py::literals;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
@@ -40,12 +40,12 @@ static void declareImageSlice(lsst::cpputils::python::WrapperCollection &wrapper
     using Class = ImageSlice<PixelT>;
 
     wrappers.wrapType(
-            py::class_<Class, std::shared_ptr<Class>, Image<PixelT>>(wrappers.module,
+            nb::class_<Class, Image<PixelT>>(wrappers.module,
                                                                      ("ImageSlice" + suffix).c_str()),
             [](auto &mod, auto &cls) {
-                cls.def(py::init<Image<PixelT> const &>(), "img"_a);
+                cls.def(nb::init<Image<PixelT> const &>(), "img"_a);
 
-                py::enum_<typename Class::ImageSliceType>(cls, "ImageSliceType")
+                nb::enum_<typename Class::ImageSliceType>(cls, "ImageSliceType")
                         .value("ROW", Class::ImageSliceType::ROW)
                         .value("COLUMN", Class::ImageSliceType::COLUMN)
                         .export_values();
@@ -55,11 +55,11 @@ static void declareImageSlice(lsst::cpputils::python::WrapperCollection &wrapper
                 cls.def(
                         "__add__",
                         [](ImageSlice<PixelT> &self, Image<PixelT> const &other) { return self + other; },
-                        py::is_operator());
+                        nb::is_operator());
                 cls.def(
                         "__mul__",
                         [](ImageSlice<PixelT> &self, Image<PixelT> const &other) { return self * other; },
-                        py::is_operator());
+                        nb::is_operator());
                 cls.def("__iadd__", [](ImageSlice<PixelT> &self, Image<PixelT> const &other) {
                     self += other;
                     return self;
@@ -74,25 +74,25 @@ static void declareImageSlice(lsst::cpputils::python::WrapperCollection &wrapper
                         [](Image<PixelT> const &self, ImageSlice<PixelT> const &other) {
                             return self + other;
                         },
-                        py::is_operator());
+                        nb::is_operator());
                 cls.def(
                         "__sub__",
                         [](Image<PixelT> const &self, ImageSlice<PixelT> const &other) {
                             return self - other;
                         },
-                        py::is_operator());
+                        nb::is_operator());
                 cls.def(
                         "__mul__",
                         [](Image<PixelT> const &self, ImageSlice<PixelT> const &other) {
                             return self * other;
                         },
-                        py::is_operator());
+                        nb::is_operator());
                 cls.def(
                         "__truediv__",
                         [](Image<PixelT> const &self, ImageSlice<PixelT> const &other) {
                             return self / other;
                         },
-                        py::is_operator());
+                        nb::is_operator());
                 cls.def("__iadd__", [](Image<PixelT> &self, ImageSlice<PixelT> const &other) {
                     self += other;
                     return self;

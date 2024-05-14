@@ -19,22 +19,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
+#include "nanobind/nanobind.h"
 
 #include "lsst/cpputils/python.h"
 
 #include "lsst/afw/table/io/Persistable.h"
 #include "lsst/afw/fits.h"
 
-namespace py = pybind11;
-using namespace py::literals;
+namespace nb = nanobind;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
 namespace table {
 namespace io {
 
-using PyPersistable = py::class_<Persistable, std::shared_ptr<Persistable>>;
+using PyPersistable = nb::class_<Persistable>;
 
 void wrapPersistable(cpputils::python::WrapperCollection &wrappers) {
     // TODO: uncomment once afw.fits uses WrapperCollection

@@ -65,6 +65,9 @@ public:
     static FilterLabel fromBandPhysical(std::string const &band, std::string const &physical);
     static FilterLabel fromBand(std::string const &band);
     static FilterLabel fromPhysical(std::string const &physical);
+    static void fromBandPhysical(FilterLabel *filterLabel, std::string const &band, std::string const &physical);
+    static void fromBand(FilterLabel *filterLabel, std::string const &band);
+    static void fromPhysical(FilterLabel *filterLabel, std::string const &physical);
     /** @} */
 
     FilterLabel(FilterLabel const &);

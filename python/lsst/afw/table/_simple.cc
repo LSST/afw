@@ -21,8 +21,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
-#include "ndarray/pybind11.h"
+#include "nanobind/nanobind.h"
+#include "ndarray/nanobind.h"
 
 #include "lsst/cpputils/python.h"
 
@@ -33,8 +33,8 @@
 #include "lsst/afw/table/python/columnView.h"
 #include "lsst/afw/table/python/sortedCatalog.h"
 
-namespace py = pybind11;
-using namespace py::literals;
+namespace nb = nanobind;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
@@ -44,15 +44,15 @@ using cpputils::python::WrapperCollection;
 
 namespace {
 
-using PySimpleTable = py::class_<SimpleTable, std::shared_ptr<SimpleTable>, BaseTable>;
-using PySimpleRecord = py::class_<SimpleRecord, std::shared_ptr<SimpleRecord>, BaseRecord>;
+using PySimpleTable = nb::class_<SimpleTable, BaseTable>;
+using PySimpleRecord = nb::class_<SimpleRecord, BaseRecord>;
 
 PySimpleRecord declareSimpleRecord(WrapperCollection &wrappers) {
     return wrappers.wrapType(PySimpleRecord(wrappers.module, "SimpleRecord"), [](auto &mod, auto &cls) {
         cls.def("getId", &SimpleRecord::getId);
         cls.def("setId", &SimpleRecord::setId);
         cls.def("getTable", &SimpleRecord::getTable);
-        cls.def_property_readonly("table", &SimpleRecord::getTable);
+        cls.def_prop_ro("table", &SimpleRecord::getTable);
         cls.def("getCoord", &SimpleRecord::getCoord);
         cls.def("setCoord", &SimpleRecord::setCoord);
         cls.def("getRa", &SimpleRecord::getRa);

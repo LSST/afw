@@ -1,5 +1,5 @@
-#ifndef AFW_TABLE_PYBIND11_SORTEDCATALOG_H_INCLUDED
-#define AFW_TABLE_PYBIND11_SORTEDCATALOG_H_INCLUDED
+#ifndef AFW_TABLE_NANOBIND_SORTEDCATALOG_H_INCLUDED
+#define AFW_TABLE_NANOBIND_SORTEDCATALOG_H_INCLUDED
 /*
  * This file is part of afw.
  *
@@ -23,7 +23,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
+#include "nanobind/nanobind.h"
+#include "nanobind/ndarray.h"
 
 #include "lsst/cpputils/python.h"
 
@@ -37,7 +38,7 @@ namespace python {
 
 template <typename Record>
 using PySortedCatalog =
-        pybind11::class_<SortedCatalogT<Record>, std::shared_ptr<SortedCatalogT<Record>>, CatalogT<Record>>;
+        nanobind::class_<SortedCatalogT<Record>, CatalogT<Record>>;
 
 /**
  * Wrap an instantiation of lsst::afw::table::SortedCatalogT<Record>.
@@ -56,8 +57,8 @@ using PySortedCatalog =
 template <typename Record>
 PySortedCatalog<Record> declareSortedCatalog(cpputils::python::WrapperCollection &wrappers,
                                              std::string const &name, bool isBase = false) {
-    namespace py = pybind11;
-    using namespace pybind11::literals;
+    namespace nb = nanobind;
+    using namespace nanobind::literals;
 
     using Catalog = SortedCatalogT<Record>;
     using Table = typename Record::Table;
@@ -71,16 +72,16 @@ PySortedCatalog<Record> declareSortedCatalog(cpputils::python::WrapperCollection
         fullName = name + "Catalog";
     }
 
-    // We need py::dynamic_attr() in the class definition to support our Python-side caching
+    // We need nb::dynamic_attr() in the class definition to support our Python-side caching
     // of the associated ColumnView.
     return wrappers.wrapType(
-            PySortedCatalog<Record>(wrappers.module, fullName.c_str(), py::dynamic_attr()),
+            PySortedCatalog<Record>(wrappers.module, fullName.c_str(), nb::dynamic_attr()),
             [clsBase](auto &mod, auto &cls) {
                 /* Constructors */
-                cls.def(pybind11::init<Schema const &>());
-                cls.def(pybind11::init<std::shared_ptr<Table> const &>(),
+                cls.def(nanobind::init<Schema const &>());
+                cls.def(nanobind::init<std::shared_ptr<Table> const &>(),
                         "table"_a = std::shared_ptr<Table>());
-                cls.def(pybind11::init<Catalog const &>());
+                cls.def(nanobind::init<Catalog const &>());
 
                 /* Overridden and Variant Methods */
                 cls.def_static("readFits", (Catalog(*)(std::string const &, int, int)) & Catalog::readFits,
@@ -100,30 +101,30 @@ PySortedCatalog<Record> declareSortedCatalog(cpputils::python::WrapperCollection
                 // Python, we make that appear as though the key argument is available but has a default
                 // value.  If that key is not None, we delegate to the base class.
                 cls.def("isSorted",
-                        [clsBase](py::object const &self, py::object key) -> py::object {
-                            if (key.is(py::none())) {
+                        [clsBase](nb::object const &self, nb::object key) -> nb::object {
+                            if (key.is(nb::none())) {
                                 key = self.attr("table").attr("getIdKey")();
                             }
                             return clsBase.attr("isSorted")(self, key);
                         },
-                        "key"_a = py::none());
+                        "key"_a = nb::none());
                 cls.def("sort",
-                        [clsBase](py::object const &self, py::object key) -> py::object {
-                            if (key.is(py::none())) {
+                        [clsBase](nb::object const &self, nb::object key) -> nb::object {
+                            if (key.is(nb::none())) {
                                 key = self.attr("table").attr("getIdKey")();
                             }
                             return clsBase.attr("sort")(self, key);
                         },
-                        "key"_a = py::none());
+                        "key"_a = nb::none());
                 cls.def("find",
-                        [clsBase](py::object const &self, py::object const &value,
-                                  py::object key) -> py::object {
-                            if (key.is(py::none())) {
+                        [clsBase](nb::object const &self, nb::object const &value,
+                                  nb::object key) -> nb::object {
+                            if (key.is(nb::none())) {
                                 key = self.attr("table").attr("getIdKey")();
                             }
                             return clsBase.attr("find")(self, value, key);
                         },
-                        "value"_a, "key"_a = py::none());
+                        "value"_a, "key"_a = nb::none());
 
             });
 }
@@ -133,4 +134,4 @@ PySortedCatalog<Record> declareSortedCatalog(cpputils::python::WrapperCollection
 }  // namespace afw
 }  // namespace lsst
 
-#endif  // !AFW_TABLE_PYBIND11_CATALOG_H_INCLUDED
+#endif  // !AFW_TABLE_NANOBIND_CATALOG_H_INCLUDED

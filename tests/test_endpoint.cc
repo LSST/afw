@@ -38,7 +38,7 @@ using namespace std;
  *
  * In addition to tests of C++-only functionality, this test suite includes
  * tests that need custom subclasses of standard endpoints. While these could
- * be written in Python, allowing Python classes to inherit from pybind11
+ * be written in Python, allowing Python classes to inherit from nanobind
  * wrappers requires a lot of extra support code.
  *
  * See test_endpoint.py for remaining unit tests.

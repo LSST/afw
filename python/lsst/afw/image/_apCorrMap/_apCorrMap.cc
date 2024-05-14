@@ -21,30 +21,31 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
-#include "pybind11/stl.h"
+#include "nanobind/nanobind.h"
+#include "nanobind/stl/vector.h"
 #include "lsst/cpputils/python.h"
 
 #include <string>
 #include <vector>
+#include <nanobind/make_iterator.h>
 
 #include "lsst/afw/table/io/python.h"  // for addPersistableMethods
 #include "lsst/afw/typehandling/Storable.h"
 #include "lsst/afw/image/ApCorrMap.h"
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+namespace nb = nanobind;
+using namespace nanobind::literals;
 
 namespace lsst {
 namespace afw {
 namespace image {
 namespace {
 
-using PyApCorrMap = py::class_<ApCorrMap, std::shared_ptr<ApCorrMap>, typehandling::Storable>;
+using PyApCorrMap = nb::class_<ApCorrMap, typehandling::Storable>;
 
 void wrapApCorrMap(lsst::cpputils::python::WrapperCollection &wrappers) {
     wrappers.wrapType(PyApCorrMap(wrappers.module, "ApCorrMap"), [](auto &mod, auto &cls) {
-        cls.def(py::init<>());
+        cls.def(nb::init<>());
 
         table::io::python::addPersistableMethods<ApCorrMap>(cls);
 
@@ -56,8 +57,9 @@ void wrapApCorrMap(lsst::cpputils::python::WrapperCollection &wrappers) {
         cls.def("get", &ApCorrMap::get);
         cls.def("set", &ApCorrMap::set);
         cls.def(
-                "items", [](ApCorrMap const &self) { return py::make_iterator(self.begin(), self.end()); },
-                py::keep_alive<0, 1>());
+                "items", [](ApCorrMap const &self) {
+                    return nb::make_iterator(nb::type<ApCorrMap>(), "iterator", self.begin(), self.end()); },
+                nb::keep_alive<0, 1>());
         // values, keys, and __iter__ defined in apCorrMap.py
 
         cls.def("__len__", &ApCorrMap::size);
@@ -68,7 +70,7 @@ void wrapApCorrMap(lsst::cpputils::python::WrapperCollection &wrappers) {
     });
 }
 
-PYBIND11_MODULE(_apCorrMap, mod) {
+NB_MODULE(_apCorrMap, mod) {
     lsst::cpputils::python::WrapperCollection wrappers(mod, "lsst.afw.image._apCorrMap");
     wrappers.addInheritanceDependency("lsst.afw.table.io");
     wrappers.addInheritanceDependency("lsst.afw.typehandling");

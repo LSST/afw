@@ -21,16 +21,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
+#include "nanobind/nanobind.h"
 #include <lsst/cpputils/python.h>
 
-#include "pybind11/stl.h"
+#include "nanobind/stl/vector.h"
+#include "nanobind/stl/unordered_map.h"
+#include "nanobind/stl/map.h"
+#include "nanobind/stl/shared_ptr.h"
 
 #include "lsst/afw/table/io/python.h"
 #include "lsst/afw/cameraGeom/DetectorCollection.h"
 
-namespace py = pybind11;
-using namespace py::literals;
+namespace nb = nanobind;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
@@ -40,10 +43,9 @@ namespace {
 
 template <typename T>
 using PyDetectorCollectionBase =
-        py::class_<DetectorCollectionBase<T>, std::shared_ptr<DetectorCollectionBase<T>>>;
+        nb::class_<DetectorCollectionBase<T>>;
 
-using PyDetectorCollection = py::class_<DetectorCollection, DetectorCollectionBase<Detector const>,
-                                        std::shared_ptr<DetectorCollection>>;
+using PyDetectorCollection = nb::class_<DetectorCollection, DetectorCollectionBase<Detector const>>;
 
 template <typename T>
 void declareDetectorCollectionBase(PyDetectorCollectionBase<T> &cls) {
@@ -51,10 +53,10 @@ void declareDetectorCollectionBase(PyDetectorCollectionBase<T> &cls) {
     cls.def("getIdMap", &DetectorCollectionBase<T>::getIdMap);
     cls.def("__len__", &DetectorCollectionBase<T>::size);
     cls.def("get",
-            py::overload_cast<std::string const &, std::shared_ptr<T>>(&DetectorCollectionBase<T>::get,
-                                                                       py::const_),
+            nb::overload_cast<std::string const &, std::shared_ptr<T>>(&DetectorCollectionBase<T>::get,
+                                                                       nb::const_),
             "name"_a, "default"_a = nullptr);
-    cls.def("get", py::overload_cast<int, std::shared_ptr<T>>(&DetectorCollectionBase<T>::get, py::const_),
+    cls.def("get", nb::overload_cast<int, std::shared_ptr<T>>(&DetectorCollectionBase<T>::get, nb::const_),
             "id"_a, "default"_a = nullptr);
     cls.def("__contains__", [](DetectorCollectionBase<T> const &self, std::string const &name) {
         return self.get(name) != nullptr;
@@ -70,7 +72,7 @@ void wrapDetectorCollection(lsst::cpputils::python::WrapperCollection &wrappers)
             [](auto &mod, auto &cls) { declareDetectorCollectionBase(cls); });
     wrappers.wrapType(PyDetectorCollection(wrappers.module, "DetectorCollection"), [](auto &mod, auto &cls) {
         ;
-        cls.def(py::init<DetectorCollection::List>());
+        cls.def(nb::init<DetectorCollection::List>());
         cls.def("getFpBBox", &DetectorCollection::getFpBBox);
         table::io::python::addPersistableMethods(cls);
     });

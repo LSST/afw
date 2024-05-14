@@ -23,16 +23,16 @@
 #include <memory>
 #include <vector>
 
-#include <pybind11/pybind11.h>
+#include <nanobind/nanobind.h>
 #include <lsst/cpputils/python.h>
-#include <pybind11/stl.h>
+#include <nanobind/stl/vector.h>
 
 #include "lsst/geom/Box.h"
 #include "lsst/afw/image.h"
 #include "lsst/afw/math/SpatialCell.h"
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+namespace nb = nanobind;
+using namespace nanobind::literals;
 
 namespace lsst {
 namespace afw {
@@ -44,7 +44,7 @@ using CandidateList = std::vector<std::shared_ptr<SpatialCellCandidate>>;
 
 // Wrap SpatialCellCandidate (an abstract class so no constructor is wrapped)
 void declareSpatialCellCandidate(lsst::cpputils::python::WrapperCollection &wrappers) {
-    using PyClass = py::class_<SpatialCellCandidate, std::shared_ptr<SpatialCellCandidate>>;
+    using PyClass = nb::class_<SpatialCellCandidate>;
     auto clsSpatialCellCandidate =
             wrappers.wrapType(PyClass(wrappers.module, "SpatialCellCandidate"), [](auto &mod, auto &cls) {
                 cls.def("getXCenter", &SpatialCellCandidate::getXCenter);
@@ -57,7 +57,7 @@ void declareSpatialCellCandidate(lsst::cpputils::python::WrapperCollection &wrap
                 cls.def("setStatus", &SpatialCellCandidate::setStatus);
                 cls.def("isBad", &SpatialCellCandidate::isBad);
             });
-    wrappers.wrapType(py::enum_<SpatialCellCandidate::Status>(clsSpatialCellCandidate, "Status"),
+    wrappers.wrapType(nb::enum_<SpatialCellCandidate::Status>(clsSpatialCellCandidate, "Status"),
                       [](auto &mod, auto &enm) {
                           enm.value("BAD", SpatialCellCandidate::Status::BAD);
                           enm.value("GOOD", SpatialCellCandidate::Status::GOOD);
@@ -69,27 +69,27 @@ void declareSpatialCellCandidate(lsst::cpputils::python::WrapperCollection &wrap
 // Wrap SpatialCellCandidateIterator
 void declareSpatialCellCandidateIterator(lsst::cpputils::python::WrapperCollection &wrappers) {
     wrappers.wrapType(
-            py::class_<SpatialCellCandidateIterator>(wrappers.module, "SpatialCellCandidateIterator"),
+            nb::class_<SpatialCellCandidateIterator>(wrappers.module, "SpatialCellCandidateIterator"),
             [](auto &mod, auto &cls) {
-                cls.def("__incr__", &SpatialCellCandidateIterator::operator++, py::is_operator());
+                cls.def("__incr__", &SpatialCellCandidateIterator::operator++, nb::is_operator());
                 cls.def(
                         "__deref__",
                         [](SpatialCellCandidateIterator &it) -> std::shared_ptr<SpatialCellCandidate> {
                             return *it;
                         },
-                        py::is_operator());
-                cls.def("__eq__", &SpatialCellCandidateIterator::operator==, py::is_operator());
-                cls.def("__ne__", &SpatialCellCandidateIterator::operator!=, py::is_operator());
-                cls.def("__sub__", &SpatialCellCandidateIterator::operator-, py::is_operator());
+                        nb::is_operator());
+                cls.def("__eq__", &SpatialCellCandidateIterator::operator==, nb::is_operator());
+                cls.def("__ne__", &SpatialCellCandidateIterator::operator!=, nb::is_operator());
+                cls.def("__sub__", &SpatialCellCandidateIterator::operator-, nb::is_operator());
             });
 }
 
 // Wrap SpatialCell
 void declareSpatialCell(lsst::cpputils::python::WrapperCollection &wrappers) {
     wrappers.wrapType(
-            py::class_<SpatialCell, std::shared_ptr<SpatialCell>>(wrappers.module, "SpatialCell"),
+            nb::class_<SpatialCell>(wrappers.module, "SpatialCell"),
             [](auto &mod, auto &cls) {
-                cls.def(py::init<std::string const &, lsst::geom::Box2I const &, CandidateList const &>(),
+                cls.def(nb::init<std::string const &, lsst::geom::Box2I const &, CandidateList const &>(),
                         "label"_a, "bbox"_a = lsst::geom::Box2I(), "candidateList"_a = CandidateList());
 
                 cls.def("empty", &SpatialCell::empty);
@@ -122,9 +122,9 @@ void declareSpatialCell(lsst::cpputils::python::WrapperCollection &wrappers) {
 // Wrap SpatialCellSet
 void declareSpatialCellSet(lsst::cpputils::python::WrapperCollection &wrappers) {
     wrappers.wrapType(
-            py::class_<SpatialCellSet, std::shared_ptr<SpatialCellSet>>(wrappers.module, "SpatialCellSet"),
+            nb::class_<SpatialCellSet>(wrappers.module, "SpatialCellSet"),
             [](auto &mod, auto &cls) {
-                cls.def(py::init<lsst::geom::Box2I const &, int, int>(), "region"_a, "xSize"_a,
+                cls.def(nb::init<lsst::geom::Box2I const &, int, int>(), "region"_a, "xSize"_a,
                         "ySize"_a = 0);
 
                 cls.def("getCellList", &SpatialCellSet::getCellList);
@@ -146,10 +146,10 @@ void declareSpatialCellSet(lsst::cpputils::python::WrapperCollection &wrappers) 
 
 // Wrap CandidateVisitor
 void declareCandidateVisitor(lsst::cpputils::python::WrapperCollection &wrappers) {
-    wrappers.wrapType(py::class_<CandidateVisitor, std::shared_ptr<CandidateVisitor>>(wrappers.module,
+    wrappers.wrapType(nb::class_<CandidateVisitor>(wrappers.module,
                                                                                       "CandidateVisitor"),
                       [](auto &mod, auto &cls) {
-                          cls.def(py::init<>());
+                          cls.def(nb::init<>());
 
                           cls.def("reset", &CandidateVisitor::reset);
                           cls.def("processCandidate", &CandidateVisitor::processCandidate);
@@ -158,7 +158,7 @@ void declareCandidateVisitor(lsst::cpputils::python::WrapperCollection &wrappers
 
 // Wrap class SpatialCellImageCandidate (an abstract class, so no constructor is wrapped)
 void declareSpatialCellImageCandidate(lsst::cpputils::python::WrapperCollection &wrappers) {
-    wrappers.wrapType(py::class_<SpatialCellImageCandidate, std::shared_ptr<SpatialCellImageCandidate>,
+    wrappers.wrapType(nb::class_<SpatialCellImageCandidate,
                                  SpatialCellCandidate>(wrappers.module, "SpatialCellImageCandidate"),
                       [](auto &mod, auto &cls) {
                           cls.def_static("setWidth", &SpatialCellImageCandidate::setWidth, "width"_a);
@@ -234,25 +234,25 @@ void declareTestClasses(lsst::cpputils::python::WrapperCollection &wrappers) {
         double _flux;
     };
 
-    wrappers.wrapType(py::class_<TestCandidate, std::shared_ptr<TestCandidate>, SpatialCellCandidate>(
+    wrappers.wrapType(nb::class_<TestCandidate, SpatialCellCandidate>(
                               wrappers.module, "TestCandidate"),
                       [](auto &mod, auto &cls) {
-                          cls.def(py::init<float const, float const, float const>());
+                          cls.def(nb::init<float const, float const, float const>());
                           cls.def("getCandidateRating", &TestCandidate::getCandidateRating);
                           cls.def("setCandidateRating", &TestCandidate::setCandidateRating);
                       });
     wrappers.wrapType(
-            py::class_<TestCandidateVisitor, std::shared_ptr<TestCandidateVisitor>, CandidateVisitor>(
+            nb::class_<TestCandidateVisitor, CandidateVisitor>(
                     wrappers.module, "TestCandidateVisitor"),
             [](auto &mod, auto &cls) {
-                cls.def(py::init<>());
+                cls.def(nb::init<>());
                 cls.def("getN", &TestCandidateVisitor::getN);
             });
     wrappers.wrapType(
-            py::class_<TestImageCandidate, std::shared_ptr<TestImageCandidate>, SpatialCellImageCandidate>(
+            nb::class_<TestImageCandidate, SpatialCellImageCandidate>(
                     wrappers.module, "TestImageCandidate"),
             [](auto &mod, auto &cls) {
-                cls.def(py::init<float const, float const, float const>(), "xCenter"_a, "yCenter"_a,
+                cls.def(nb::init<float const, float const, float const>(), "xCenter"_a, "yCenter"_a,
                         "flux"_a);
                 cls.def("getCandidateRating", &TestImageCandidate::getCandidateRating);
                 cls.def("getMaskedImage", &TestImageCandidate::getMaskedImage);

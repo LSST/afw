@@ -20,23 +20,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#include <pybind11/pybind11.h>
+#include <nanobind/nanobind.h>
 #include <lsst/cpputils/python.h>
 
 #include "lsst/afw/math/PixelAreaBoundedField.h"
 
-namespace py = pybind11;
-using namespace py::literals;
+namespace nb = nanobind;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
 namespace math {
 
-using PyClass = py::class_<PixelAreaBoundedField, std::shared_ptr<PixelAreaBoundedField>, BoundedField>;
+using PyClass = nb::class_<PixelAreaBoundedField, BoundedField>;
 
 void wrapPixelAreaBoundedField(lsst::cpputils::python::WrapperCollection &wrappers) {
     wrappers.wrapType(PyClass(wrappers.module, "PixelAreaBoundedField"), [](auto &mod, auto &cls) {
-        cls.def(py::init<lsst::geom::Box2I const &, std::shared_ptr<afw::geom::SkyWcs const>,
+        cls.def(nb::init<lsst::geom::Box2I const &, std::shared_ptr<afw::geom::SkyWcs const>,
                          lsst::geom::AngleUnit const &, double>(),
                 "bbox"_a, "skyWcs"_a, "unit"_a = lsst::geom::radians, "scaling"_a = 1.0);
         // All other operations are wrapped by the BoundedField base class.

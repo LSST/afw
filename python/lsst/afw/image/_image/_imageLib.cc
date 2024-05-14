@@ -21,7 +21,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
+#include "nanobind/nanobind.h"
 #include "lsst/cpputils/python.h"
 
 namespace lsst {
@@ -30,8 +30,6 @@ namespace image {
 
 void wrapImage(lsst::cpputils::python::WrapperCollection &);
 void wrapImageSlice(lsst::cpputils::python::WrapperCollection &);
-
-PYBIND11_MODULE(_imageLib, mod) {
     lsst::cpputils::python::WrapperCollection wrappers(mod, "lsst.afw.image._image");
     wrapImage(wrappers);
     wrapImageSlice(wrappers);

@@ -21,23 +21,23 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
+#include "nanobind/nanobind.h"
 #include "lsst/cpputils/python.h"
-#include "pybind11/eigen.h"
+#include "nanobind/eigen/dense.h"
 
 #include <memory>
 
 #include "astshim.h"
-#include "pybind11/stl.h"
-#include "ndarray/pybind11.h"
+#include "nanobind/stl/vector.h"
+#include "ndarray/nanobind.h"
 
 #include "lsst/afw/table/io/python.h"
 #include "lsst/afw/table/io/Persistable.h"
 #include "lsst/afw/geom/Endpoint.h"
 #include "lsst/afw/geom/Transform.h"
 
-namespace py = pybind11;
-using namespace py::literals;
+namespace nb = nanobind;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
@@ -79,28 +79,28 @@ void declareTransform(lsst::cpputils::python::WrapperCollection &wrappers) {
 
     std::string const pyClassName = Class::getShortClassName();
     wrappers.wrapType(
-            py::class_<Class, std::shared_ptr<Class>, table::io::Persistable>(wrappers.module, pyClassName.c_str()),
+            nb::class_<Class, table::io::Persistable>(wrappers.module, pyClassName.c_str()),
             [](auto &mod, auto &cls) {
                 std::string const pyClassName = Class::getShortClassName();
-                cls.def(py::init<ast::FrameSet const &, bool>(), "frameSet"_a, "simplify"_a = true);
-                cls.def(py::init<ast::Mapping const &, bool>(), "mapping"_a, "simplify"_a = true);
+                cls.def(nb::init<ast::FrameSet const &, bool>(), "frameSet"_a, "simplify"_a = true);
+                cls.def(nb::init<ast::Mapping const &, bool>(), "mapping"_a, "simplify"_a = true);
 
-                cls.def_property_readonly("hasForward", &Class::hasForward);
-                cls.def_property_readonly("hasInverse", &Class::hasInverse);
-                cls.def_property_readonly("fromEndpoint", &Class::getFromEndpoint);
-                cls.def_property_readonly("toEndpoint", &Class::getToEndpoint);
+                cls.def_prop_ro("hasForward", &Class::hasForward);
+                cls.def_prop_ro("hasInverse", &Class::hasInverse);
+                cls.def_prop_ro("fromEndpoint", &Class::getFromEndpoint);
+                cls.def_prop_ro("toEndpoint", &Class::getToEndpoint);
 
                 // Return a copy of the contained Mapping in order to assure changing the returned Mapping
                 // will not affect the contained Mapping (since Python ignores constness)
                 cls.def("getMapping", [](Class const &self) { return self.getMapping()->copy(); });
 
                 cls.def("applyForward",
-                        py::overload_cast<FromArray const &>(&Class::applyForward, py::const_), "array"_a);
+                        nb::overload_cast<FromArray const &>(&Class::applyForward, nb::const_), "array"_a);
                 cls.def("applyForward",
-                        py::overload_cast<FromPoint const &>(&Class::applyForward, py::const_), "point"_a);
-                cls.def("applyInverse", py::overload_cast<ToArray const &>(&Class::applyInverse, py::const_),
+                        nb::overload_cast<FromPoint const &>(&Class::applyForward, nb::const_), "point"_a);
+                cls.def("applyInverse", nb::overload_cast<ToArray const &>(&Class::applyInverse, nb::const_),
                         "array"_a);
-                cls.def("applyInverse", py::overload_cast<ToPoint const &>(&Class::applyInverse, py::const_),
+                cls.def("applyInverse", nb::overload_cast<ToPoint const &>(&Class::applyInverse, nb::const_),
                         "point"_a);
                 cls.def("inverted", &Class::inverted);
                 /* Need some extra handling of ndarray return type in Python to prevent dimensions

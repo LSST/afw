@@ -21,15 +21,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
-#include "pybind11/stl.h"
+#include "nanobind/nanobind.h"
+#include "nanobind/stl/vector.h"
+#include "nanobind/stl/string.h"
+#include "nanobind/stl/shared_ptr.h"
+#include "nanobind/stl/map.h"
 #include "lsst/cpputils/python.h"
 
 #include "lsst/afw/fits.h"
 #include "lsst/afw/image/MaskedImage.h"
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+namespace nb = nanobind;
+using namespace nanobind::literals;
 
 namespace lsst {
 namespace afw {
@@ -38,7 +41,7 @@ namespace image {
 namespace {
 
 template <typename ImagePixelT>  // only the image type varies; mask and variance are fixed
-using PyMaskedImage = py::class_<MaskedImage<ImagePixelT>, std::shared_ptr<MaskedImage<ImagePixelT>>>;
+using PyMaskedImage = nb::class_<MaskedImage<ImagePixelT>>;
 
 /**
 @internal Declare a constructor that takes a MaskedImage of FromPixelT and returns a MaskedImage cast to
@@ -46,11 +49,11 @@ ToPixelT
 
 The mask and variance must be of the standard types.
 
-@param[in] cls  The pybind11 class to which add the constructor
+@param[in] cls  The nanobind class to which add the constructor
 */
 template <typename FromPixelT, typename ToPixelT>
 void declareCastConstructor(PyMaskedImage<ToPixelT> &cls) {
-    cls.def(py::init<MaskedImage<FromPixelT> const &, bool const>(), "src"_a, "deep"_a);
+    cls.def(nb::init<MaskedImage<FromPixelT> const &, bool const>(), "src"_a, "deep"_a);
 }
 
 template <typename ImagePixelT>
@@ -67,15 +70,15 @@ PyMaskedImage<ImagePixelT> declareMaskedImage(lsst::cpputils::python::WrapperCol
                 /* Member types and enums */
 
                 /* Constructors */
-                cls.def(py::init<unsigned int, unsigned int, typename MI::MaskPlaneDict const &>(), "width"_a,
+                cls.def(nb::init<unsigned int, unsigned int, typename MI::MaskPlaneDict const &>(), "width"_a,
                         "height"_a, "planeDict"_a = typename MI::MaskPlaneDict());
-                cls.def(py::init<lsst::geom::Extent2I, typename MI::MaskPlaneDict const &>(), "dimensions"_a,
+                cls.def(nb::init<lsst::geom::Extent2I, typename MI::MaskPlaneDict const &>(), "dimensions"_a,
                         "planeDict"_a = typename MI::MaskPlaneDict());
-                cls.def(py::init<typename MI::ImagePtr, typename MI::MaskPtr, typename MI::VariancePtr>(),
+                cls.def(nb::init<typename MI::ImagePtr, typename MI::MaskPtr, typename MI::VariancePtr>(),
                         "image"_a, "mask"_a = nullptr, "variance"_a = nullptr);
-                cls.def(py::init<lsst::geom::Box2I const &, typename MI::MaskPlaneDict const &>(), "bbox"_a,
+                cls.def(nb::init<lsst::geom::Box2I const &, typename MI::MaskPlaneDict const &>(), "bbox"_a,
                         "planeDict"_a = typename MI::MaskPlaneDict());
-                cls.def(py::init<std::string const &, std::shared_ptr<daf::base::PropertySet>,
+                cls.def(nb::init<std::string const &, std::shared_ptr<daf::base::PropertySet>,
                                  lsst::geom::Box2I const &, ImageOrigin, bool, bool,
                                  std::shared_ptr<daf::base::PropertySet>,
                                  std::shared_ptr<daf::base::PropertySet>,
@@ -84,7 +87,7 @@ PyMaskedImage<ImagePixelT> declareMaskedImage(lsst::cpputils::python::WrapperCol
                         "origin"_a = PARENT, "conformMasks"_a = false, "needAllHdus"_a = false,
                         "imageMetadata"_a = nullptr, "maskMetadata"_a = nullptr,
                         "varianceMetadata"_a = nullptr, "allowUnsafe"_a = false);
-                cls.def(py::init<fits::MemFileManager &, std::shared_ptr<daf::base::PropertySet>,
+                cls.def(nb::init<fits::MemFileManager &, std::shared_ptr<daf::base::PropertySet>,
                                  lsst::geom::Box2I const &, ImageOrigin, bool, bool,
                                  std::shared_ptr<daf::base::PropertySet>,
                                  std::shared_ptr<daf::base::PropertySet>,
@@ -93,14 +96,14 @@ PyMaskedImage<ImagePixelT> declareMaskedImage(lsst::cpputils::python::WrapperCol
                         "origin"_a = PARENT, "conformMasks"_a = false, "needAllHdus"_a = false,
                         "imageMetadata"_a = nullptr, "maskMetadata"_a = nullptr,
                         "varianceMetadata"_a = nullptr, "allowUnsafe"_a = false);
-                cls.def(py::init<MI const &, bool>(), "rhs"_a, "deep"_a = false);
-                cls.def(py::init<MI const &, lsst::geom::Box2I const &, ImageOrigin, bool>(), "rhs"_a,
+                cls.def(nb::init<MI const &, bool>(), "rhs"_a, "deep"_a = false);
+                cls.def(nb::init<MI const &, lsst::geom::Box2I const &, ImageOrigin, bool>(), "rhs"_a,
                         "bbox"_a, "origin"_a = PARENT, "deep"_a = false);
 
                 /* Operators */
                 cls.def("swap", &MI::swap);
                 cls.def("assign", &MI::assign, "rhs"_a, "bbox"_a = lsst::geom::Box2I(), "origin"_a = PARENT,
-                        py::is_operator()  // py::is_operator is a workaround for code in slicing.py
+                        nb::is_operator()  // nb::is_operator is a workaround for code in slicing.py
                                            // that expects NotImplemented to be returned on failure.
                 );
 
@@ -193,13 +196,13 @@ PyMaskedImage<ImagePixelT> declareMaskedImage(lsst::cpputils::python::WrapperCol
                 cls.def_static("readFits", (MI(*)(fits::MemFileManager &))MI::readFits, "manager"_a);
                 cls.def("getImage", &MI::getImage);
                 cls.def("setImage", &MI::setImage);
-                cls.def_property("image", &MI::getImage, &MI::setImage);
+                cls.def_prop_rw("image", &MI::getImage, &MI::setImage);
                 cls.def("getMask", &MI::getMask);
                 cls.def("setMask", &MI::setMask);
-                cls.def_property("mask", &MI::getMask, &MI::setMask);
+                cls.def_prop_rw("mask", &MI::getMask, &MI::setMask);
                 cls.def("getVariance", &MI::getVariance);
                 cls.def("setVariance", &MI::setVariance);
-                cls.def_property("variance", &MI::getVariance, &MI::setVariance);
+                cls.def_prop_rw("variance", &MI::getVariance, &MI::setVariance);
                 cls.def("getWidth", &MI::getWidth);
                 cls.def("getHeight", &MI::getHeight);
                 cls.def("getDimensions", &MI::getDimensions);
@@ -228,12 +231,12 @@ void declareImagesOverlap(lsst::cpputils::python::WrapperCollection &wrappers) {
     // the Image version in the Image wrapper results in it being invisible in lsst.afw.image
     wrappers.wrap([](auto &mod) {
         mod.def("imagesOverlap",
-                py::overload_cast<ImageBase<ImagePixelT1> const &, ImageBase<ImagePixelT2> const &>(
+                nb::overload_cast<ImageBase<ImagePixelT1> const &, ImageBase<ImagePixelT2> const &>(
                         &imagesOverlap<ImagePixelT1, ImagePixelT2>),
                 "image1"_a, "image2"_a);
 
         mod.def("imagesOverlap",
-                py::overload_cast<MaskedImage<ImagePixelT1> const &, MaskedImage<ImagePixelT2> const &>(
+                nb::overload_cast<MaskedImage<ImagePixelT1> const &, MaskedImage<ImagePixelT2> const &>(
                         &imagesOverlap<ImagePixelT1, ImagePixelT2>),
                 "image1"_a, "image2"_a);
     });
@@ -241,7 +244,7 @@ void declareImagesOverlap(lsst::cpputils::python::WrapperCollection &wrappers) {
 
 }  // namespace
 
-PYBIND11_MODULE(_maskedImage, mod) {
+NB_MODULE(_maskedImage, mod) {
     lsst::cpputils::python::WrapperCollection wrappers(mod, "lsst.afw.image._maskedImage");
     wrappers.addSignatureDependency("lsst.afw.image._image");
     wrappers.addInheritanceDependency("lsst.daf.base");

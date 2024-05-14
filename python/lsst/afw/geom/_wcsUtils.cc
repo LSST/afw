@@ -21,14 +21,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
+#include "nanobind/nanobind.h"
 #include "lsst/cpputils/python.h"
-#include "pybind11/eigen.h"
+#include "nanobind/eigen/dense.h"
 
 #include <memory>
 
 #include "astshim.h"
-#include "ndarray/pybind11.h"
+#include "ndarray/nanobind.h"
 #include "ndarray/eigen.h"
 
 #include "lsst/daf/base.h"
@@ -36,8 +36,8 @@
 #include "lsst/geom/SpherePoint.h"
 #include "lsst/afw/geom/wcsUtils.h"
 
-namespace py = pybind11;
-using namespace py::literals;
+namespace nb = nanobind;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {

@@ -21,15 +21,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
+#include <nanobind/nanobind.h>
+#include <nanobind/stl/vector.h>
 
 #include "lsst/cpputils/python.h"
 
 #include "lsst/afw/detection/FootprintSet.h"
 
-namespace py = pybind11;
-using namespace py::literals;
+namespace nb = nanobind;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
@@ -65,11 +65,11 @@ void declareSetMask(PyClass &cls) {
 template <typename PixelT, typename PyClass>
 void declareTemplatedMembers(PyClass &cls) {
     /* Constructors */
-    cls.def(py::init<image::Image<PixelT> const &, Threshold const &, int const, bool const,
+    cls.def(nb::init<image::Image<PixelT> const &, Threshold const &, int const, bool const,
                      table::Schema const &>(),
             "img"_a, "threshold"_a, "npixMin"_a = 1, "setPeaks"_a = true,
             "peakSchema"_a = PeakTable::makeMinimalSchema());
-    cls.def(py::init<image::MaskedImage<PixelT, image::MaskPixel> const &, Threshold const &,
+    cls.def(nb::init<image::MaskedImage<PixelT, image::MaskPixel> const &, Threshold const &,
                      std::string const &, int const, bool const>(),
             "img"_a, "threshold"_a, "planeName"_a = "", "npixMin"_a = 1, "setPeaks"_a = true);
 
@@ -88,27 +88,27 @@ void wrapFootprintSet(cpputils::python::WrapperCollection &wrappers) {
     wrappers.addSignatureDependency("lsst.afw.table");
 
     wrappers.wrapType(
-            py::class_<FootprintSet, std::shared_ptr<FootprintSet>>(wrappers.module, "FootprintSet"),
+            nb::class_<FootprintSet>(wrappers.module, "FootprintSet"),
             [](auto &mod, auto &cls) {
                 declareTemplatedMembers<std::uint16_t>(cls);
                 declareTemplatedMembers<int>(cls);
                 declareTemplatedMembers<float>(cls);
                 declareTemplatedMembers<double>(cls);
 
-                cls.def(py::init<image::Mask<image::MaskPixel> const &, Threshold const &, int const>(),
+                cls.def(nb::init<image::Mask<image::MaskPixel> const &, Threshold const &, int const>(),
                         "img"_a, "threshold"_a, "npixMin"_a = 1);
 
-                cls.def(py::init<lsst::geom::Box2I>(), "region"_a);
-                cls.def(py::init<FootprintSet const &>(), "set"_a);
-                cls.def(py::init<FootprintSet const &, int, FootprintControl const &>(), "set"_a, "rGrow"_a,
+                cls.def(nb::init<lsst::geom::Box2I>(), "region"_a);
+                cls.def(nb::init<FootprintSet const &>(), "set"_a);
+                cls.def(nb::init<FootprintSet const &, int, FootprintControl const &>(), "set"_a, "rGrow"_a,
                         "ctrl"_a);
-                cls.def(py::init<FootprintSet const &, int, bool>(), "set"_a, "rGrow"_a, "isotropic"_a);
-                cls.def(py::init<FootprintSet const &, FootprintSet const &, bool>(), "footprints1"_a,
+                cls.def(nb::init<FootprintSet const &, int, bool>(), "set"_a, "rGrow"_a, "isotropic"_a);
+                cls.def(nb::init<FootprintSet const &, FootprintSet const &, bool>(), "footprints1"_a,
                         "footprints2"_a, "includePeaks"_a);
 
                 cls.def("swap", &FootprintSet::swap);
                 // setFootprints takes shared_ptr<FootprintList> and getFootprints returns it,
-                // but pybind11 can't handle that type, so use a custom getter and setter
+                // but nanobind can't handle that type, so use a custom getter and setter
                 cls.def("setFootprints", [](FootprintSet &self, FootprintSet::FootprintList footList) {
                     self.setFootprints(std::make_shared<FootprintSet::FootprintList>(std::move(footList)));
                 });

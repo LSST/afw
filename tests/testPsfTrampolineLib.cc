@@ -24,8 +24,8 @@
 // Testing helper module that let's us conveniently invoke c++ methods that should
 // get overridden in python-derived subclasses of Psf.
 
-#include <pybind11/pybind11.h>
-
+#include <nanobind/nanobind.h>
+#include <nanobind/stl/shared_ptr.h>
 #include "lsst/afw/detection/Psf.h"
 #include "lsst/afw/typehandling/Storable.h"
 
@@ -53,7 +53,7 @@ bool isPersistable(const typehandling::Storable& psf) {
 
 }
 
-PYBIND11_MODULE(testPsfTrampolineLib, mod) {
+NB_MODULE(testPsfTrampolineLib, mod) {
     mod.def("resizedPsf", &resizedPsf);
     mod.def("clonedPsf", &clonedPsf);
     mod.def("clonedStorablePsf", &clonedStorablePsf);

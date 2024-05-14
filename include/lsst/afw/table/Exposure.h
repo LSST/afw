@@ -158,7 +158,10 @@ public:
         _transmissionCurve = std::move(transmissionCurve);
     }
 
-    std::shared_ptr<cameraGeom::Detector const> getDetector() const { return _detector; }
+    std::shared_ptr<cameraGeom::Detector const> getDetector() const {
+        std::cout << "getDetector\n";
+        std::cout << _detector << "\n";
+        return _detector; }
     void setDetector(std::shared_ptr<cameraGeom::Detector const> detector) {
         _detector = std::move(detector);
     }

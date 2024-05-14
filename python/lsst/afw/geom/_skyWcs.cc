@@ -21,16 +21,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
+#include "nanobind/nanobind.h"
 #include <lsst/cpputils/python.h>
-#include "pybind11/eigen.h"
+#include "nanobind/eigen/dense.h"
 
 #include <memory>
 
 #include "astshim.h"
 #include "Eigen/Core"
-#include "pybind11/stl.h"
-#include "ndarray/pybind11.h"
+#include "nanobind/stl/vector.h"
+#include "ndarray/nanobind.h"
 
 #include "lsst/geom.h"
 #include "lsst/afw/geom/Transform.h"
@@ -38,8 +38,8 @@
 #include "lsst/afw/geom/SkyWcs.h"
 #include "lsst/afw/table/io/python.h"  // for addPersistableMethods
 
-namespace py = pybind11;
-using namespace py::literals;
+namespace nb = nanobind;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
@@ -80,13 +80,13 @@ void declareSkyWcs(lsst::cpputils::python::WrapperCollection &wrappers) {
                 "simplify"_a = true);
     });
     wrappers.wrapType(
-            py::class_<SkyWcs, std::shared_ptr<SkyWcs>, typehandling::Storable>(wrappers.module, "SkyWcs"),
+            nb::class_<SkyWcs, typehandling::Storable>(wrappers.module, "SkyWcs"),
             [](auto &mod, auto &cls) {
-                cls.def(py::init<daf::base::PropertySet &, bool>(), "metadata"_a, "strip"_a = false);
-                cls.def(py::init<ast::FrameDict const &>(), "frameDict"_a);
+                cls.def(nb::init<daf::base::PropertySet &, bool>(), "metadata"_a, "strip"_a = false);
+                cls.def(nb::init<ast::FrameDict const &>(), "frameDict"_a);
 
-                cls.def("__eq__", &SkyWcs::operator==, py::is_operator());
-                cls.def("__ne__", &SkyWcs::operator!=, py::is_operator());
+                cls.def("__eq__", &SkyWcs::operator==, nb::is_operator());
+                cls.def("__ne__", &SkyWcs::operator!=, nb::is_operator());
 
                 table::io::python::addPersistableMethods<SkyWcs>(cls);
 
@@ -107,8 +107,8 @@ void declareSkyWcs(lsst::cpputils::python::WrapperCollection &wrappers) {
                 cls.def("getFrameDict", [](SkyWcs const &self) { return self.getFrameDict()->copy(); });
                 cls.def("getTransform", &SkyWcs::getTransform);
 
-                cls.def_property_readonly("isFits", &SkyWcs::isFits);
-                cls.def_property_readonly("isFlipped", &SkyWcs::isFlipped);
+                cls.def_prop_ro("isFits", &SkyWcs::isFits);
+                cls.def_prop_ro("isFlipped", &SkyWcs::isFlipped);
                 cls.def("linearizePixelToSky",
                         (lsst::geom::AffineTransform(SkyWcs::*)(lsst::geom::SpherePoint const &,
                                                                 lsst::geom::AngleUnit const &) const) &

@@ -21,13 +21,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <pybind11/pybind11.h>
+#include <nanobind/nanobind.h>
 #include <lsst/cpputils/python.h>
 
 #include "lsst/afw/cameraGeom/Orientation.h"
 
-namespace py = pybind11;
-using namespace py::literals;
+namespace nb = nanobind;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
@@ -35,15 +35,15 @@ namespace cameraGeom {
 
 void wrapOrientation(lsst::cpputils::python::WrapperCollection &wrappers) {
     wrappers.addSignatureDependency("lsst.geom");
-    wrappers.wrapType(py::class_<Orientation>(wrappers.module, "Orientation"), [](auto &mod, auto &cls) {
+    wrappers.wrapType(nb::class_<Orientation>(wrappers.module, "Orientation"), [](auto &mod, auto &cls) {
         /* Constructors */
-        cls.def(py::init<lsst::geom::Point3D, lsst::geom::Point2D, lsst::geom::Angle, lsst::geom::Angle,
+        cls.def(nb::init<lsst::geom::Point3D, lsst::geom::Point2D, lsst::geom::Angle, lsst::geom::Angle,
                          lsst::geom::Angle>(),
                 "fpPosition"_a = lsst::geom::Point3D(0, 0, 0), "refPoint"_a = lsst::geom::Point2D(-0.5, -0.5),
                 "yaw"_a = lsst::geom::Angle(0), "pitch"_a = lsst::geom::Angle(0),
                 "roll"_a = lsst::geom::Angle(0));
 
-        cls.def(py::init<lsst::geom::Point2D, lsst::geom::Point2D, lsst::geom::Angle, lsst::geom::Angle,
+        cls.def(nb::init<lsst::geom::Point2D, lsst::geom::Point2D, lsst::geom::Angle, lsst::geom::Angle,
                          lsst::geom::Angle>(),
                 "fpPosition"_a, "refPoint"_a = lsst::geom::Point2D(-0.5, -0.5),
                 "yaw"_a = lsst::geom::Angle(0), "pitch"_a = lsst::geom::Angle(0),

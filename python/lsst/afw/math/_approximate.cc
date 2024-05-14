@@ -20,16 +20,16 @@
  * see <https://www.lsstcorp.org/LegalNotices/>.
  */
 
-#include <pybind11/pybind11.h>
+#include <nanobind/nanobind.h>
 #include <lsst/cpputils/python.h>
-#include <pybind11/stl.h>
+#include <nanobind/stl/vector.h>
 
 #include "lsst/afw/image/MaskedImage.h"
 #include "lsst/afw/math/Approximate.h"
 
-namespace py = pybind11;
+namespace nb = nanobind;
 
-using namespace py::literals;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
@@ -41,7 +41,7 @@ void declareApproximate(lsst::cpputils::python::WrapperCollection &wrappers, std
     using Class = Approximate<PixelT>;
 
     wrappers.wrapType(
-            py::class_<Class, std::shared_ptr<Class>>(wrappers.module, ("Approximate" + suffix).c_str()),
+            nb::class_<Class>(wrappers.module, ("Approximate" + suffix).c_str()),
             [](auto &mod, auto &cls) {
                 cls.def("getImage", &Class::getImage, "orderX"_a = -1, "orderY"_a = -1);
                 cls.def("getMaskedImage", &Class::getMaskedImage, "orderX"_a = -1, "orderY"_a = -1);
@@ -56,10 +56,10 @@ void declareApproximate(lsst::cpputils::python::WrapperCollection &wrappers, std
 }
 void declareApproximate(lsst::cpputils::python::WrapperCollection &wrappers) {
     auto control =
-            wrappers.wrapType(py::class_<ApproximateControl, std::shared_ptr<ApproximateControl>>(
+            wrappers.wrapType(nb::class_<ApproximateControl>(
                                       wrappers.module, "ApproximateControl"),
                               [](auto &mod, auto &cls) {
-                                  cls.def(py::init<ApproximateControl::Style, int, int, bool>(), "style"_a,
+                                  cls.def(nb::init<ApproximateControl::Style, int, int, bool>(), "style"_a,
                                           "orderX"_a, "orderY"_a = -1, "weighting"_a = true);
 
                                   cls.def("getStyle", &ApproximateControl::getStyle);
@@ -71,7 +71,7 @@ void declareApproximate(lsst::cpputils::python::WrapperCollection &wrappers) {
                                   cls.def("getWeighting", &ApproximateControl::getWeighting);
                                   cls.def("setWeighting", &ApproximateControl::setWeighting);
                               });
-    wrappers.wrapType(py::enum_<ApproximateControl::Style>(control, "Style"), [](auto &mod, auto &enm) {
+    wrappers.wrapType(nb::enum_<ApproximateControl::Style>(control, "Style"), [](auto &mod, auto &enm) {
         enm.value("UNKNOWN", ApproximateControl::Style::UNKNOWN);
         enm.value("CHEBYSHEV", ApproximateControl::Style::CHEBYSHEV);
         enm.value("NUM_STYLES", ApproximateControl::Style::NUM_STYLES);

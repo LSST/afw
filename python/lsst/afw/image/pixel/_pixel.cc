@@ -20,7 +20,7 @@
  * see <https://www.lsstcorp.org/LegalNotices/>.
  */
 
-#include "pybind11/pybind11.h"
+#include "nanobind/nanobind.h"
 #include "lsst/cpputils/python.h"
 
 #include <cstdint>
@@ -29,8 +29,8 @@
 #include "lsst/afw/image/MaskedImage.h"
 #include "lsst/afw/image/Pixel.h"
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+namespace nb = nanobind;
+using namespace nanobind::literals;
 
 namespace lsst {
 namespace afw {
@@ -45,24 +45,24 @@ namespace {
 (Note that SinglePixel for Image is just the pixel type)
 
 @tparam  Image plane type
-@param mod  pybind11 module
+@param mod  nanobind module
 @param[in] name  Name of Python class, e.g. "SinglePixelI" if PixelT is `int`.
 */
 template <typename PixelT>
 void declareSinglePixel(lsst::cpputils::python::WrapperCollection &wrappers, std::string const &name) {
     wrappers.wrapType(
-            py::class_<SinglePixel<PixelT, MaskPixel, VariancePixel>>(wrappers.module, name.c_str()),
+            nb::class_<SinglePixel<PixelT, MaskPixel, VariancePixel>>(wrappers.module, name.c_str()),
             [](auto &mod, auto &cls) {
                 mod.def("makeSinglePixel", &makeSinglePixel<PixelT, MaskPixel, VariancePixel>, "x"_a, "m"_a,
                         "v"_a);
-                cls.def(py::init<PixelT, MaskPixel, VariancePixel>(), "image"_a, "mask"_a = 0,
+                cls.def(nb::init<PixelT, MaskPixel, VariancePixel>(), "image"_a, "mask"_a = 0,
                         "variance"_a = 0);
             });
 }
 
 }  // namespace
 
-PYBIND11_MODULE(_pixel, mod) {
+NB_MODULE(_pixel, mod) {
     lsst::cpputils::python::WrapperCollection wrappers(mod, "lsst.afw.image.pixel");
     declareSinglePixel<float>(wrappers, "SinglePixelF");
     declareSinglePixel<double>(wrappers, "SinglePixelD");

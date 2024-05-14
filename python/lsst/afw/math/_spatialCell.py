@@ -42,7 +42,7 @@ class SpatialCellCandidateIterator:  # noqa: F811
 class SpatialCellCandidate:  # noqa: F811
     def __repr__(self):
         return (f"center=({self.getXCenter()},{self.getYCenter()}), "
-                f"status={self.getStatus().name}, rating={self.getCandidateRating()}")
+                f"status={self.getStatus().__name__}, rating={self.getCandidateRating()}")
 
 
 @continueClass

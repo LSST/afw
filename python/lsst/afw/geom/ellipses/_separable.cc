@@ -21,7 +21,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <pybind11/pybind11.h>
+#include <nanobind/nanobind.h>
 #include <lsst/cpputils/python.h>
 
 #include "lsst/afw/geom/ellipses/Separable.h"
@@ -31,9 +31,9 @@
 #include "lsst/afw/geom/ellipses/ReducedShear.h"
 #include "lsst/afw/geom/ellipses/radii.h"
 
-namespace py = pybind11;
+namespace nb = nanobind;
 
-using namespace py::literals;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
@@ -43,13 +43,13 @@ template <typename Ellipticity_, typename Radius_>
 void declareSeparable(lsst::cpputils::python::WrapperCollection &wrappers, const std::string &suffix) {
     using Class = Separable<Ellipticity_, Radius_>;
     wrappers.wrapType(
-            py::class_<Class, std::shared_ptr<Class>, BaseCore>(wrappers.module,
+            nb::class_<Class, BaseCore>(wrappers.module,
                                                                 ("Separable" + suffix).c_str()),
             [](auto &mod, auto &cls) {
-                cls.def(py::init<double, double, double, bool>(), "e1"_a = 0.0, "e2"_a = 0.0,
+                cls.def(nb::init<double, double, double, bool>(), "e1"_a = 0.0, "e2"_a = 0.0,
                         "radius"_a = Radius_(), "normalize"_a = true);
-                cls.def(py::init<Class const &>());
-                cls.def(py::init<BaseCore const &>());
+                cls.def(nb::init<Class const &>());
+                cls.def(nb::init<BaseCore const &>());
 
                 cls.def("getE1", &Class::getE1);
                 cls.def("setE1", &Class::setE1);
@@ -71,10 +71,10 @@ void declareSeparable(lsst::cpputils::python::WrapperCollection &wrappers, const
                     self.transform(t).inPlace();
                 });
                 cls.def("__str__", [](Class &self) {
-                    return py::str("({}, {})").format(self.getEllipticity(), self.getRadius());
+                    return nb::str("({}, {})").format(self.getEllipticity(), self.getRadius());
                 });
                 cls.def("__repr__", [](Class &self) {
-                    return py::str("Separable({}, {})").format(self.getEllipticity(), self.getRadius());
+                    return nb::str("Separable({}, {})").format(self.getEllipticity(), self.getRadius());
                 });
             });
 }

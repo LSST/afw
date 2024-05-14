@@ -23,9 +23,12 @@
 #ifndef AFW_TABLE_PYTHON_CATALOG_H_INCLUDED
 #define AFW_TABLE_PYTHON_CATALOG_H_INCLUDED
 
-#include "pybind11/pybind11.h"
+#include <nanobind/make_iterator.h>
+#include "nanobind/nanobind.h"
+#include "nanobind/ndarray.h"
+#include "nanobind/stl/tuple.h"
+#include "nanobind/stl/shared_ptr.h"
 
-#include "ndarray/pybind11.h"
 #include "lsst/cpputils/python.h"
 #include "lsst/afw/table/BaseColumnView.h"
 #include "lsst/afw/table/Catalog.h"
@@ -36,7 +39,7 @@ namespace table {
 namespace python {
 
 template <typename Record>
-using PyCatalog = pybind11::class_<CatalogT<Record>, std::shared_ptr<CatalogT<Record>>>;
+using PyCatalog = nanobind::class_<CatalogT<Record>>;
 
 /// Extract a column from a potentially non-contiguous Catalog
 template <typename T, typename Record>
@@ -162,12 +165,12 @@ private:
  * @tparam T  Field type.
  * @tparam Record  Record type, e.g. BaseRecord or SimpleRecord.
  *
- * @param[in] cls  Catalog pybind11 class.
+ * @param[in] cls  Catalog nb:: class.
  */
 template <typename T, typename Record>
 void declareCatalogOverloads(PyCatalog<Record> &cls) {
-    namespace py = pybind11;
-    using namespace pybind11::literals;
+    namespace nb = nanobind;
+    using namespace nanobind::literals;
 
     using Catalog = CatalogT<Record>;
     using Value = typename Field<T>::Value;
@@ -190,37 +193,37 @@ void declareCatalogOverloads(PyCatalog<Record> &cls) {
     });
     cls.def("equal_range", [](Catalog &self, Value const &value, Key<T> const &key) {
         auto p = self.equal_range(value, key);
-        return py::slice(p.first - self.begin(), p.second - self.begin(), 1);
+        return nb::slice(p.first - self.begin(), p.second - self.begin(), std::ptrdiff_t(1));
     });
     cls.def("between", [](Catalog &self, Value const &lower, Value const &upper, Key<T> const &key) {
         std::ptrdiff_t a = self.lower_bound(lower, key) - self.begin();
         std::ptrdiff_t b = self.upper_bound(upper, key) - self.begin();
-        return py::slice(a, b, 1);
+        return nb::slice(a, b, std::ptrdiff_t(1));
     });
 
     cls.def("_get_column_from_key",
-            [](Catalog const &self, Key<T> const &key, pybind11::object py_column_view) {
-                std::shared_ptr<ColumnView> column_view = py_column_view.cast<std::shared_ptr<ColumnView>>();
+            [](Catalog const &self, Key<T> const &key, nb::object py_column_view) {
+                std::shared_ptr<ColumnView> column_view = nb::cast<std::shared_ptr<ColumnView>>(py_column_view);
                 if (!column_view && self.isContiguous()) {
                     // If there's no column view cached, but there could be,
                     // make one (and we'll return it so it can be cached by
                     // the calling Python code).
                     column_view = std::make_shared<ColumnView>(self.getColumnView());
-                    py_column_view = pybind11::cast(column_view);
+                    py_column_view = nb::cast(column_view);
                 }
                 if (column_view) {
                     // If there is a column view, use it to return a view.
                     if constexpr (std::is_same_v<T, Angle>) {
                         // numpy doesn't recognize our Angle type, so we return
                         // double radians.
-                        return pybind11::make_tuple(column_view->get_radians_array(key), column_view);
+                        return nb::make_tuple(column_view->get_radians_array(key), column_view);
                     } else {
-                        return pybind11::make_tuple((*column_view)[key].shallow(), column_view);
+                        return nb::make_tuple((*column_view)[key].shallow(), column_view);
                     }
                 }
                 // If we can't make a column view, extract a copy.
-                return pybind11::make_tuple(_getArrayFromCatalog(self, key), column_view);
-            });
+                return nb::make_tuple(_getArrayFromCatalog(self, key), column_view);
+            }, "key"_a, "column_view"_a = nb::none());
 }
 
 /**
@@ -229,34 +232,34 @@ void declareCatalogOverloads(PyCatalog<Record> &cls) {
  * @tparam T  Array element type.
  * @tparam Record  Record type, e.g. BaseRecord or SimpleRecord.
  *
- * @param[in] cls  Catalog pybind11 class.
+ * @param[in] cls  Catalog nb:: class.
  */
 template <typename T, typename Record>
 void declareCatalogArrayOverloads(PyCatalog<Record> &cls) {
-    namespace py = pybind11;
-    using namespace pybind11::literals;
+    namespace nb = nanobind;
+    using namespace nb::literals;
 
     using Catalog = CatalogT<Record>;
     using Value = typename Field<T>::Value;
     using ColumnView = typename Record::ColumnView;
 
     cls.def("_get_column_from_key",
-            [](Catalog const &self, Key<Array<T>> const &key, pybind11::object py_column_view) {
-                std::shared_ptr<ColumnView> column_view = py_column_view.cast<std::shared_ptr<ColumnView>>();
+            [](Catalog const &self, Key<Array<T>> const &key, nb::object py_column_view) {
+                std::shared_ptr<ColumnView> column_view = nb::cast<std::shared_ptr<ColumnView>>(py_column_view);
                 if (!column_view && self.isContiguous()) {
                     // If there's no column view cached, but there could be,
                     // make one (and we'll return it so it can be cached by
                     // the calling Python code).
                     column_view = std::make_shared<ColumnView>(self.getColumnView());
-                    py_column_view = pybind11::cast(column_view);
+                    py_column_view = nb::cast(column_view);
                 }
                 if (column_view) {
                     // If there is a column view, use it to return view.
-                    return pybind11::make_tuple((*column_view)[key].shallow(), column_view);
+                    return nb::make_tuple((*column_view)[key].shallow(), column_view);
                 }
                 // If we can't make a column view, extract a copy.
-                return pybind11::make_tuple(_getArrayFromCatalog(self, key), column_view);
-            });
+                return nb::make_tuple(_getArrayFromCatalog(self, key), column_view);
+            }, "key"_a, "column_view"_a = nb::none());
 }
 
 /**
@@ -275,8 +278,8 @@ void declareCatalogArrayOverloads(PyCatalog<Record> &cls) {
 template <typename Record>
 PyCatalog<Record> declareCatalog(cpputils::python::WrapperCollection &wrappers, std::string const &name,
                                  bool isBase = false) {
-    namespace py = pybind11;
-    using namespace pybind11::literals;
+    namespace nb = nanobind;
+    using namespace nb::literals;
 
     using Catalog = CatalogT<Record>;
     using Table = typename Record::Table;
@@ -289,15 +292,15 @@ PyCatalog<Record> declareCatalog(cpputils::python::WrapperCollection &wrappers, 
         fullName = name + "Catalog";
     }
 
-    // We need py::dynamic_attr() in the class definition to support our Python-side caching
+    // We need nb::dynamic_attr() in the class definition to support our Python-side caching
     // of the associated ColumnView.
     return wrappers.wrapType(
-            PyCatalog<Record>(wrappers.module, fullName.c_str(), py::dynamic_attr()),
+            PyCatalog<Record>(wrappers.module, fullName.c_str(), nb::dynamic_attr()),
             [](auto &mod, auto &cls) {
                 /* Constructors */
-                cls.def(py::init<Schema const &>(), "schema"_a);
-                cls.def(py::init<std::shared_ptr<Table> const &>(), "table"_a);
-                cls.def(py::init<Catalog const &>(), "other"_a);
+                cls.def(nb::init<Schema const &>(), "schema"_a);
+                cls.def(nb::init<std::shared_ptr<Table> const &>(), "table"_a);
+                cls.def(nb::init<Catalog const &>(), "other"_a);
 
                 /* Static Methods */
                 cls.def_static("readFits", (Catalog(*)(std::string const &, int, int)) & Catalog::readFits,
@@ -308,9 +311,9 @@ PyCatalog<Record> declareCatalog(cpputils::python::WrapperCollection &wrappers, 
 
                 /* Methods */
                 cls.def("getTable", &Catalog::getTable);
-                cls.def_property_readonly("table", &Catalog::getTable);
+                cls.def_prop_ro("table", &Catalog::getTable);
                 cls.def("getSchema", &Catalog::getSchema);
-                cls.def_property_readonly("schema", &Catalog::getSchema);
+                cls.def_prop_ro("schema", &Catalog::getSchema);
                 cls.def("capacity", &Catalog::capacity);
                 cls.def("__len__", &Catalog::size);
                 cls.def("resize", &Catalog::resize);
@@ -330,13 +333,13 @@ PyCatalog<Record> declareCatalog(cpputils::python::WrapperCollection &wrappers, 
                 cls.def("_delitem_", [](Catalog &self, std::ptrdiff_t i) {
                     self.erase(self.begin() + cpputils::python::cppIndex(self.size(), i));
                 });
-                cls.def("_delslice_", [](Catalog &self, py::slice const &s) {
+                cls.def("_delslice_", [](Catalog &self, nb::slice const &s) {
                     Py_ssize_t start = 0, stop = 0, step = 0, length = 0;
                     if (PySlice_GetIndicesEx(s.ptr(), self.size(), &start, &stop, &step, &length) != 0) {
-                        throw py::error_already_set();
+                        throw nb::python_error();
                     }
                     if (step != 1) {
-                        throw py::index_error("Slice step must not exactly 1");
+                        throw nb::index_error("Slice step must not exactly 1");
                     }
                     self.erase(self.begin() + start, self.begin() + stop);
                 });
@@ -353,7 +356,7 @@ PyCatalog<Record> declareCatalog(cpputils::python::WrapperCollection &wrappers, 
                     //   delegates to __getitem__(int) is super slow, because
                     //   __getitem__ is overloaded;
                     //
-                    // - using pybind11::make_iterator on either Catalog's own
+                    // - using nb::make_iterator on either Catalog's own
                     //   iterator type or Catalog.getInternal()'s iterator (a
                     //   std::vector iterator) opens us up to undefined
                     //   behavior if a modification to the container those
@@ -367,17 +370,17 @@ PyCatalog<Record> declareCatalog(cpputils::python::WrapperCollection &wrappers, 
                     //
                     // This custom iterator also yields `shared_ptr<Record>`.
                     // That should make the return value policy passed to
-                    // `py::make_iterator` irrelevant; we don't need to keep
+                    // `nb::make_iterator` irrelevant; we don't need to keep
                     // the catalog alive in order to keep a record alive,
                     // because the `shared_ptr` manages the record's lifetime.
                     // But we still need keep_alive on the `__iter__` method
                     // itself to keep the raw catalog pointer alive as long as
                     // the iterator is alive.
-                    return py::make_iterator(
+                    return nb::make_iterator(nb::type<PyCatalog<Record>>(), "iterator",
                         PyCatalogIndexIterator<Record>(&self, 0),
                         PyCatalogIndexIterator<Record>(&self, self.size())
                     );
-                }, py::keep_alive<0, 1>());
+                }, nb::keep_alive<0, 1>());
                 cls.def("isContiguous", &Catalog::isContiguous);
                 cls.def("writeFits",
                         (void (Catalog::*)(std::string const &, std::string const &, int) const) &
@@ -406,18 +409,18 @@ PyCatalog<Record> declareCatalog(cpputils::python::WrapperCollection &wrappers, 
                 declareCatalogArrayOverloads<double>(cls);
 
                 cls.def("_get_column_from_key",
-                        [](Catalog const &self, Key<Flag> const &key, pybind11::object py_column_view) {
+                        [](Catalog const &self, Key<Flag> const &key, nb::object py_column_view) {
                             // Extra ColumnView arg and return value here are
                             // for consistency with the non-flag overload (up
                             // in declareCatalogOverloads).  Casting the array
                             // (from ndarray::Array to numpy.ndarray) before
                             // return is also for consistency with that, though
                             // it's not strictly necessary.
-                            return pybind11::make_tuple(
+                            return nb::make_tuple(
                                 _getArrayFromCatalog(self, key),
                                 py_column_view
                             );
-                        });
+                        }, "key"_a, "column_view"_a = nb::none());
                 cls.def(
                     "_set_flag",
                     [](Catalog &self, Key<Flag> const & key, ndarray::Array<bool const, 1> const & array) {

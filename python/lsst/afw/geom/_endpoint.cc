@@ -27,17 +27,17 @@
 
 #include <type_traits>
 
-#include "pybind11/pybind11.h"
+#include "nanobind/nanobind.h"
 #include <lsst/cpputils/python.h>
-#include "pybind11/stl.h"
-#include "ndarray/pybind11.h"
+#include "nanobind/stl/vector.h"
+#include "ndarray/nanobind.h"
 
 #include "lsst/geom/Point.h"
 #include "lsst/geom/SpherePoint.h"
 #include "lsst/afw/geom/Endpoint.h"
 
-namespace py = pybind11;
-using namespace py::literals;
+namespace nb = nanobind;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
@@ -45,7 +45,7 @@ namespace geom {
 namespace {
 
 /*
-Add `__str__`, `__repr__` and `getClassPrefix` methods to an Endpoint pybind11 wrapper
+Add `__str__`, `__repr__` and `getClassPrefix` methods to an Endpoint nanobind wrapper
 
 str(self) = "GenericEndpoint(_nAxes_)" for GenericEndpoint, e.g. "GenericEndpoint(4)";
             "_typeName_()" for all other Endpoint classes, e.g. "SpherePointEndpoint()",
@@ -53,7 +53,7 @@ repr(self) = "lsst.afw.geom." + str(self), e.g. "lsst.afw.geom.GenericEndpoint(4
 */
 template <typename PyClass>
 void addStrAndRepr(PyClass &cls) {
-    using Class = typename PyClass::type;  // C++ class associated with pybind11 wrapper class
+    using Class = typename PyClass::Type;  // C++ class associated with nanobind wrapper class
     cpputils::python::addOutputOp(cls, "__str__");
     cls.def("__repr__", [](Class const &self) {
         std::ostringstream os;
@@ -68,7 +68,7 @@ Add getNPoints, dataFromPoint, dataFromArray, pointFromData and arrayFromData
 */
 template <typename PyClass>
 void addDataConverters(PyClass &cls) {
-    using Class = typename PyClass::type;  // C++ class associated with pybind11 wrapper class
+    using Class = typename PyClass::Type;  // C++ class associated with nanobind wrapper class
     cls.def("getNPoints", &Class::getNPoints);
     cls.def("dataFromPoint", &Class::dataFromPoint);
     cls.def("dataFromArray", &Class::dataFromArray);
@@ -81,7 +81,7 @@ Add makeFrame method
 */
 template <typename PyClass>
 void addMakeFrame(PyClass &cls) {
-    using Class = typename PyClass::type;  // C++ class associated with pybind11 wrapper class
+    using Class = typename PyClass::Type;  // C++ class associated with nanobind wrapper class
     // return a deep copy so Python cannot modify the internal state
     cls.def("makeFrame", [](Class const &self) {
         auto frame = self.makeFrame();
@@ -117,9 +117,9 @@ template <typename Point, typename Array>
 void declareBaseEndpoint(lsst::cpputils::python::WrapperCollection &wrappers, std::string const &suffix) {
     using Class = BaseEndpoint<Point, Array>;
     std::string const pyClassName = "_BaseEndpoint" + suffix;
-    wrappers.wrapType(py::class_<Class, std::shared_ptr<Class>>(wrappers.module, pyClassName.c_str()),
+    wrappers.wrapType(nb::class_<Class>(wrappers.module, pyClassName.c_str()),
                       [](auto &mod, auto &cls) {
-                          cls.def_property_readonly("nAxes", &Class::getNAxes);
+                          cls.def_prop_ro("nAxes", &Class::getNAxes);
                           addDataConverters(cls);
                           addMakeFrame(cls);
                           cls.def("normalizeFrame", &Class::normalizeFrame);
@@ -137,7 +137,7 @@ void declareBaseVectorEndpoint(lsst::cpputils::python::WrapperCollection &wrappe
     std::string const pyClassName = "_BaseVectorEndpoint" + suffix;
 
     declareBaseEndpoint<Point, Array>(wrappers, suffix);
-    wrappers.wrapType(py::class_<Class, std::shared_ptr<Class>, BaseEndpoint<Point, Array>>(
+    wrappers.wrapType(nb::class_<Class, BaseEndpoint<Point, Array>>(
                               wrappers.module, pyClassName.c_str()),
                       [](auto &mod, auto &cls) { addDataConverters(cls); });
 }
@@ -150,10 +150,10 @@ void declareGenericEndpoint(lsst::cpputils::python::WrapperCollection &wrappers)
 
     declareBaseEndpoint<Point, Array>(wrappers, "Generic");
 
-    wrappers.wrapType(py::class_<Class, std::shared_ptr<Class>, BaseEndpoint<Point, Array>>(
+    wrappers.wrapType(nb::class_<Class, BaseEndpoint<Point, Array>>(
                               wrappers.module, "GenericEndpoint"),
                       [](auto &mod, auto &cls) {
-                          cls.def(py::init<int>(), "nAxes"_a);
+                          cls.def(nb::init<int>(), "nAxes"_a);
 
                           addStrAndRepr(cls);
                       });
@@ -168,10 +168,10 @@ void declarePoint2Endpoint(lsst::cpputils::python::WrapperCollection &wrappers) 
 
     declareBaseVectorEndpoint<Point>(wrappers, pointNumStr);
 
-    wrappers.wrapType(py::class_<Class, std::shared_ptr<Class>, BaseVectorEndpoint<Point>>(
+    wrappers.wrapType(nb::class_<Class, BaseVectorEndpoint<Point>>(
                               wrappers.module, pyClassName.c_str()),
                       [](auto &mod, auto &cls) {
-                          cls.def(py::init<>());
+                          cls.def(nb::init<>());
                           // do not wrap the constructor that takes nAxes; it is an implementation detail
 
                           cls.def("normalizeFrame", &Class::normalizeFrame);
@@ -186,10 +186,10 @@ void declareSpherePointEndpoint(lsst::cpputils::python::WrapperCollection &wrapp
 
     declareBaseVectorEndpoint<Point>(wrappers, "SpherePoint");
 
-    wrappers.wrapType(py::class_<Class, std::shared_ptr<Class>, BaseVectorEndpoint<Point>>(
+    wrappers.wrapType(nb::class_<Class, BaseVectorEndpoint<Point>>(
                               wrappers.module, "SpherePointEndpoint"),
                       [](auto &mod, auto &cls) {
-                          cls.def(py::init<>());
+                          cls.def(nb::init<>());
                           // do not wrap the constructor that takes nAxes; it is an implementation detail
 
                           addMakeFrame(cls);

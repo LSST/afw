@@ -23,9 +23,9 @@
 #ifndef AFW_TABLE_PYBIND11_COLUMNVIEW_H_INCLUDED
 #define AFW_TABLE_PYBIND11_COLUMNVIEW_H_INCLUDED
 
-#include "pybind11/pybind11.h"
+#include <nanobind/nanobind.h>
 
-#include "ndarray/pybind11.h"
+#include <ndarray/nanobind.h>
 #include "lsst/cpputils/python.h"
 
 #include "lsst/afw/table/BaseColumnView.h"
@@ -37,7 +37,7 @@ namespace python {
 
 template <typename Record>
 using PyColumnView =
-        pybind11::class_<ColumnViewT<Record>, std::shared_ptr<ColumnViewT<Record>>, BaseColumnView>;
+        nb::class_<ColumnViewT<Record>, BaseColumnView>;
 
 /**
  * Declare member and static functions for a given instantiation of lsst::afw::table::ColumnViewT<RecordT>.
@@ -61,7 +61,7 @@ PyColumnView<Record> declareColumnView(cpputils::python::WrapperCollection& wrap
     return wrappers.wrapType(PyColumnView<Record>(wrappers.module, fullName.c_str()),
                              [](auto& mod, auto& cls) {
                                  cls.def("getTable", &ColumnViewT<Record>::getTable);
-                                 cls.def_property_readonly("table", &ColumnViewT<Record>::getTable);
+                                 cls.def_prop_ro("table", &ColumnViewT<Record>::getTable);
                              });
 };
 }  // namespace python

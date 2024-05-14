@@ -21,12 +21,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
-#include "pybind11/stl.h"
+#include "nanobind/nanobind.h"
+#include "nanobind/stl/vector.h"
+#include "nanobind/stl/string.h"
+#include <nanobind/stl/set.h>
+#include <nanobind/stl/tuple.h>
+#include <nanobind/stl/map.h>
 
 #include <sstream>
 
-#include "ndarray/pybind11.h"
+#include "ndarray/nanobind.h"
 
 #include "lsst/cpputils/python.h"
 
@@ -36,8 +40,8 @@
 #include "lsst/afw/table/BaseRecord.h"
 #include "lsst/afw/table/SchemaMapper.h"
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+namespace nb = nanobind;
+using namespace nanobind::literals;
 
 namespace lsst {
 namespace afw {
@@ -47,41 +51,40 @@ using cpputils::python::WrapperCollection;
 
 namespace {
 
-using PySchema = py::class_<Schema>;
+using PySchema = nb::class_<Schema>;
 
-using PySubSchema = py::class_<SubSchema>;
-
-template <typename T>
-using PyFieldBase = py::class_<FieldBase<T>>;
+using PySubSchema = nb::class_<SubSchema>;
 
 template <typename T>
-using PyKeyBase = py::class_<KeyBase<T>>;
+using PyFieldBase = nb::class_<FieldBase<T>>;
 
 template <typename T>
-using PyField = py::class_<Field<T>, FieldBase<T>>;
+using PyKeyBase = nb::class_<KeyBase<T>>;
 
 template <typename T>
-using PyKey = py::class_<Key<T>, KeyBase<T>, FieldBase<T>>;
+using PyField = nb::class_<Field<T>, FieldBase<T>>;
 
 template <typename T>
-using PySchemaItem = py::class_<SchemaItem<T>>;
+using PyKey = nb::class_<Key<T>, KeyBase<T>>;
+
+template <typename T>
+using PySchemaItem = nb::class_<SchemaItem<T>>;
 
 // Specializations for FieldBase
-
 template <typename T>
 void declareFieldBaseSpecializations(PyFieldBase<T> &cls) {
-    cls.def(py::init<>());
+    cls.def(nb::init<>());
 }
 
 template <typename T>
 void declareFieldBaseSpecializations(PyFieldBase<Array<T>> &cls) {
-    cls.def(py::init<int>(), "size"_a = 0);
+    cls.def(nb::init<size_t>(), "size"_a = 0);
     cls.def("getSize", &FieldBase<Array<T>>::getSize);
     cls.def("isVariableLength", &FieldBase<Array<T>>::isVariableLength);
 }
 
 void declareFieldBaseSpecializations(PyFieldBase<std::string> &cls) {
-    cls.def(py::init<int>(), "size"_a = -1);
+    cls.def(nb::init<size_t>(), "size"_a = -1);
     cls.def("getSize", &FieldBase<std::string>::getSize);
 }
 
@@ -89,12 +92,13 @@ void declareFieldBaseSpecializations(PyFieldBase<std::string> &cls) {
 
 template <typename T>
 void declareFieldSpecializations(PyField<T> &cls) {
-    cls.def(py::pickle(
+    cls.def("__getstate__",
             [](Field<T> const &self) {
                 /* Return a tuple that fully encodes the state of the object */
-                return py::make_tuple(self.getName(), self.getDoc(), self.getUnits());
-            },
-            [](py::tuple t) {
+                return nb::make_tuple(self.getName(), self.getDoc(), self.getUnits());
+            });
+    cls.def("__setstate__",
+            [](Field<T> *field, nb::tuple t) {
                 int const NPARAMS = 3;
                 if (t.size() != NPARAMS) {
                     std::ostringstream os;
@@ -102,19 +106,20 @@ void declareFieldSpecializations(PyField<T> &cls) {
                        << NPARAMS;
                     throw std::runtime_error(os.str());
                 }
-                return Field<T>(t[0].cast<std::string>(), t[1].cast<std::string>(), t[2].cast<std::string>());
-            }));
+                new (field) Field<T>(nb::cast<std::string>(t[0]), nb::cast<std::string>(t[1]), nb::cast<std::string>(t[2]));
+            });
 }
 
 // Field<Array<T>> and Field<std::string> have the same pickle implementation
 template <typename T>
 void _sequenceFieldSpecializations(PyField<T> &cls) {
-    cls.def(py::pickle(
+    cls.def("__getstate__",
             [](Field<T> const &self) {
                 /* Return a tuple that fully encodes the state of the object */
-                return py::make_tuple(self.getName(), self.getDoc(), self.getUnits(), self.getSize());
-            },
-            [](py::tuple t) {
+                return nb::make_tuple(self.getName(), self.getDoc(), self.getUnits(), self.getSize());
+            });
+    cls.def("__setstate__",
+            [](Field<T> *field, nb::tuple t) {
                 int const NPARAMS = 4;
                 if (t.size() != NPARAMS) {
                     std::ostringstream os;
@@ -122,9 +127,9 @@ void _sequenceFieldSpecializations(PyField<T> &cls) {
                        << NPARAMS;
                     throw std::runtime_error(os.str());
                 }
-                return Field<T>(t[0].cast<std::string>(), t[1].cast<std::string>(), t[2].cast<std::string>(),
-                                t[3].cast<int>());
-            }));
+                new (field) Field<T>(nb::cast<std::string>(t[0]), nb::cast<std::string>(t[1]), nb::cast<std::string>(t[2]),
+                                nb::cast<int>(t[3]));
+            });
 }
 
 template <typename T>
@@ -141,19 +146,25 @@ void declareKeyBaseSpecializations(PyKeyBase<T> &) {}
 
 template <typename T>
 void declareKeyBaseSpecializations(PyKeyBase<Array<T>> &cls) {
-    cls.def("__getitem__", [](Key<Array<T>> const &self, py::object const &index) -> py::object {
-        if (py::isinstance<py::slice>(index)) {
-            py::slice slice(index);
-            py::size_t start = 0, stop = 0, step = 0, length = 0;
-            bool valid = slice.compute(self.getSize(), &start, &stop, &step, &length);
-            if (!valid) throw py::error_already_set();
+    cls.def("__getitem__", [](Key<Array<T>> const &self, nb::object const &index) -> nb::object {
+        if (nb::isinstance<nb::slice>(index)) {
+            nb::slice slice = (nanobind::slice &&) index;
+            Py_ssize_t start = 0, stop = 0, step = 0;
+            size_t length = 0;
+            auto result  = slice.compute(self.getSize());
+            start = result.template get<0>();
+            stop = result.template get<1>();
+            step = result.template get<2>();
+            length = result.template get<3>();
+            bool valid = true;
+            if (!valid) throw nb::python_error();
             if (step != 1) {
                 throw LSST_EXCEPT(pex::exceptions::InvalidParameterError,
                                   "Step for array Key indexing must be 1.");
             }
-            return py::cast(self.slice(start, stop));
+            return nb::cast(self.slice(start, stop));
         } else {
-            return py::cast(self[py::cast<int>(index)]);
+            return nb::cast(self[nb::cast<int>(index)]);
         }
     });
     cls.def("slice", &KeyBase<Array<T>>::slice);
@@ -174,16 +185,16 @@ void declareKeyAccessors(PyKey<Array<U>> &cls) {
     auto getter = [](Key<Array<U>> const &self, BaseRecord &record) -> ndarray::Array<U, 1, 1> {
         return record[self];
     };
-    auto setter = [](Key<Array<U>> const &self, BaseRecord &record, py::object const &value) {
+    auto setter = [](Key<Array<U>> const &self, BaseRecord &record, nb::object const &value) {
         if (self.getSize() == 0) {
             // Variable-length array field: do a shallow copy, which requires a non-const
             // contiguous array.
-            record.set(self, py::cast<ndarray::Array<U, 1, 1>>(value));
+            record.set(self, nb::cast<ndarray::Array<U, 1, 1>>(value));
         } else {
             // Fixed-length array field: do a deep copy, which can work with a const
             // noncontiguous array.  But we need to check the size first, since the
             // penalty for getting that wrong is assert->abort.
-            auto v = py::cast<ndarray::Array<U const, 1, 0>>(value);
+            auto v = nb::cast<ndarray::Array<U const, 1, 0>>(value);
             ndarray::ArrayRef<U, 1, 1> ref = record[self];
             if (v.size() != ref.size()) {
                 throw LSST_EXCEPT(
@@ -201,14 +212,15 @@ void declareKeyAccessors(PyKey<Array<U>> &cls) {
 template <typename T>
 void declareKeySpecializations(PyKey<T> &cls) {
     declareKeyAccessors(cls);
-    cls.def_property_readonly("subfields", [](py::object const &) { return py::none(); });
-    cls.def_property_readonly("subkeys", [](py::object const &) { return py::none(); });
-    cls.def(py::pickle(
+    cls.def_prop_ro("subfields", [](nb::object const &) { return nb::none(); });
+    cls.def_prop_ro("subkeys", [](nb::object const &) { return nb::none(); });
+    cls.def("__getstate__",
             [](Key<T> const &self) {
                 /* Return a tuple that fully encodes the state of the object */
-                return py::make_tuple(self.getOffset());
-            },
-            [](py::tuple t) {
+                return nb::make_tuple(self.getOffset());
+            });
+            cls.def("__getstate__",
+            [](nb::tuple t) {
                 int const NPARAMS = 1;
                 if (t.size() != NPARAMS) {
                     std::ostringstream os;
@@ -216,21 +228,22 @@ void declareKeySpecializations(PyKey<T> &cls) {
                        << NPARAMS;
                     throw std::runtime_error(os.str());
                 }
-                return detail::Access::makeKey<T>(t[0].cast<int>());
-            }));
+                return detail::Access::makeKey<T>(nb::cast<int>(t[0]));
+            });
 }
 
 void declareKeySpecializations(PyKey<Flag> &cls) {
     declareKeyAccessors(cls);
-    cls.def_property_readonly("subfields", [](py::object const &) { return py::none(); });
-    cls.def_property_readonly("subkeys", [](py::object const &) { return py::none(); });
+    cls.def_prop_ro("subfields", [](nb::object const &) { return nb::none(); });
+    cls.def_prop_ro("subkeys", [](nb::object const &) { return nb::none(); });
     cls.def("getBit", &Key<Flag>::getBit);
-    cls.def(py::pickle(
+    cls.def("__getstate__",
             [](Key<Flag> const &self) {
                 /* Return a tuple that fully encodes the state of the object */
-                return py::make_tuple(self.getOffset(), self.getBit());
-            },
-            [](py::tuple t) {
+                return nb::make_tuple(self.getOffset(), self.getBit());
+            });
+    cls.def("__setstate__",
+            [](Key<Flag> *key, nb::tuple t) {
                 int const NPARAMS = 2;
                 if (t.size() != NPARAMS) {
                     std::ostringstream os;
@@ -238,33 +251,36 @@ void declareKeySpecializations(PyKey<Flag> &cls) {
                        << NPARAMS;
                     throw std::runtime_error(os.str());
                 }
-                return detail::Access::makeKey(t[0].cast<int>(), t[1].cast<int>());
-            }));
+                detail::Access::makeKey(key, nb::cast<int>(t[0]), nb::cast<int>(t[1]));
+            });
 }
 
 template <typename T>
 void declareKeySpecializations(PyKey<Array<T>> &cls) {
     declareKeyAccessors(cls);
-    cls.def_property_readonly("subfields", [](Key<Array<T>> const &self) -> py::object {
-        py::list result;
+    cls.def("isVariableLength", [](Key<Array<T>> &self) -> bool {return self.isVariableLength();});
+    cls.def("getSize", [](Key<Array<T>> &self) -> size_t {return self.getSize();});
+    cls.def_prop_ro("subfields", [](Key<Array<T>> const &self) -> nb::object {
+        nb::list result;
         for (std::size_t i = 0; i < self.getSize(); ++i) {
-            result.append(py::cast(i));
+            result.append(nb::cast(i));
         }
-        return py::tuple(result);
+        return nb::tuple(result);
     });
-    cls.def_property_readonly("subkeys", [](Key<Array<T>> const &self) -> py::object {
-        py::list result;
+    cls.def_prop_ro("subkeys", [](Key<Array<T>> const &self) -> nb::object {
+        nb::list result;
         for (std::size_t i = 0; i < self.getSize(); ++i) {
-            result.append(py::cast(self[i]));
+            result.append(nb::cast(self[i]));
         }
-        return py::tuple(result);
+        return nb::tuple(result);
     });
-    cls.def(py::pickle(
+    cls.def("__getstate__",
             [](Key<Array<T>> const &self) {
                 /* Return a tuple that fully encodes the state of the object */
-                return py::make_tuple(self.getOffset(), self.getElementCount());
-            },
-            [](py::tuple t) {
+                return nb::make_tuple(self.getOffset(), self.getElementCount());
+            });
+    cls.def("__setstate__",
+            [](Key<Array<T>> *key, nb::tuple t) {
                 int const NPARAMS = 2;
                 if (t.size() != NPARAMS) {
                     std::ostringstream os;
@@ -272,20 +288,23 @@ void declareKeySpecializations(PyKey<Array<T>> &cls) {
                        << NPARAMS;
                     throw std::runtime_error(os.str());
                 }
-                return detail::Access::makeKeyArray<T>(t[0].cast<int>(), t[1].cast<int>());
-            }));
+                detail::Access::makeKeyArray<T>(key, nb::cast<int>(t[0]), nb::cast<int>(t[1]));
+            });
 }
 
 void declareKeySpecializations(PyKey<std::string> &cls) {
     declareKeyAccessors(cls);
-    cls.def_property_readonly("subfields", [](py::object const &) { return py::none(); });
-    cls.def_property_readonly("subkeys", [](py::object const &) { return py::none(); });
-    cls.def(py::pickle(
+    cls.def("isVariableLength", [](Key<std::string> &self) -> bool {return self.isVariableLength();});
+    cls.def("getSize", [](Key<std::string> &self) -> size_t {return self.getSize();});
+    cls.def_prop_ro("subfields", [](nb::object const &) { return nb::none(); });
+    cls.def_prop_ro("subkeys", [](nb::object const &) { return nb::none(); });
+    cls.def("__getstate__",
             [](Key<std::string> const &self) {
                 /* Return a tuple that fully encodes the state of the object */
-                return py::make_tuple(self.getOffset(), self.getElementCount());
-            },
-            [](py::tuple t) {
+                return nb::make_tuple(self.getOffset(), self.getElementCount());
+            });
+    cls.def("__setstate__",
+            [](Key<std::string>  *key, nb::tuple t) {
                 int const NPARAMS = 2;
                 if (t.size() != NPARAMS) {
                     std::ostringstream os;
@@ -293,17 +312,17 @@ void declareKeySpecializations(PyKey<std::string> &cls) {
                        << NPARAMS;
                     throw std::runtime_error(os.str());
                 }
-                return detail::Access::makeKeyString(t[0].cast<int>(), t[1].cast<int>());
-            }));
+                detail::Access::makeKeyString(key,nb::cast<int>(t[0]), nb::cast<int>(t[1]));
+            });
 }
 
 // Wrap all helper classes (FieldBase, KeyBase, Key, Field, SchemaItem) declarefor a Schema field type.
 template <typename T>
 void declareSchemaType(WrapperCollection &wrappers) {
     std::string suffix = FieldBase<T>::getTypeString();
-    py::str pySuffix(suffix);
+    nb::str pySuffix(suffix.c_str());
 
-    py::object astropyUnit = py::module::import("astropy.units").attr("Unit");
+    nb::object astropyUnit = nb::module_::import_("astropy.units").attr("Unit");
 
     // FieldBase
     wrappers.wrapType(PyFieldBase<T>(wrappers.module, ("FieldBase" + suffix).c_str()),
@@ -321,22 +340,27 @@ void declareSchemaType(WrapperCollection &wrappers) {
     wrappers.wrapType(PyField<T>(wrappers.module, ("Field" + suffix).c_str()), [pySuffix, astropyUnit](
                                                                                        auto &mod, auto &cls) {
         declareFieldSpecializations(cls);
-
         mod.attr("_Field")[pySuffix] = cls;
 
-        cls.def(py::init([astropyUnit](  // capture by value to refcount in Python instead of dangle in C++
-                                 std::string const &name, std::string const &doc, py::str const &units,
-                                 py::object const &size, py::str const &parse_strict) {
+	cls.def("__init__", [astropyUnit](Field<T> *field, // capture by value to refcount in Python instead of dangle in C++
+                                 std::string const &name, std::string const &doc, std::string const &units, 
+				 std::string const &parse_strict) {
+                  astropyUnit(units, "parse_strict"_a = parse_strict);
+                 
+                        new (field) Field<T>(name, doc, units);
+                   
+                },
+                "name"_a, "doc"_a = "", "units"_a = "", "parse_strict"_a = "raise");
+        cls.def("_addTo", [](Field<T> const &self, Schema &schema, bool doReplace) -> Key<T> {
+            return schema.addField(self, doReplace);
+        });
+        cls.def("__init__", [astropyUnit](Field<T> *field, // capture by value to refcount in Python instead of dangle in C++
+                                 std::string const &name, std::string const &doc, std::string const &units,
+                                 int size, std::string const &parse_strict) {
                     astropyUnit(units, "parse_strict"_a = parse_strict);
-                    std::string u = py::cast<std::string>(units);
-                    if (size.is(py::none())) {
-                        return new Field<T>(name, doc, u);
-                    } else {
-                        int s = py::cast<int>(size);
-                        return new Field<T>(name, doc, u, s);
-                    }
-                }),
-                "name"_a, "doc"_a = "", "units"_a = "", "size"_a = py::none(), "parse_strict"_a = "raise");
+                        new (field) Field<T>(name, doc, units, size);
+                },
+                "name"_a, "doc"_a = "", "units"_a = "", "size"_a, "parse_strict"_a = "raise");
         cls.def("_addTo", [](Field<T> const &self, Schema &schema, bool doReplace) -> Key<T> {
             return schema.addField(self, doReplace);
         });
@@ -351,12 +375,13 @@ void declareSchemaType(WrapperCollection &wrappers) {
     // Key
     wrappers.wrapType(PyKey<T>(wrappers.module, ("Key" + suffix).c_str()), [pySuffix](auto &mod, auto &cls) {
         mod.attr("_Key")[pySuffix] = cls;
-        cls.def(py::init<>());
+        cls.def(nb::init<>());
+        cls.def_static("getTypeString", &Key<T>::getTypeString);
         cls.def("__eq__", [](Key<T> const &self, Key<T> const &other) -> bool { return self == other; },
-                py::is_operator());
+                nb::is_operator());
         cpputils::python::addHash(cls);
         cls.def("__ne__", [](Key<T> const &self, Key<T> const &other) -> bool { return self != other; },
-                py::is_operator());
+                nb::is_operator());
         cls.def("isValid", &Key<T>::isValid);
         cls.def("getOffset", &Key<T>::getOffset);
         cpputils::python::addOutputOp(cls, "__str__");
@@ -371,7 +396,7 @@ void declareSchemaType(WrapperCollection &wrappers) {
                                     bool doReplace) { return mapper.addMapping(self, field, doReplace); });
         cls.def("_addMappingTo", [](Key<T> const &self, SchemaMapper &mapper, std::string const &name,
                                     bool doReplace) { return mapper.addMapping(self, name, doReplace); });
-        cls.def("_addMappingTo", [](Key<T> const &self, SchemaMapper &mapper, py::object const &,
+        cls.def("_addMappingTo", [](Key<T> const &self, SchemaMapper &mapper,
                                     bool doReplace) { return mapper.addMapping(self, doReplace); });
         declareKeySpecializations(cls);
     });
@@ -380,11 +405,11 @@ void declareSchemaType(WrapperCollection &wrappers) {
     wrappers.wrapType(PySchemaItem<T>(wrappers.module, ("SchemaItem" + suffix).c_str()),
                       [pySuffix](auto &mod, auto &cls) {
                           mod.attr("_SchemaItem")[pySuffix] = cls;
-                          cls.def_readonly("key", &SchemaItem<T>::key);
-                          cls.def_readonly("field", &SchemaItem<T>::field);
+                          cls.def_ro("key", &SchemaItem<T>::key);
+                          cls.def_ro("field", &SchemaItem<T>::field);
                           cls.def("getKey", [](SchemaItem<T> const &self) { return self.key; });
                           cls.def("getField", [](SchemaItem<T> const &self) { return self.field; });
-                          cls.def("__getitem__", [](py::object const &self, int index) -> py::object {
+                          cls.def("__getitem__", [](nb::object const &self, int index) -> nb::object {
                               if (index == 0) {
                                   return self.attr("key");
                               } else if (index == 1) {
@@ -392,20 +417,21 @@ void declareSchemaType(WrapperCollection &wrappers) {
                               }
                               // Have to raise IndexError not some LSST exception to get the
                               // right behavior when unpacking.
-                              throw py::index_error("Index to SchemaItem must be 0 or 1.");
+                              throw nb::index_error("Index to SchemaItem must be 0 or 1.");
                           });
-                          cls.def("__len__", [](py::object const &self) -> int { return 2; });
+                          cls.def("__len__", [](nb::object const &self) -> int { return 2; });
                           cls.def("__str__",
-                                  [](py::object const &self) -> py::str { return py::str(py::tuple(self)); });
-                          cls.def("__repr__", [](py::object const &self) -> py::str {
-                              return py::str("SchemaItem(key={0.key}, field={0.field})").format(self);
+                                  [](nb::object const &self) -> nb::str { return nb::str(nb::tuple(self)); });
+                          cls.def("__repr__", [](nb::object const &self) -> nb::str {
+                              return nb::str("SchemaItem(key={0.key}, field={0.field})").format(self);
                           });
-                          cls.def(py::pickle(
+                          cls.def("__getstate__",
                                   [](SchemaItem<T> const &self) {
                                       /* Return a tuple that fully encodes the state of the object */
-                                      return py::make_tuple(self.key, self.field);
-                                  },
-                                  [](py::tuple t) {
+                                      return nb::make_tuple(self.key, self.field);
+                                  });
+                          cls.def("__setstate__",
+                                  [](SchemaItem<T> *schema, nb::tuple t) {
                                       int const NPARAMS = 2;
                                       if (t.size() != NPARAMS) {
                                           std::ostringstream os;
@@ -413,8 +439,8 @@ void declareSchemaType(WrapperCollection &wrappers) {
                                              << ") when unpickling; expected " << NPARAMS;
                                           throw std::runtime_error(os.str());
                                       }
-                                      return SchemaItem<T>(t[0].cast<Key<T>>(), t[1].cast<Field<T>>());
-                                  }));
+                                      new (schema)  SchemaItem<T>(nb::cast<Key<T>>(t[0]), nb::cast<Field<T>>(t[1]));
+                                  });
                       });
 }
 
@@ -423,42 +449,42 @@ void declareSchemaType(WrapperCollection &wrappers) {
 struct MakePythonSchemaItem {
     template <typename T>
     void operator()(SchemaItem<T> const &item) {
-        result = py::cast(item);
+        result = nb::cast(item);
     }
 
-    py::object result;
+    nb::object result;
 };
 
 void declareSchema(WrapperCollection &wrappers) {
     wrappers.wrapType(PySchema(wrappers.module, "Schema"), [](auto &mod, auto &cls) {
         // wrap ComparisonFlags values as ints since we use them as bitflags,
         // not true enums
-        cls.attr("EQUAL_KEYS") = py::cast(int(Schema::EQUAL_KEYS));
-        cls.attr("EQUAL_NAMES") = py::cast(int(Schema::EQUAL_NAMES));
-        cls.attr("EQUAL_DOCS") = py::cast(int(Schema::EQUAL_DOCS));
-        cls.attr("EQUAL_UNITS") = py::cast(int(Schema::EQUAL_UNITS));
-        cls.attr("EQUAL_FIELDS") = py::cast(int(Schema::EQUAL_FIELDS));
-        cls.attr("EQUAL_ALIASES") = py::cast(int(Schema::EQUAL_ALIASES));
-        cls.attr("IDENTICAL") = py::cast(int(Schema::IDENTICAL));
+        cls.attr("EQUAL_KEYS") = nb::cast(int(Schema::EQUAL_KEYS));
+        cls.attr("EQUAL_NAMES") = nb::cast(int(Schema::EQUAL_NAMES));
+        cls.attr("EQUAL_DOCS") = nb::cast(int(Schema::EQUAL_DOCS));
+        cls.attr("EQUAL_UNITS") = nb::cast(int(Schema::EQUAL_UNITS));
+        cls.attr("EQUAL_FIELDS") = nb::cast(int(Schema::EQUAL_FIELDS));
+        cls.attr("EQUAL_ALIASES") = nb::cast(int(Schema::EQUAL_ALIASES));
+        cls.attr("IDENTICAL") = nb::cast(int(Schema::IDENTICAL));
 
-        cls.attr("VERSION") = py::cast(int(Schema::VERSION));
+        cls.attr("VERSION") = nb::cast(int(Schema::VERSION));
 
-        cls.def(py::init<>());
-        cls.def(py::init<Schema const &>());
+        cls.def(nb::init<>());
+        cls.def(nb::init<Schema const &>());
         cls.def("__getitem__", [](Schema &self, std::string const &name) { return self[name]; });
         cls.def("__eq__", [](Schema const &self, Schema const &other) { return self == other; },
-                py::is_operator());
+                nb::is_operator());
         cls.def("__ne__", [](Schema const &self, Schema const &other) { return self != other; },
-                py::is_operator());
+                nb::is_operator());
         cls.def("getRecordSize", &Schema::getRecordSize);
         cls.def("getFieldCount", &Schema::getFieldCount);
         cls.def("getFlagFieldCount", &Schema::getFlagFieldCount);
         cls.def("getNonFlagFieldCount", &Schema::getNonFlagFieldCount);
-        cls.def("find", [](py::object const &self, py::object const &key) -> py::object {
+        cls.def("find", [](nb::object const &self, nb::object const &key) -> nb::object {
             try {
-                if (py::isinstance<py::str>(key) || py::isinstance<py::bytes>(key)) {
-                    Schema const &s = py::cast<Schema const &>(self);
-                    std::string name = py::cast<std::string>(key);
+                if (nb::isinstance<nb::str>(key) || nb::isinstance<nb::bytes>(key)) {
+                    Schema const &s = nb::cast<Schema const &>(self);
+                    std::string name = nb::cast<std::string>(key);
                     MakePythonSchemaItem func;
                     s.findAndApply(name, func);
                     return func.result;
@@ -467,21 +493,21 @@ void declareSchema(WrapperCollection &wrappers) {
             } catch (pex::exceptions::NotFoundError &err) {
                 // Avoid API change by re-throwing as KeyError.
                 PyErr_SetString(PyExc_KeyError, err.what());
-                throw py::error_already_set();
+                throw nb::python_error();
             }
         });
         cls.def("getNames", &Schema::getNames, "topOnly"_a = false);
         cls.def("getAliasMap", &Schema::getAliasMap);
-        cls.def("setAliasMap", &Schema::setAliasMap, "aliases"_a);
+        cls.def("setAliasMap", &Schema::setAliasMap, "aliases"_a = nb::none());
         cls.def("disconnectAliases", &Schema::disconnectAliases);
-        cls.def("forEach", [](Schema &self, py::object &obj) { self.forEach(obj); });
+        cls.def("forEach", [](Schema &self, nb::object &obj) { self.forEach(obj); });
         cls.def("compare", &Schema::compare, "other"_a, "flags"_a = int(Schema::EQUAL_KEYS));
         cls.def("contains", (int (Schema::*)(Schema const &, int) const) & Schema::contains, "other"_a,
                 "flags"_a = int(Schema::EQUAL_KEYS));
-        cls.def("__contains__", [](py::object const &self, py::object const &key) {
+        cls.def("__contains__", [](nb::object const &self, nb::object const &key) {
             try {
                 self.attr("find")(key);
-            } catch (py::error_already_set &err) {
+            } catch (nb::python_error &err) {
                 err.restore();
                 PyErr_Clear();
                 return false;
@@ -515,17 +541,17 @@ void declareSubSchema(WrapperCollection &wrappers) {
     wrappers.wrapType(PySubSchema(wrappers.module, "SubSchema"), [](auto &mod, auto &cls) {
         cls.def("getNames", &SubSchema::getNames, "topOnly"_a = false);
         cls.def("getPrefix", &SubSchema::getPrefix);
-        cls.def("asKey", [](SubSchema const &self) -> py::object {
+        cls.def("asKey", [](SubSchema const &self) -> nb::object {
             MakePythonSchemaItem func;
             self.apply(func);
             return func.result.attr("key");
         });
-        cls.def("asField", [](SubSchema const &self) -> py::object {
+        cls.def("asField", [](SubSchema const &self) -> nb::object {
             MakePythonSchemaItem func;
             self.apply(func);
             return func.result.attr("field");
         });
-        cls.def("find", [](SubSchema const &self, std::string const &name) -> py::object {
+        cls.def("find", [](SubSchema const &self, std::string const &name) -> nb::object {
             MakePythonSchemaItem func;
             self.findAndApply(name, func);
             return func.result;
@@ -541,9 +567,9 @@ void wrapSchema(WrapperCollection &wrappers) {
     // dicts, and then in schemaContinued.py we'll add them to a TemplateMeta
     // ABC.
     auto &mod = wrappers.module;
-    mod.attr("_Field") = py::dict();
-    mod.attr("_Key") = py::dict();
-    mod.attr("_SchemaItem") = py::dict();
+    mod.attr("_Field") = nb::dict();
+    mod.attr("_Key") = nb::dict();
+    mod.attr("_SchemaItem") = nb::dict();
 
     declareSchemaType<std::uint8_t>(wrappers);
     declareSchemaType<std::uint16_t>(wrappers);

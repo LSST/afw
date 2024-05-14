@@ -21,12 +21,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
+#include "nanobind/nanobind.h"
 
 #include "lsst/cpputils/python.h"
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+namespace nb = nanobind;
+using namespace nanobind::literals;
 
 namespace lsst {
 namespace afw {
@@ -36,7 +36,7 @@ using cpputils::python::WrapperCollection;
 void wrapObservatory(WrapperCollection&);
 void wrapWeather(WrapperCollection&);
 
-PYBIND11_MODULE(_coord, mod) {
+NB_MODULE(_coord, mod) {
     WrapperCollection wrappers(mod, "lsst.afw.coord");
     wrapObservatory(wrappers);
     wrapWeather(wrappers);

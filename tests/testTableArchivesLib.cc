@@ -20,8 +20,9 @@
  * see <https://www.lsstcorp.org/LegalNotices/>.
  */
 
-#include <pybind11/pybind11.h>
-//#include <pybind11/stl.h>
+#include <nanobind/nanobind.h>
+#include <nanobind/stl/vector.h>
+#include <nanobind/stl/shared_ptr.h>
 
 #include <memory>
 #include "lsst/afw/cameraGeom.h"
@@ -29,7 +30,7 @@
 #include "lsst/afw/table/io/CatalogVector.h"
 #include "lsst/afw/table/io/OutputArchive.h"
 
-namespace py = pybind11;
+namespace nb = nanobind;
 
 // not really a Psf, just a Persistable we can stuff in an Exposure
 class DummyPsf : public lsst::afw::detection::Psf {
@@ -128,14 +129,13 @@ void DummyPsf::write(OutputArchiveHandle& handle) const {
     handle.saveCatalog(catalog);
 }
 
-PYBIND11_DECLARE_HOLDER_TYPE(MyType, std::shared_ptr<MyType>);
 
-PYBIND11_MODULE(testTableArchivesLib, mod) {
-    py::module::import("lsst.afw.detection");
+NB_MODULE(testTableArchivesLib, mod) {
+    nb::module_::import_("lsst.afw.detection");
 
-    py::class_<DummyPsf, std::shared_ptr<DummyPsf>, lsst::afw::detection::Psf> cls(mod, "DummyPsf");
+    nb::class_<DummyPsf, lsst::afw::detection::Psf> cls(mod, "DummyPsf");
 
-    cls.def(py::init<double>());
+    cls.def(nb::init<double>());
 
     cls.def("doComputeBBox", &DummyPsf::doComputeBBox);
     cls.def("clone", &DummyPsf::clone);
@@ -144,5 +144,5 @@ PYBIND11_MODULE(testTableArchivesLib, mod) {
     cls.def("getValue", &DummyPsf::getValue);
     cls.def("__eq__",
             [](DummyPsf const& self, DummyPsf const& other) { return self.getValue() == other.getValue(); },
-            py::is_operator());
+            nb::is_operator());
 }

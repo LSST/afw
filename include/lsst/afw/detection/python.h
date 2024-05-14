@@ -24,7 +24,8 @@
 #ifndef LSST_AFW_DETECTION_PYTHON_H
 #define LSST_AFW_DETECTION_PYTHON_H
 
-#include "pybind11/pybind11.h"
+#include "nanobind/nanobind.h"
+#include <nanobind/trampoline.h>
 #include "lsst/afw/detection/Psf.h"
 #include "lsst/afw/typehandling/python.h"
 
@@ -37,20 +38,21 @@ namespace detection {
 /**
  * "Trampoline" for Psf to let it be used as a base class in Python.
  *
- * Subclasses of Psf that are wrapped in %pybind11 should have a similar
+ * Subclasses of Psf that are wrapped in %nanobind should have a similar
  * helper that subclasses `PsfTrampoline<subclass>`. This helper can be
  * skipped if the subclass neither adds any virtual methods nor implements
  * any abstract methods.
  *
  * @tparam Base the exact (most specific) class being wrapped
  *
- * @see [pybind11 documentation](https://pybind11.readthedocs.io/en/stable/advanced/classes.html)
+ * @see [nanobind documentation](https://nanobind.readthedocs.io/en/stable/advanced/classes.html)
  */
 template <typename Base = Psf>
 class PsfTrampoline : public StorableHelper<Base> {
 public:
     using Image = typename Base::Image;
 
+    NB_TRAMPOLINE(StorableHelper<Base>, 20);
     /**
      * Delegating constructor for wrapped class.
      *
@@ -67,18 +69,18 @@ public:
     explicit PsfTrampoline<Base>(Args... args) : StorableHelper<Base>(args...) {}
 
     std::shared_ptr<Psf> clone() const override {
-        /* __deepcopy__ takes an optional dict, but PYBIND11_OVERLOAD_* won't
+        /* __deepcopy__ takes an optional dict, but nanobind_OVERLOAD_* won't
          * compile unless you give it arguments that work for the C++ method
          */
-        PYBIND11_OVERLOAD_PURE_NAME(std::shared_ptr<Psf>, Base, "__deepcopy__", clone,);
+        NB_OVERRIDE_PURE_NAME("__deepcopy__", clone,);
     }
 
     std::shared_ptr<Psf> resized(int width, int height) const override {
-        PYBIND11_OVERLOAD_PURE(std::shared_ptr<Psf>, Base, resized, width, height);
+        NB_OVERRIDE_PURE(resized, width, height);
     }
 
     lsst::geom::Point2D getAveragePosition() const override {
-        PYBIND11_OVERLOAD(lsst::geom::Point2D, Base, getAveragePosition,);
+        NB_OVERRIDE(getAveragePosition);
     }
 
     // Private and protected c++ members are overloaded to python using underscores.
@@ -86,8 +88,8 @@ public:
         lsst::geom::Point2D const& position,
         image::Color const& color
     ) const override {
-        PYBIND11_OVERLOAD_NAME(
-            std::shared_ptr<Image>, Base, "_doComputeImage", doComputeImage, position, color
+        NB_OVERRIDE_NAME(
+            "_doComputeImage", doComputeImage, position, color
         );
     }
 
@@ -95,8 +97,8 @@ public:
         lsst::geom::Point2D const& position,
         image::Color const& color
     ) const override {
-        PYBIND11_OVERLOAD_NAME(
-            lsst::geom::Box2I, Base, "_doComputeImageBBox", doComputeImageBBox, position, color
+        NB_OVERRIDE_NAME(
+            "_doComputeImageBBox", doComputeImageBBox, position, color
         );
     }
 
@@ -104,8 +106,8 @@ public:
         lsst::geom::Point2D const& position,
         image::Color const& color
     ) const override {
-        PYBIND11_OVERLOAD_PURE_NAME(
-            std::shared_ptr<Image>, Base, "_doComputeKernelImage", doComputeKernelImage, position, color
+        NB_OVERRIDE_PURE_NAME(
+            "_doComputeKernelImage", doComputeKernelImage, position, color
         );
     }
 
@@ -113,8 +115,8 @@ public:
         double radius, lsst::geom::Point2D const& position,
         image::Color const& color
     ) const override {
-        PYBIND11_OVERLOAD_PURE_NAME(
-            double, Base, "_doComputeApertureFlux", doComputeApertureFlux, radius, position, color
+        NB_OVERRIDE_PURE_NAME(
+            "_doComputeApertureFlux", doComputeApertureFlux, radius, position, color
         );
     }
 
@@ -122,8 +124,8 @@ public:
         lsst::geom::Point2D const& position,
         image::Color const& color
     ) const override {
-        PYBIND11_OVERLOAD_PURE_NAME(
-            geom::ellipses::Quadrupole, Base, "_doComputeShape", doComputeShape, position, color
+        NB_OVERRIDE_PURE_NAME(
+            "_doComputeShape", doComputeShape, position, color
         );
     }
 
@@ -131,8 +133,8 @@ public:
         lsst::geom::Point2D const& position,
         image::Color const& color
     ) const override {
-        PYBIND11_OVERLOAD_PURE_NAME(
-            lsst::geom::Box2I, Base, "_doComputeBBox", doComputeBBox, position, color
+        NB_OVERRIDE_PURE_NAME(
+            "_doComputeBBox", doComputeBBox, position, color
         );
     }
 };

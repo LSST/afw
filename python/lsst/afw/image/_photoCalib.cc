@@ -21,13 +21,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
-#include "pybind11/stl.h"
+#include "nanobind/nanobind.h"
+#include "nanobind/stl/vector.h"
 #include "lsst/cpputils/python.h"
 
 #include <memory>
 
-#include "ndarray/pybind11.h"
+#include "ndarray/nanobind.h"
 
 #include "lsst/cpputils/python.h"
 
@@ -38,8 +38,8 @@
 #include "lsst/afw/typehandling/Storable.h"
 #include "lsst/afw/image/PhotoCalib.h"
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+namespace nb = nanobind;
+using namespace nanobind::literals;
 
 namespace lsst {
 namespace afw {
@@ -47,11 +47,11 @@ namespace image {
 namespace {
 
 void declareMeasurement(lsst::cpputils::python::WrapperCollection &wrappers) {
-    wrappers.wrapType(py::class_<Measurement, std::shared_ptr<Measurement>>(wrappers.module, "Measurement"),
+    wrappers.wrapType(nb::class_<Measurement>(wrappers.module, "Measurement"),
                       [](auto &mod, auto &cls) {
-                          cls.def(py::init<double, double>(), "value"_a, "error"_a);
-                          cls.def_readonly("value", &Measurement::value);
-                          cls.def_readonly("error", &Measurement::error);
+                          cls.def(nb::init<double, double>(), "value"_a, "error"_a);
+                          cls.def_ro("value", &Measurement::value);
+                          cls.def_ro("error", &Measurement::error);
 
                           cpputils::python::addOutputOp(cls, "__str__");
                           cls.def("__repr__", [](Measurement const &self) {
@@ -64,16 +64,16 @@ void declareMeasurement(lsst::cpputils::python::WrapperCollection &wrappers) {
 
 void declarePhotoCalib(lsst::cpputils::python::WrapperCollection &wrappers) {
     wrappers.wrapType(
-            py::class_<PhotoCalib, std::shared_ptr<PhotoCalib>, typehandling::Storable>(wrappers.module,
+            nb::class_<PhotoCalib, typehandling::Storable>(wrappers.module,
                                                                                         "PhotoCalib"),
             [](auto &mod, auto &cls) {
                 /* Constructors */
-                cls.def(py::init<>());
-                cls.def(py::init<double, double, lsst::geom::Box2I>(), "calibrationMean"_a,
+                cls.def(nb::init<>());
+                cls.def(nb::init<double, double, lsst::geom::Box2I>(), "calibrationMean"_a,
                         "calibrationErr"_a = 0.0, "bbox"_a = lsst::geom::Box2I());
-                cls.def(py::init<std::shared_ptr<afw::math::BoundedField>, double>(), "calibration"_a,
+                cls.def(nb::init<std::shared_ptr<afw::math::BoundedField>, double>(), "calibration"_a,
                         "calibrationErr"_a = 0.0);
-                cls.def(py::init<double, double, std::shared_ptr<afw::math::BoundedField>, bool>(),
+                cls.def(nb::init<double, double, std::shared_ptr<afw::math::BoundedField>, bool>(),
                         "calibrationMean"_a, "calibrationErr"_a, "calibration"_a, "isConstant"_a);
 
                 table::io::python::addPersistableMethods<PhotoCalib>(cls);
@@ -152,17 +152,17 @@ void declarePhotoCalib(lsst::cpputils::python::WrapperCollection &wrappers) {
 
                 /* from magnitude. */
                 cls.def("magnitudeToInstFlux",
-                        py::overload_cast<double, lsst::geom::Point<double, 2> const &>(
-                                &PhotoCalib::magnitudeToInstFlux, py::const_),
+                        nb::overload_cast<double, lsst::geom::Point<double, 2> const &>(
+                                &PhotoCalib::magnitudeToInstFlux, nb::const_),
                         "instFlux"_a, "point"_a);
                 cls.def("magnitudeToInstFlux",
-                        py::overload_cast<double>(&PhotoCalib::magnitudeToInstFlux, py::const_),
+                        nb::overload_cast<double>(&PhotoCalib::magnitudeToInstFlux, nb::const_),
                         "instFlux"_a);
 
                 /* utilities */
                 cls.def("getCalibrationMean", &PhotoCalib::getCalibrationMean);
                 cls.def("getCalibrationErr", &PhotoCalib::getCalibrationErr);
-                cls.def_property_readonly("_isConstant", &PhotoCalib::isConstant);
+                cls.def_prop_ro("_isConstant", &PhotoCalib::isConstant);
                 cls.def("getInstFluxAtZeroMagnitude", &PhotoCalib::getInstFluxAtZeroMagnitude);
                 cls.def("getLocalCalibration", &PhotoCalib::getLocalCalibration, "point"_a);
 
@@ -175,19 +175,25 @@ void declarePhotoCalib(lsst::cpputils::python::WrapperCollection &wrappers) {
                         "includeScaleUncertainty"_a = true);
 
                 cls.def("calibrateCatalog",
-                        py::overload_cast<afw::table::SourceCatalog const &,
+                        nb::overload_cast<afw::table::SourceCatalog const &,
                                           std::vector<std::string> const &>(&PhotoCalib::calibrateCatalog,
-                                                                            py::const_),
+                                                                            nb::const_),
                         "maskedImage"_a, "fluxFields"_a);
                 cls.def("calibrateCatalog",
-                        py::overload_cast<afw::table::SourceCatalog const &>(&PhotoCalib::calibrateCatalog,
-                                                                             py::const_),
+                        nb::overload_cast<afw::table::SourceCatalog const &>(&PhotoCalib::calibrateCatalog,
+                                                                             nb::const_),
                         "maskedImage"_a);
 
                 /* Operators */
+<<<<<<< HEAD
                 cls.def("__eq__", &PhotoCalib::operator==, py::is_operator());
                 cls.def("__ne__", &PhotoCalib::operator!=, py::is_operator());
                 cpputils::python::addOutputOp(cls, "__str__");
+=======
+                cls.def("__eq__", &PhotoCalib::operator==, nb::is_operator());
+                cls.def("__ne__", &PhotoCalib::operator!=, nb::is_operator());
+                utils::python::addOutputOp(cls, "__str__");
+>>>>>>> fc01b5209 (Initial nanobind migration)
                 cls.def("__repr__", [](PhotoCalib const &self) {
                     std::ostringstream os;
                     os << "PhotoCalib(" << self << ")";
@@ -200,10 +206,10 @@ void declareCalib(lsst::cpputils::python::WrapperCollection &wrappers) {
     wrappers.wrap([](auto &mod) {
         /* Utility functions */
         mod.def("makePhotoCalibFromMetadata",
-                py::overload_cast<daf::base::PropertySet &, bool>(makePhotoCalibFromMetadata), "metadata"_a,
+                nb::overload_cast<daf::base::PropertySet &, bool>(makePhotoCalibFromMetadata), "metadata"_a,
                 "strip"_a = false);
         mod.def("makePhotoCalibFromCalibZeroPoint",
-                py::overload_cast<double, double>(makePhotoCalibFromCalibZeroPoint), "instFluxMag0"_a,
+                nb::overload_cast<double, double>(makePhotoCalibFromCalibZeroPoint), "instFluxMag0"_a,
                 "instFluxMag0Err"_a = false);
     });
 }

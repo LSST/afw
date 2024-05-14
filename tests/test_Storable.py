@@ -206,6 +206,8 @@ class ExposureStorableBlobTestSuite(lsst.utils.tests.TestCase):
         # Extra components must be ALL CAPS for fits storage.
         im.getInfo().setComponent("BLOB", self.blob)
         with lsst.utils.tests.getTempFilePath(".fits") as tmpFile:
+            print('-------------------', tmpFile)
+            print(type(tmpFile))
             im.writeFits(tmpFile)
 
             newIm = ExposureF(tmpFile)

@@ -185,6 +185,20 @@ std::shared_ptr<TransformMap const> TransformMap::make(
     );
 }
 
+void TransformMap::make(
+        TransformMap *transformMap,
+        CameraSys const & reference,
+        Transforms const & transforms
+) {
+    std::vector<Connection> connections;
+    connections.reserve(transforms.size());
+    for (auto const & pair : transforms) {
+        connections.push_back(Connection{pair.second, reference, pair.first});
+    }
+    // We can't use make_shared because TransformMap ctor is private.
+    new (transformMap) TransformMap(standardizeConnections(reference, std::move(connections)));
+}
+
 std::shared_ptr<TransformMap const> TransformMap::make(
     CameraSys const &reference,
     std::vector<Connection> const & connections
@@ -195,6 +209,14 @@ std::shared_ptr<TransformMap const> TransformMap::make(
     );
 }
 
+void TransformMap::make(
+        TransformMap *transformMap,
+        CameraSys const &reference,
+        std::vector<Connection> const & connections
+) {
+    // We can't use make_shared because TransformMap ctor is private.
+    new (transformMap) TransformMap(standardizeConnections(reference, connections));
+}
 
 // All resources owned by value or by smart pointer
 TransformMap::~TransformMap() noexcept = default;

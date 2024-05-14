@@ -21,12 +21,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
+#include "nanobind/nanobind.h"
 
 #include "lsst/cpputils/python.h"
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+namespace nb = nanobind;
+using namespace nanobind::literals;
 
 namespace lsst {
 namespace afw {
@@ -38,7 +38,7 @@ void wrapGenericMap(cpputils::python::WrapperCollection& wrappers);
 void wrapStorable(cpputils::python::WrapperCollection& wrappers);
 void wrapSimpleGenericMap(cpputils::python::WrapperCollection& wrappers);
 
-PYBIND11_MODULE(_typehandling, mod) {
+NB_MODULE(_typehandling, mod) {
     WrapperCollection w(mod, "lsst.afw.typehandling");
     wrapStorable(w);
     wrapGenericMap(w);

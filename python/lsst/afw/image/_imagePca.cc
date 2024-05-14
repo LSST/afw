@@ -21,15 +21,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
-#include "pybind11/stl.h"
+#include "nanobind/nanobind.h"
+#include "nanobind/stl/vector.h"
 #include "lsst/cpputils/python.h"
 
 #include "lsst/afw/image/ImagePca.h"
 
-namespace py = pybind11;
+namespace nb = nanobind;
 
-using namespace py::literals;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
@@ -41,12 +41,12 @@ template <typename ImageT>
 static void declareImagePca(lsst::cpputils::python::WrapperCollection &wrappers, std::string const &suffix) {
     std::string name = "ImagePca" + suffix;
     wrappers.wrapType(
-            py::class_<ImagePca<ImageT>, std::shared_ptr<ImagePca<ImageT>>>(wrappers.module, name.c_str()),
+            nb::class_<ImagePca<ImageT>>(wrappers.module, name.c_str()),
             [](auto &mod, auto &cls) {
-                //  py::class_<ImagePca<ImageT>, std::shared_ptr<ImagePca<ImageT>>> cls(mod, ("ImagePca" +
+                //  nb::class_<ImagePca<ImageT>, std::shared_ptr<ImagePca<ImageT>>> cls(mod, ("ImagePca" +
                 //  suffix).c_str());
 
-                cls.def(py::init<bool>(), "constantWeight"_a = true);
+                cls.def(nb::init<bool>(), "constantWeight"_a = true);
 
                 cls.def("addImage", &ImagePca<ImageT>::addImage, "img"_a, "flux"_a = 0.0);
                 cls.def("getImageList", &ImagePca<ImageT>::getImageList);

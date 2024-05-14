@@ -21,26 +21,27 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
-#include "pybind11/stl.h"
-#include "pybind11/numpy.h"
+#include "nanobind/nanobind.h"
+#include "nanobind/stl/vector.h"
+#include "nanobind/ndarray.h"
 #include <lsst/cpputils/python.h>
 
 #include "lsst/afw/geom/Span.h"
 #include "lsst/afw/geom/SpanPixelIterator.h"
+#include <lsst/sphgeom/python.h>
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+namespace nb = nanobind;
+using namespace nanobind::literals;
 
 namespace lsst {
 namespace afw {
 namespace geom {
 namespace {
 
-using PySpan = py::class_<Span, std::shared_ptr<Span>>;
+using PySpan = nb::class_<Span>;
 
 // A thin wrapper around SpanPixelIterator.
-// Unfortunately we cannot use py::make_iterator here, as we normally
+// Unfortunately we cannot use nb::make_iterator here, as we normally
 // should, because for some reason the return values then all refer
 // to the last element.
 class SpanIterator {
@@ -48,7 +49,7 @@ public:
     SpanIterator(const Span &s) : _it{s.begin()}, _end{s.end()} {};
     lsst::geom::Point2I next() {
         if (_it == _end) {
-            throw py::stop_iteration();
+            throw nb::stop_iteration();
         }
         return *_it++;
     };
@@ -59,7 +60,7 @@ private:
 };
 
 static void declareSpanIterator(lsst::cpputils::python::WrapperCollection &wrappers) {
-    wrappers.wrapType(py::class_<SpanIterator>(wrappers.module, "SpanIterator"), [](auto &mod, auto &cls) {
+    wrappers.wrapType(nb::class_<SpanIterator>(wrappers.module, "SpanIterator"), [](auto &mod, auto &cls) {
         cls.def("__iter__", [](SpanIterator &it) -> SpanIterator & { return it; });
         cls.def("__next__", &SpanIterator::next);
     });
@@ -67,12 +68,12 @@ static void declareSpanIterator(lsst::cpputils::python::WrapperCollection &wrapp
 
 void declareSpan(lsst::cpputils::python::WrapperCollection &wrappers) {
     wrappers.wrapType(PySpan(wrappers.module, "Span"), [](auto &mod, auto &cls) {
-        cls.def(py::init<int, int, int>());
-        cls.def(py::init<Span::Interval const &, int>());
-        cls.def(py::init<>());
-        cls.def("__eq__", &Span::operator==, py::is_operator());
-        cls.def("__ne__", &Span::operator!=, py::is_operator());
-        cls.def("__lt__", &Span::operator<, py::is_operator());
+        cls.def(nb::init<int, int, int>());
+        cls.def(nb::init<Span::Interval const &, int>());
+        cls.def(nb::init<>());
+        cls.def("__eq__", &Span::operator==, nb::is_operator());
+        cls.def("__ne__", &Span::operator!=, nb::is_operator());
+        cls.def("__lt__", &Span::operator<, nb::is_operator());
         cls.def("__len__", &Span::getWidth);
         cls.def("__str__", &Span::toString);
         // unlike most iterators, SpanPixelIterator doesn't actually refer
@@ -91,7 +92,7 @@ void declareSpan(lsst::cpputils::python::WrapperCollection &wrappers) {
         cls.def("getMin", &Span::getMin);
         cls.def("getMax", &Span::getMax);
         cls.def("contains", (bool (Span::*)(int) const) & Span::contains);
-        cls.def("contains", py::vectorize((bool (Span::*)(int, int) const)&Span::contains), "x"_a, "y"_a);
+        cls.def("contains", nb::vectorize((bool (Span::*)(int, int) const)&Span::contains), "x"_a, "y"_a);
         cls.def("contains", (bool (Span::*)(lsst::geom::Point2I const &) const) & Span::contains);
         cls.def("isEmpty", &Span::isEmpty);
         cls.def("toString", &Span::toString);

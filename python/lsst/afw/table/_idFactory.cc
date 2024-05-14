@@ -21,19 +21,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
+#include "nanobind/nanobind.h"
 
 #include "lsst/cpputils/python.h"
 #include "lsst/afw/table/IdFactory.h"
 
-namespace py = pybind11;
-using namespace py::literals;
+namespace nb = nanobind;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
 namespace table {
 
-using PyIdFactory = py::class_<IdFactory, std::shared_ptr<IdFactory>>;
+using PyIdFactory = nb::class_<IdFactory>;
 
 void wrapIdFactory(cpputils::python::WrapperCollection& wrappers) {
     wrappers.wrapType(PyIdFactory(wrappers.module, "IdFactory"), [](auto& mod, auto& cls) {

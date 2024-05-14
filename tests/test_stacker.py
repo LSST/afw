@@ -217,7 +217,7 @@ class StackTestCase(lsst.utils.tests.TestCase):
                 afwDisplay.Display(frame=i).mtv(mimg, title=str(i))
 
         mimgStack = afwMath.statisticsStack(mimgVec, afwMath.MEAN, sctrl)
-
+        print("-----------------", type(mimgStack))
         if display:
             i += 1
             afwDisplay.Display(frame=i).mtv(mimgStack, title="Stack")
@@ -228,9 +228,9 @@ class StackTestCase(lsst.utils.tests.TestCase):
         #
         sctrl = afwMath.StatisticsControl()
         sctrl.setAndMask(afwImage.Mask.getPlaneBitMask("EDGE"))
-
+        print("fffffffffffffffff", type(mimgStack), type(afwMath.MIN | afwMath.MAX), type(sctrl))
         stats = afwMath.makeStatistics(
-            mimgStack, afwMath.MIN | afwMath.MAX, sctrl)
+            mimgStack, (afwMath.MIN | afwMath.MAX).value, sctrl)
         self.assertEqual(stats.getValue(afwMath.MIN), val)
         self.assertEqual(stats.getValue(afwMath.MAX), val)
         #

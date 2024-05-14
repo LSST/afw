@@ -59,7 +59,7 @@ FilterLabel makeTestFilterLabel(bool hasBand, std::string const &band, bool hasP
 
 FilterLabel::FilterLabel(bool hasBand, std::string const &band, bool hasPhysical, std::string const &physical)
         : _hasBand(hasBand), _hasPhysical(hasPhysical), _band(band), _physical(physical) {
-    // Guard against changes to factory methods or pybind11 keyword constructor
+    // Guard against changes to factory methods or nanobind keyword constructor
     if (!hasBand && !hasPhysical) {
         throw LSST_EXCEPT(pex::exceptions::LogicError, "FilterLabel must have at least one label.");
     }
@@ -73,6 +73,18 @@ FilterLabel FilterLabel::fromBand(std::string const &band) { return FilterLabel(
 
 FilterLabel FilterLabel::fromPhysical(std::string const &physical) {
     return FilterLabel(false, ""s, true, physical);
+}
+
+void FilterLabel::fromBandPhysical(FilterLabel *filterLabel, std::string const &band, std::string const &physical) {
+    new (filterLabel) FilterLabel(true, band, true, physical);
+}
+
+void FilterLabel::fromBand(FilterLabel *filterLabel, std::string const &band) {
+    new (filterLabel) FilterLabel(true, band, false, ""s);
+}
+
+void FilterLabel::fromPhysical(FilterLabel *filterLabel, std::string const &physical) {
+    new (filterLabel) FilterLabel(false, ""s, true, physical);
 }
 
 // defaults give the right behavior with bool-and-string implementation

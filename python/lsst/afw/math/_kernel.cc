@@ -20,24 +20,24 @@
  * see <https://www.lsstcorp.org/LegalNotices/>.
  */
 
-#include <pybind11/pybind11.h>
+#include <nanobind/nanobind.h>
 #include <lsst/cpputils/python.h>
 
-#include <pybind11/stl.h>
+#include <nanobind/stl/vector.h>
 
 #include "lsst/afw/math/Kernel.h"
 #include "lsst/afw/table/io/python.h"  // for addPersistableMethods
 
-namespace py = pybind11;
+namespace nb = nanobind;
 
-using namespace py::literals;
+using namespace nb::literals;
 
 using namespace lsst::afw::math;
 namespace lsst {
 namespace afw {
 namespace math {
 void wrapKernel(lsst::cpputils::python::WrapperCollection &wrappers) {
-    using PyKernel = py::class_<Kernel, std::shared_ptr<Kernel>>;
+    using PyKernel = nb::class_<Kernel>;
 
     wrappers.addSignatureDependency("lsst.afw.table");
     wrappers.addSignatureDependency("lsst.afw.table.io");
@@ -78,11 +78,11 @@ void wrapKernel(lsst::cpputils::python::WrapperCollection &wrappers) {
         cls.def("getCacheSize", &Kernel::getCacheSize);
     });
 
-    using PyFixedKernel = py::class_<FixedKernel, std::shared_ptr<FixedKernel>, Kernel>;
+    using PyFixedKernel = nb::class_<FixedKernel, Kernel>;
     wrappers.wrapType(PyFixedKernel(wrappers.module, "FixedKernel"), [](auto &mod, auto &cls) {
-        cls.def(py::init<>());
-        cls.def(py::init<lsst::afw::image::Image<Kernel::Pixel> const &>(), "image"_a);
-        cls.def(py::init<lsst::afw::math::Kernel const &, lsst::geom::Point2D const &>(), "kernel"_a,
+        cls.def(nb::init<>());
+        cls.def(nb::init<lsst::afw::image::Image<Kernel::Pixel> const &>(), "image"_a);
+        cls.def(nb::init<lsst::afw::math::Kernel const &, lsst::geom::Point2D const &>(), "kernel"_a,
                 "pos"_a);
         cls.def("clone", &FixedKernel::clone);
         cls.def("resized", &FixedKernel::resized, "width"_a, "height"_a);
@@ -91,16 +91,16 @@ void wrapKernel(lsst::cpputils::python::WrapperCollection &wrappers) {
         cls.def("isPersistable", &FixedKernel::isPersistable);
     });
 
-    using PyAnalyticKernel = py::class_<AnalyticKernel, std::shared_ptr<AnalyticKernel>, Kernel>;
+    using PyAnalyticKernel = nb::class_<AnalyticKernel, Kernel>;
     wrappers.wrapType(PyAnalyticKernel(wrappers.module, "AnalyticKernel"), [](auto &mod, auto &cls) {
-        cls.def(py::init<>());
-        // Workaround for NullSpatialFunction and py::arg not playing well with Citizen (TODO: no longer
+        cls.def(nb::init<>());
+        // Workaround for NullSpatialFunction and nb::arg not playing well with Citizen (TODO: no longer
         // needed?)
-        cls.def(py::init<int, int, AnalyticKernel::KernelFunction const &>(), "width"_a, "height"_a,
+        cls.def(nb::init<int, int, AnalyticKernel::KernelFunction const &>(), "width"_a, "height"_a,
                 "kernelFunction"_a);
-        cls.def(py::init<int, int, AnalyticKernel::KernelFunction const &, Kernel::SpatialFunction const &>(),
+        cls.def(nb::init<int, int, AnalyticKernel::KernelFunction const &, Kernel::SpatialFunction const &>(),
                 "width"_a, "height"_a, "kernelFunction"_a, "spatialFunction"_a);
-        cls.def(py::init<int, int, AnalyticKernel::KernelFunction const &,
+        cls.def(nb::init<int, int, AnalyticKernel::KernelFunction const &,
                          std::vector<Kernel::SpatialFunctionPtr> const &>(),
                 "width"_a, "height"_a, "kernelFunction"_a, "spatialFunctionList"_a);
         cls.def("clone", &AnalyticKernel::clone);
@@ -114,10 +114,10 @@ void wrapKernel(lsst::cpputils::python::WrapperCollection &wrappers) {
     });
 
     using PyDeltaFunctionKernel =
-            py::class_<DeltaFunctionKernel, std::shared_ptr<DeltaFunctionKernel>, Kernel>;
+            nb::class_<DeltaFunctionKernel, Kernel>;
     wrappers.wrapType(
             PyDeltaFunctionKernel(wrappers.module, "DeltaFunctionKernel"), [](auto &mod, auto &cls) {
-                cls.def(py::init<int, int, lsst::geom::Point2I const &>(), "width"_a, "height"_a, "point"_a);
+                cls.def(nb::init<int, int, lsst::geom::Point2I const &>(), "width"_a, "height"_a, "point"_a);
                 cls.def("clone", &DeltaFunctionKernel::clone);
                 cls.def("resized", &DeltaFunctionKernel::resized, "width"_a, "height"_a);
                 cls.def("getPixel", &DeltaFunctionKernel::getPixel);
@@ -126,15 +126,15 @@ void wrapKernel(lsst::cpputils::python::WrapperCollection &wrappers) {
             });
 
     using PyLinearCombinationKernel =
-            py::class_<LinearCombinationKernel, std::shared_ptr<LinearCombinationKernel>, Kernel>;
+            nb::class_<LinearCombinationKernel, Kernel>;
     wrappers.wrapType(
             PyLinearCombinationKernel(wrappers.module, "LinearCombinationKernel"), [](auto &mod, auto &cls) {
-                cls.def(py::init<>());
-                cls.def(py::init<KernelList const &, std::vector<double> const &>(), "kernelList"_a,
+                cls.def(nb::init<>());
+                cls.def(nb::init<KernelList const &, std::vector<double> const &>(), "kernelList"_a,
                         "kernelParameters"_a);
-                cls.def(py::init<KernelList const &, Kernel::SpatialFunction const &>(), "kernelList"_a,
+                cls.def(nb::init<KernelList const &, Kernel::SpatialFunction const &>(), "kernelList"_a,
                         "spatialFunction"_a);
-                cls.def(py::init<KernelList const &, std::vector<Kernel::SpatialFunctionPtr> const &>(),
+                cls.def(nb::init<KernelList const &, std::vector<Kernel::SpatialFunctionPtr> const &>(),
                         "kernelList"_a, "spatialFunctionList"_a);
                 cls.def("clone", &LinearCombinationKernel::clone);
                 cls.def("resized", &LinearCombinationKernel::resized, "width"_a, "height"_a);
@@ -149,18 +149,18 @@ void wrapKernel(lsst::cpputils::python::WrapperCollection &wrappers) {
                 cls.def("isPersistable", &LinearCombinationKernel::isPersistable);
             });
 
-    using PySeparableKernel = py::class_<SeparableKernel, std::shared_ptr<SeparableKernel>, Kernel>;
+    using PySeparableKernel = nb::class_<SeparableKernel, Kernel>;
     wrappers.wrapType(PySeparableKernel(wrappers.module, "SeparableKernel"), [](auto &mod, auto &cls) {
-        cls.def(py::init<>());
-        // Workaround for NullSpatialFunction and py::arg not playing well with Citizen (TODO: no longer
+        cls.def(nb::init<>());
+        // Workaround for NullSpatialFunction and nb::arg not playing well with Citizen (TODO: no longer
         // needed?)
-        cls.def(py::init<int, int, SeparableKernel::KernelFunction const &,
+        cls.def(nb::init<int, int, SeparableKernel::KernelFunction const &,
                          SeparableKernel::KernelFunction const &>(),
                 "width"_a, "height"_a, "kernelColFunction"_a, "kernelRowFunction"_a);
-        cls.def(py::init<int, int, SeparableKernel::KernelFunction const &,
+        cls.def(nb::init<int, int, SeparableKernel::KernelFunction const &,
                          SeparableKernel::KernelFunction const &, Kernel::SpatialFunction const &>(),
                 "width"_a, "height"_a, "kernelColFunction"_a, "kernelRowFunction"_a, "spatialFunction"_a);
-        cls.def(py::init<int, int, SeparableKernel::KernelFunction const &,
+        cls.def(nb::init<int, int, SeparableKernel::KernelFunction const &,
                          SeparableKernel::KernelFunction const &,
                          std::vector<Kernel::SpatialFunctionPtr> const &>(),
                 "width"_a, "height"_a, "kernelColFunction"_a, "kernelRowFunction"_a, "spatialFunctionList"_a);

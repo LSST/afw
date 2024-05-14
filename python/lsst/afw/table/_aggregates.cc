@@ -21,11 +21,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
-#include "pybind11/eigen.h"
-#include "pybind11/stl.h"
+#include "nanobind/nanobind.h"
+#include "nanobind/eigen/dense.h"
+#include "nanobind/stl/vector.h"
 
-#include "ndarray/pybind11.h"
+#include "ndarray/nanobind.h"
 
 #include "lsst/afw/geom/ellipses/Quadrupole.h"
 
@@ -39,8 +39,8 @@
 #include "lsst/afw/table/FunctorKey.h"
 #include "lsst/afw/table/aggregates.h"
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+namespace nb = nanobind;
+using namespace nanobind::literals;
 
 namespace lsst {
 namespace afw {
@@ -54,33 +54,33 @@ namespace {
 // define a CRTP interface in C++ and in Python that's just duck-typing.
 
 template <typename T>
-using PyPointKey = py::class_<PointKey<T>, std::shared_ptr<PointKey<T>>>;
+using PyPointKey = nb::class_<PointKey<T>>;
 
 template <typename T>
-using PyPoint3Key = py::class_<Point3Key<T>, std::shared_ptr<Point3Key<T>>>;
+using PyPoint3Key = nb::class_<Point3Key<T>>;
 
 template <typename Box>
-using PyBoxKey = py::class_<BoxKey<Box>, std::shared_ptr<BoxKey<Box>>>;
+using PyBoxKey = nb::class_<BoxKey<Box>>;
 
-using PyCoordKey = py::class_<CoordKey, std::shared_ptr<CoordKey>>;
+using PyCoordKey = nb::class_<CoordKey>;
 
-using PyQuadrupoleKey = py::class_<QuadrupoleKey, std::shared_ptr<QuadrupoleKey>>;
+using PyQuadrupoleKey = nb::class_<QuadrupoleKey>;
 
-using PyEllipseKey = py::class_<EllipseKey, std::shared_ptr<EllipseKey>>;
+using PyEllipseKey = nb::class_<EllipseKey>;
 
 template <typename T, int N>
 using PyCovarianceMatrixKey =
-        py::class_<CovarianceMatrixKey<T, N>, std::shared_ptr<CovarianceMatrixKey<T, N>>>;
+        nb::class_<CovarianceMatrixKey<T, N>>;
 
 template <typename T>
 static void declarePointKey(WrapperCollection &wrappers, std::string const &suffix) {
     wrappers.wrapType(
             PyPointKey<T>(wrappers.module, ("Point" + suffix + "Key").c_str()), [](auto &mod, auto &cls) {
-                cls.def(py::init<>());
-                cls.def(py::init<Key<T> const &, Key<T> const &>(), "x"_a, "y"_a);
-                cls.def(py::init<SubSchema const &>());
-                cls.def("__eq__", &PointKey<T>::operator==, py::is_operator());
-                cls.def("__ne__", &PointKey<T>::operator!=, py::is_operator());
+                cls.def(nb::init<>());
+                cls.def(nb::init<Key<T> const &, Key<T> const &>(), "x"_a, "y"_a);
+                cls.def(nb::init<SubSchema const &>());
+                cls.def("__eq__", &PointKey<T>::operator==, nb::is_operator());
+                cls.def("__ne__", &PointKey<T>::operator!=, nb::is_operator());
                 cls.def("getX", &PointKey<T>::getX);
                 cls.def("getY", &PointKey<T>::getY);
                 cls.def("isValid", &PointKey<T>::isValid);
@@ -95,11 +95,11 @@ template <typename T>
 static void declarePoint3Key(WrapperCollection &wrappers, std::string const &suffix) {
     wrappers.wrapType(
             PyPoint3Key<T>(wrappers.module, ("Point3" + suffix + "Key").c_str()), [](auto &mod, auto &cls) {
-                cls.def(py::init<>());
-                cls.def(py::init<Key<T> const &, Key<T> const &, Key<T> const &>(), "x"_a, "y"_a, "z"_a);
-                cls.def(py::init<SubSchema const &>());
-                cls.def("__eq__", &Point3Key<T>::operator==, py::is_operator());
-                cls.def("__ne__", &Point3Key<T>::operator!=, py::is_operator());
+                cls.def(nb::init<>());
+                cls.def(nb::init<Key<T> const &, Key<T> const &, Key<T> const &>(), "x"_a, "y"_a, "z"_a);
+                cls.def(nb::init<SubSchema const &>());
+                cls.def("__eq__", &Point3Key<T>::operator==, nb::is_operator());
+                cls.def("__ne__", &Point3Key<T>::operator!=, nb::is_operator());
                 cls.def("getX", &Point3Key<T>::getX);
                 cls.def("getY", &Point3Key<T>::getY);
                 cls.def("isValid", &Point3Key<T>::isValid);
@@ -115,11 +115,11 @@ static void declareBoxKey(WrapperCollection &wrappers, std::string const &suffix
     wrappers.wrapType(
             PyBoxKey<Box>(wrappers.module, ("Box" + suffix + "Key").c_str()), [](auto &mod, auto &cls) {
                 using Element = typename Box::Element;
-                cls.def(py::init<>());
-                cls.def(py::init<PointKey<Element> const &, PointKey<Element> const &>(), "min"_a, "max"_a);
-                cls.def(py::init<SubSchema const &>());
-                cls.def("__eq__", &BoxKey<Box>::operator==, py::is_operator());
-                cls.def("__ne__", &BoxKey<Box>::operator!=, py::is_operator());
+                cls.def(nb::init<>());
+                cls.def(nb::init<PointKey<Element> const &, PointKey<Element> const &>(), "min"_a, "max"_a);
+                cls.def(nb::init<SubSchema const &>());
+                cls.def("__eq__", &BoxKey<Box>::operator==, nb::is_operator());
+                cls.def("__ne__", &BoxKey<Box>::operator!=, nb::is_operator());
                 cls.def("getMin", &BoxKey<Box>::getMin);
                 cls.def("getMax", &BoxKey<Box>::getMax);
                 cls.def("isValid", &BoxKey<Box>::isValid);
@@ -132,11 +132,11 @@ static void declareBoxKey(WrapperCollection &wrappers, std::string const &suffix
 
 static void declareCoordKey(WrapperCollection &wrappers) {
     wrappers.wrapType(PyCoordKey(wrappers.module, "CoordKey"), [](auto &mod, auto &cls) {
-        cls.def(py::init<>());
-        cls.def(py::init<Key<lsst::geom::Angle>, Key<lsst::geom::Angle>>(), "ra"_a, "dec"_a);
-        cls.def(py::init<SubSchema const &>());
-        cls.def("__eq__", &CoordKey::operator==, py::is_operator());
-        cls.def("__ne__", &CoordKey::operator!=, py::is_operator());
+        cls.def(nb::init<>());
+        cls.def(nb::init<Key<lsst::geom::Angle>, Key<lsst::geom::Angle>>(), "ra"_a, "dec"_a);
+        cls.def(nb::init<SubSchema const &>());
+        cls.def("__eq__", &CoordKey::operator==, nb::is_operator());
+        cls.def("__ne__", &CoordKey::operator!=, nb::is_operator());
         cls.def_static("addFields", &CoordKey::addFields, "schema"_a, "name"_a, "doc"_a);
         cls.def_static("addErrorFields", &CoordKey::addErrorFields, "schema"_a);
         cls.def_static("getErrorKey", &CoordKey::getErrorKey, "schema"_a);
@@ -150,12 +150,12 @@ static void declareCoordKey(WrapperCollection &wrappers) {
 
 static void declareQuadrupoleKey(WrapperCollection &wrappers) {
     wrappers.wrapType(PyQuadrupoleKey(wrappers.module, "QuadrupoleKey"), [](auto &mod, auto &cls) {
-        cls.def(py::init<>());
-        cls.def(py::init<Key<double> const &, Key<double> const &, Key<double> const &>(), "ixx"_a, "iyy"_a,
+        cls.def(nb::init<>());
+        cls.def(nb::init<Key<double> const &, Key<double> const &, Key<double> const &>(), "ixx"_a, "iyy"_a,
                 "ixy"_a);
-        cls.def(py::init<SubSchema const &>());
-        cls.def("__eq__", &QuadrupoleKey::operator==, py::is_operator());
-        cls.def("__nq__", &QuadrupoleKey::operator!=, py::is_operator());
+        cls.def(nb::init<SubSchema const &>());
+        cls.def("__eq__", &QuadrupoleKey::operator==, nb::is_operator());
+        cls.def("__nq__", &QuadrupoleKey::operator!=, nb::is_operator());
         cls.def_static("addFields", &QuadrupoleKey::addFields, "schema"_a, "name"_a, "doc"_a,
                        "coordType"_a = CoordinateType::PIXEL);
         cls.def("getIxx", &QuadrupoleKey::getIxx);
@@ -169,11 +169,11 @@ static void declareQuadrupoleKey(WrapperCollection &wrappers) {
 
 static void declareEllipseKey(WrapperCollection &wrappers) {
     wrappers.wrapType(PyEllipseKey(wrappers.module, "EllipseKey"), [](auto &mod, auto &cls) {
-        cls.def(py::init<>());
-        cls.def(py::init<QuadrupoleKey const &, PointKey<double> const &>(), "qKey"_a, "pKey"_a);
-        cls.def(py::init<SubSchema const &>());
-        cls.def("__eq__", &EllipseKey::operator==, py::is_operator());
-        cls.def("__nq__", &EllipseKey::operator!=, py::is_operator());
+        cls.def(nb::init<>());
+        cls.def(nb::init<QuadrupoleKey const &, PointKey<double> const &>(), "qKey"_a, "pKey"_a);
+        cls.def(nb::init<SubSchema const &>());
+        cls.def("__eq__", &EllipseKey::operator==, nb::is_operator());
+        cls.def("__nq__", &EllipseKey::operator!=, nb::is_operator());
         cls.def_static("addFields", &EllipseKey::addFields, "schema"_a, "name"_a, "doc"_a, "unit"_a);
         cls.def("get", &EllipseKey::get);
         cls.def("set", &EllipseKey::set);
@@ -192,13 +192,13 @@ static void declareCovarianceMatrixKey(WrapperCollection &wrappers, const ::std:
                 using CovarianceKeyArray = std::vector<Key<T>>;
                 using NameArray = std::vector<std::string>;
 
-                cls.def(py::init<>());
+                cls.def(nb::init<>());
                 // Ordering of the next two ctor declaration matters, as a workaround for DM-8580.
-                cls.def(py::init<SubSchema const &, NameArray const &>());
-                cls.def(py::init<ErrKeyArray const &, CovarianceKeyArray const &>(), "err"_a,
+                cls.def(nb::init<SubSchema const &, NameArray const &>());
+                cls.def(nb::init<ErrKeyArray const &, CovarianceKeyArray const &>(), "err"_a,
                         "cov"_a = CovarianceKeyArray());
-                cls.def("__eq__", &CovarianceMatrixKey<T, N>::operator==, py::is_operator());
-                cls.def("__ne__", &CovarianceMatrixKey<T, N>::operator!=, py::is_operator());
+                cls.def("__eq__", &CovarianceMatrixKey<T, N>::operator==, nb::is_operator());
+                cls.def("__ne__", &CovarianceMatrixKey<T, N>::operator!=, nb::is_operator());
                 cls.def_static("addFields",
                                (CovarianceMatrixKey<T, N>(*)(Schema &, std::string const &, NameArray const &,
                                                              std::string const &, bool)) &
@@ -226,7 +226,7 @@ void wrapAggregates(WrapperCollection &wrappers) {
     // TODO: uncomment once afw.geom uses WrapperCollection
     // wrappers.addSignatureDependency("lsst.afw.geom.ellipses");
 
-    wrappers.wrapType(py::enum_<CoordinateType>(wrappers.module, "CoordinateType"), [](auto &mod, auto &enm) {
+    wrappers.wrapType(nb::enum_<CoordinateType>(wrappers.module, "CoordinateType"), [](auto &mod, auto &enm) {
         enm.value("PIXEL", CoordinateType::PIXEL);
         enm.value("CELESTIAL", CoordinateType::CELESTIAL);
         enm.export_values();

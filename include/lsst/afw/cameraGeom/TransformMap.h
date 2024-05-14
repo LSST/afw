@@ -107,6 +107,12 @@ public:
         Transforms const &transforms
     );
 
+    static void make(
+            TransformMap *transformMap,
+            CameraSys const & reference,
+            Transforms const & transforms
+    );
+
     /**
      * Construct a TransformMap from a sequence of Connections.
      *
@@ -125,6 +131,12 @@ public:
     static std::shared_ptr<TransformMap const> make(
         CameraSys const &reference,
         std::vector<Connection> const & connections
+    );
+
+    static void make(
+            TransformMap *transformMap,
+            CameraSys const &reference,
+            std::vector<Connection> const & connections
     );
 
     ///@{

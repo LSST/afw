@@ -21,10 +21,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
+#include <nanobind/nanobind.h>
+#include <nanobind/stl/vector.h>
 
-#include "ndarray/pybind11.h"
+#include "ndarray/nanobind.h"
 
 #include "lsst/cpputils/python.h"
 
@@ -32,8 +32,8 @@
 #include "lsst/afw/detection/FootprintCtrl.h"
 #include "lsst/afw/detection/HeavyFootprint.h"
 
-namespace py = pybind11;
-using namespace py::literals;
+namespace nb = nanobind;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
@@ -47,15 +47,15 @@ template <typename ImagePixelT, typename MaskPixelT = lsst::afw::image::MaskPixe
 void declareHeavyFootprint(WrapperCollection &wrappers, std::string const &suffix) {
     using Class = HeavyFootprint<ImagePixelT>;
     wrappers.wrapType(
-            py::class_<Class, std::shared_ptr<Class>, Footprint>(wrappers.module,
+            nb::class_<Class, Footprint>(wrappers.module,
                                                                  ("HeavyFootprint" + suffix).c_str()),
             [](auto &mod, auto &cls) {
-                cls.def(py::init<Footprint const &,
+                cls.def(nb::init<Footprint const &,
                                  lsst::afw::image::MaskedImage<ImagePixelT, MaskPixelT, VariancePixelT> const
                                          &,
                                  HeavyFootprintCtrl const *>(),
                         "foot"_a, "mimage"_a, "ctrl"_a = nullptr);
-                cls.def(py::init<Footprint const &, HeavyFootprintCtrl const *>(), "foot"_a,
+                cls.def(nb::init<Footprint const &, HeavyFootprintCtrl const *>(), "foot"_a,
                         "ctrl"_a = nullptr);
 
                 cls.def("isHeavy", &Class::isHeavy);

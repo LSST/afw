@@ -21,8 +21,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
-#include "pybind11/stl.h"
+#include "nanobind/nanobind.h"
+#include "nanobind/stl/vector.h"
 
 #include "lsst/cpputils/python.h"
 
@@ -31,8 +31,8 @@
 #include "lsst/afw/table/Source.h"
 #include "lsst/afw/table/Match.h"
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+namespace nb = nanobind;
+using namespace nanobind::literals;
 
 namespace lsst {
 namespace afw {
@@ -50,16 +50,16 @@ void declareMatch2(WrapperCollection &wrappers, std::string const &prefix) {
     using MatchList = std::vector<Match<typename Catalog1::Record, typename Catalog2::Record>>;
 
     using Class = Match<Record1, Record2>;
-    using PyClass = py::class_<Class, std::shared_ptr<Class>>;
+    using PyClass = nb::class_<Class>;
     wrappers.wrapType(PyClass(wrappers.module, (prefix + "Match").c_str()), [](auto &mod, auto &cls) {
-        cls.def(py::init<>());
-        cls.def(py::init<std::shared_ptr<Record1> const &, std::shared_ptr<Record2> const &, double>(),
+        cls.def(nb::init<>());
+        cls.def(nb::init<std::shared_ptr<Record1> const &, std::shared_ptr<Record2> const &, double>(),
                 "first"_a, "second"_a, "distance"_a);
 
         // struct fields
-        cls.def_readwrite("first", &Match<Record1, Record2>::first);
-        cls.def_readwrite("second", &Match<Record1, Record2>::second);
-        cls.def_readwrite("distance", &Match<Record1, Record2>::distance);
+        cls.def_rw("first", &Match<Record1, Record2>::first);
+        cls.def_rw("second", &Match<Record1, Record2>::second);
+        cls.def_rw("distance", &Match<Record1, Record2>::distance);
     });
 
     // Free Functions
@@ -87,8 +87,8 @@ void declareMatch1(WrapperCollection &wrappers) {
 }  // namespace
 
 void wrapMatch(WrapperCollection &wrappers) {
-    wrappers.wrapType(py::class_<MatchControl>(wrappers.module, "MatchControl"), [](auto &mod, auto &cls) {
-        cls.def(py::init<>());
+    wrappers.wrapType(nb::class_<MatchControl>(wrappers.module, "MatchControl"), [](auto &mod, auto &cls) {
+        cls.def(nb::init<>());
         LSST_DECLARE_CONTROL_FIELD(cls, MatchControl, findOnlyClosest);
         LSST_DECLARE_CONTROL_FIELD(cls, MatchControl, symmetricMatch);
         LSST_DECLARE_CONTROL_FIELD(cls, MatchControl, includeMismatches);

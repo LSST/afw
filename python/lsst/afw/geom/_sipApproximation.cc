@@ -21,34 +21,35 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
+#include "nanobind/nanobind.h"
 #include <lsst/cpputils/python.h>
-#include "pybind11/stl.h"
-#include "pybind11/eigen.h"
+#include "nanobind/stl/vector.h"
+#include "nanobind/stl/unique_ptr.h"
+#include "nanobind/eigen/dense.h"
 
-#include "ndarray/pybind11.h"
+#include "ndarray/nanobind.h"
 
 #include "lsst/afw/geom/SipApproximation.h"
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+namespace nb = nanobind;
+using namespace nanobind::literals;
 
 namespace lsst {
 namespace afw {
 namespace geom {
 namespace {
 
-using PySipApproximation = py::class_<SipApproximation, std::shared_ptr<SipApproximation>>;
+using PySipApproximation = nb::class_<SipApproximation>;
 
 void declareSipApproximation(lsst::cpputils::python::WrapperCollection &wrappers) {
     wrappers.wrapType(PySipApproximation(wrappers.module, "SipApproximation"), [](auto &mod, auto &cls) {
-        cls.def(py::init<std::shared_ptr<TransformPoint2ToPoint2>, lsst::geom::Point2D const &,
+        cls.def(nb::init<std::shared_ptr<TransformPoint2ToPoint2>, lsst::geom::Point2D const &,
                          Eigen::MatrixXd const &, lsst::geom::Box2D const &, lsst::geom::Extent2I const &,
                          int, bool, double>(),
                 "pixelToIwc"_a, "crpix"_a, "cd"_a, "bbox"_a, "gridShape"_a, "order"_a, "useInverse"_a = true,
                 "svdThreshold"_a = -1);
 
-        cls.def(py::init<std::shared_ptr<TransformPoint2ToPoint2>, lsst::geom::Point2D const &,
+        cls.def(nb::init<std::shared_ptr<TransformPoint2ToPoint2>, lsst::geom::Point2D const &,
                          Eigen::MatrixXd const &, lsst::geom::Box2D const &, lsst::geom::Extent2I const &,
                          ndarray::Array<double const, 2> const &, ndarray::Array<double const, 2> const &,
                          ndarray::Array<double const, 2> const &, ndarray::Array<double const, 2> const &,
@@ -61,14 +62,14 @@ void declareSipApproximation(lsst::cpputils::python::WrapperCollection &wrappers
                 std::vector<lsst::geom::Point2D> const &) const;
 
         cls.def("getOrder", &SipApproximation::getOrder);
-        cls.def("getA", py::overload_cast<int, int>(&SipApproximation::getA, py::const_), "p"_a, "q"_a);
-        cls.def("getB", py::overload_cast<int, int>(&SipApproximation::getB, py::const_), "p"_a, "q"_a);
-        cls.def("getAP", py::overload_cast<int, int>(&SipApproximation::getAP, py::const_), "p"_a, "q"_a);
-        cls.def("getBP", py::overload_cast<int, int>(&SipApproximation::getBP, py::const_), "p"_a, "q"_a);
-        cls.def("getA", py::overload_cast<>(&SipApproximation::getA, py::const_));
-        cls.def("getB", py::overload_cast<>(&SipApproximation::getB, py::const_));
-        cls.def("getAP", py::overload_cast<>(&SipApproximation::getAP, py::const_));
-        cls.def("getBP", py::overload_cast<>(&SipApproximation::getBP, py::const_));
+        cls.def("getA", nb::overload_cast<int, int>(&SipApproximation::getA, nb::const_), "p"_a, "q"_a);
+        cls.def("getB", nb::overload_cast<int, int>(&SipApproximation::getB, nb::const_), "p"_a, "q"_a);
+        cls.def("getAP", nb::overload_cast<int, int>(&SipApproximation::getAP, nb::const_), "p"_a, "q"_a);
+        cls.def("getBP", nb::overload_cast<int, int>(&SipApproximation::getBP, nb::const_), "p"_a, "q"_a);
+        cls.def("getA", nb::overload_cast<>(&SipApproximation::getA, nb::const_));
+        cls.def("getB", nb::overload_cast<>(&SipApproximation::getB, nb::const_));
+        cls.def("getAP", nb::overload_cast<>(&SipApproximation::getAP, nb::const_));
+        cls.def("getBP", nb::overload_cast<>(&SipApproximation::getBP, nb::const_));
         cls.def("applyForward", (ScalarTransform)&SipApproximation::applyForward);
         cls.def("applyForward", (VectorTransform)&SipApproximation::applyForward);
         cls.def("applyInverse", (ScalarTransform)&SipApproximation::applyInverse);

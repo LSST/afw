@@ -19,22 +19,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
+#include "nanobind/nanobind.h"
 
 #include "lsst/cpputils/python.h"
 
 #include "lsst/afw/table/io/InputArchive.h"
 #include "lsst/afw/fits.h"
 
-namespace py = pybind11;
-using namespace py::literals;
+namespace nb = nanobind;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
 namespace table {
 namespace io {
 
-using PyInputArchive = py::class_<InputArchive, std::shared_ptr<InputArchive>>;
+using PyInputArchive = nb::class_<InputArchive>;
 
 void wrapInputArchive(cpputils::python::WrapperCollection &wrappers) {
     wrappers.wrapType(PyInputArchive(wrappers.module, "InputArchive"), [](auto &mod, auto &cls) {

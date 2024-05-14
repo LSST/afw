@@ -53,7 +53,7 @@ enum class DetectorType {
  * An abstract base class that provides common accessors for Detector and
  * Detector::Builder.
  */
-class DetectorBase {
+class DetectorBase : public typehandling::Storable {
 public:
 
     using CrosstalkMatrix = ndarray::Array<float const, 2>;
@@ -180,8 +180,7 @@ protected:
  */
 class Detector final :
     public DetectorBase,
-    public table::io::PersistableFacade<Detector>,
-    public typehandling::Storable
+    public table::io::PersistableFacade<Detector>
 {
 public:
 

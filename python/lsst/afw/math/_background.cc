@@ -20,17 +20,18 @@
  * see <https://www.lsstcorp.org/LegalNotices/>.
  */
 
-#include <pybind11/pybind11.h>
+#include <nanobind/nanobind.h>
 #include <lsst/cpputils/python.h>
-#include <pybind11/stl.h>
+#include <nanobind/stl/vector.h>
+#include <nanobind/stl/shared_ptr.h>
 
 #include "lsst/afw/image/Image.h"
 #include "lsst/afw/image/MaskedImage.h"
 #include "lsst/afw/math/Background.h"
 
-namespace py = pybind11;
+namespace nb = nanobind;
 
-using namespace py::literals;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
@@ -72,7 +73,7 @@ void declareGetImage(PyClass &cls, std::string const &suffix) {
 
 void declareBackground(lsst::cpputils::python::WrapperCollection &wrappers) {
     /* Member types and enums */
-    wrappers.wrapType(py::enum_<UndersampleStyle>(wrappers.module, "UndersampleStyle"),
+    wrappers.wrapType(nb::enum_<UndersampleStyle>(wrappers.module, "UndersampleStyle"),
                       [](auto &mod, auto &enm) {
                           enm.value("THROW_EXCEPTION", UndersampleStyle::THROW_EXCEPTION);
                           enm.value("REDUCE_INTERP_ORDER", UndersampleStyle::REDUCE_INTERP_ORDER);
@@ -80,23 +81,23 @@ void declareBackground(lsst::cpputils::python::WrapperCollection &wrappers) {
                           enm.export_values();
                       });
 
-    using PyBackgroundControl = py::class_<BackgroundControl, std::shared_ptr<BackgroundControl>>;
+    using PyBackgroundControl = nb::class_<BackgroundControl>;
     wrappers.wrapType(PyBackgroundControl(wrappers.module, "BackgroundControl"), [](auto &mod, auto &cls) {
         /* Constructors */
-        cls.def(py::init<int const, int const, StatisticsControl const, Property const,
+        cls.def(nb::init<int const, int const, StatisticsControl const, Property const,
                          ApproximateControl const>(),
                 "nxSample"_a, "nySample"_a, "sctrl"_a = StatisticsControl(), "prop"_a = MEANCLIP,
                 "actrl"_a = ApproximateControl(ApproximateControl::UNKNOWN, 1));
-        cls.def(py::init<int const, int const, StatisticsControl const, std::string const &,
+        cls.def(nb::init<int const, int const, StatisticsControl const, std::string const &,
                          ApproximateControl const>(),
                 "nxSample"_a, "nySample"_a, "sctrl"_a, "prop"_a,
                 "actrl"_a = ApproximateControl(ApproximateControl::UNKNOWN, 1));
-        cls.def(py::init<Interpolate::Style const, int const, int const, UndersampleStyle const,
+        cls.def(nb::init<Interpolate::Style const, int const, int const, UndersampleStyle const,
                          StatisticsControl const, Property const, ApproximateControl const>(),
                 "style"_a, "nxSample"_a = 10, "nySample"_a = 10, "undersampleStyle"_a = THROW_EXCEPTION,
                 "sctrl"_a = StatisticsControl(), "prop"_a = MEANCLIP,
                 "actrl"_a = ApproximateControl(ApproximateControl::UNKNOWN, 1));
-        cls.def(py::init<std::string const &, int const, int const, std::string const &,
+        cls.def(nb::init<std::string const &, int const, int const, std::string const &,
                          StatisticsControl const, std::string const &, ApproximateControl const>(),
                 "style"_a, "nxSample"_a = 10, "nySample"_a = 10, "undersampleStyle"_a = "THROW_EXCEPTION",
                 "sctrl"_a = StatisticsControl(), "prop"_a = "MEANCLIP",
@@ -128,7 +129,7 @@ void declareBackground(lsst::cpputils::python::WrapperCollection &wrappers) {
         cls.def("getApproximateControl", (std::shared_ptr<ApproximateControl>(BackgroundControl::*)()) &
                                                  BackgroundControl::getApproximateControl);
     });
-    using PyBackground = py::class_<Background, std::shared_ptr<Background>>;
+    using PyBackground = nb::class_<Background>;
     wrappers.wrapType(PyBackground(wrappers.module, "Background"), [](auto &mod, auto &cls) {
         /* Members */
         declareGetImage<float>(cls, "F");
@@ -141,16 +142,16 @@ void declareBackground(lsst::cpputils::python::WrapperCollection &wrappers) {
                 (std::shared_ptr<BackgroundControl>(Background::*)()) & Background::getBackgroundControl);
     });
 
-    using PyBackgroundMI = py::class_<BackgroundMI, std::shared_ptr<BackgroundMI>, Background>;
+    using PyBackgroundMI = nb::class_<BackgroundMI, Background>;
     wrappers.wrapType(PyBackgroundMI(wrappers.module, "BackgroundMI"), [](auto &mod, auto &cls) {
         /* Constructors */
-        cls.def(py::init<lsst::geom::Box2I const,
+        cls.def(nb::init<lsst::geom::Box2I const,
                          image::MaskedImage<typename Background::InternalPixelT> const &>(),
                 "imageDimensions"_a, "statsImage"_a);
 
         /* Operators */
-        cls.def("__iadd__", &BackgroundMI::operator+=);
-        cls.def("__isub__", &BackgroundMI::operator-=);
+        cls.def("__iadd__", &BackgroundMI::operator+=, nb::rv_policy::none);
+        cls.def("__isub__", &BackgroundMI::operator-=, nb::rv_policy::none);
 
         /* Members */
         cls.def("getStatsImage", &BackgroundMI::getStatsImage);

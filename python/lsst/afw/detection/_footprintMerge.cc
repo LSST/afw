@@ -21,15 +21,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
+#include <nanobind/nanobind.h>
+#include <nanobind/stl/vector.h>
 
 #include "lsst/cpputils/python.h"
 
 #include "lsst/afw/detection/FootprintMerge.h"
 
-namespace py = pybind11;
-using namespace py::literals;
+namespace nb = nanobind;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
@@ -39,11 +39,11 @@ void wrapFootprintMerge(cpputils::python::WrapperCollection &wrappers) {
     wrappers.addSignatureDependency("lsst.afw.table");
 
     wrappers.wrapType(
-            py::class_<FootprintMergeList>(wrappers.module, "FootprintMergeList"), [](auto &mod, auto &cls) {
-                cls.def(py::init<afw::table::Schema &, std::vector<std::string> const &,
+            nb::class_<FootprintMergeList>(wrappers.module, "FootprintMergeList"), [](auto &mod, auto &cls) {
+                cls.def(nb::init<afw::table::Schema &, std::vector<std::string> const &,
                                  afw::table::Schema const &>(),
                         "sourceSchema"_a, "filterList"_a, "initialPeakSchema"_a);
-                cls.def(py::init<afw::table::Schema &, std::vector<std::string> const &>(), "sourceSchema"_a,
+                cls.def(nb::init<afw::table::Schema &, std::vector<std::string> const &>(), "sourceSchema"_a,
                         "filterList"_a);
 
                 cls.def("getPeakSchema", &FootprintMergeList::getPeakSchema);

@@ -21,42 +21,41 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
+#include "nanobind/nanobind.h"
+#include "nanobind/stl/string.h"
 
-#include "lsst/cpputils/python.h"
-#include "lsst/cpputils/python/PySharedPtr.h"
+#include "lsst/utils/python.h"
 
 #include "lsst/afw/typehandling/Storable.h"
 #include "lsst/afw/typehandling/python.h"
 
-namespace py = pybind11;
-using namespace py::literals;
+namespace nb = nanobind;
+using namespace nb::literals;
 
-using lsst::cpputils::python::PySharedPtr;
 
 namespace lsst {
 namespace afw {
 namespace typehandling {
 
-using PyStorable = py::class_<Storable, PySharedPtr<Storable>, table::io::Persistable, StorableHelper<>>;
+using PyStorable = nb::class_<Storable, table::io::Persistable, StorableHelper<>>;
 
 void wrapStorable(cpputils::python::WrapperCollection& wrappers) {
     wrappers.addInheritanceDependency("lsst.afw.table.io");
 
     wrappers.wrapType(PyStorable(wrappers.module, "Storable"), [](auto& mod, auto& cls) {
         // Do not wrap methods inherited from Persistable
-        cls.def(py::init<>());  // Dummy constructor for pure-Python subclasses
+        cls.def(nb::init<>());  // Dummy constructor for pure-Python subclasses
         // Do not wrap optional Storable methods; let subclasses do it as appropriate
         cls.def("__eq__", [](Storable const& self, Storable const& other) { return self.equals(other); },
                 "other"_a);
     });
 
     wrappers.wrapType(
-        py::class_<StorableHelperFactory>(
+        nb::class_<StorableHelperFactory>(
             wrappers.module, "StorableHelperFactory"
         ),
         [](auto& mod, auto& cls) {
-            cls.def(py::init<std::string&, std::string&>());
+            cls.def(nb::init<std::string&, std::string&>());
         }
     );
 }

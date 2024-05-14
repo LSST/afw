@@ -21,12 +21,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
+#include "nanobind/nanobind.h"
 
 #include "lsst/cpputils/python.h"
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+namespace nb = nanobind;
+using namespace nanobind::literals;
 
 namespace lsst {
 namespace afw {
@@ -44,8 +44,12 @@ void wrapPeak(WrapperCollection&);
 void wrapPsf(WrapperCollection&);
 void wrapThreshold(WrapperCollection&);
 
-PYBIND11_MODULE(_detection, mod) {
+NB_MODULE(_detection, mod) {
     WrapperCollection wrappers(mod, "lsst.afw.detection");
+    wrappers.addInheritanceDependency("lsst.afw.typehandling");
+    wrappers.addSignatureDependency("lsst.afw.geom.ellipses");
+    wrappers.addSignatureDependency("lsst.afw.image");
+    wrappers.addSignatureDependency("lsst.afw.fits");
     wrapPsf(wrappers);
     wrapFootprintCtrl(wrappers);
     wrapFootprint(wrappers);

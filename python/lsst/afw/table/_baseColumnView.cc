@@ -21,18 +21,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
-#include "pybind11/stl.h"
+#include "nanobind/nanobind.h"
+#include "nanobind/stl/vector.h"
 
-#include "ndarray/pybind11.h"
+#include "ndarray/nanobind.h"
 
 #include "lsst/cpputils/python.h"
 
 #include "lsst/afw/table/Key.h"
 #include "lsst/afw/table/BaseColumnView.h"
 
-namespace py = pybind11;
-using namespace py::literals;
+namespace nb = nanobind;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
@@ -42,9 +42,9 @@ using cpputils::python::WrapperCollection;
 
 namespace {
 
-using PyBaseColumnView = py::class_<BaseColumnView, std::shared_ptr<BaseColumnView>>;
+using PyBaseColumnView = nb::class_<BaseColumnView>;
 
-using PyBitsColumn = py::class_<BitsColumn, std::shared_ptr<BitsColumn>>;
+using PyBitsColumn = nb::class_<BitsColumn>;
 
 template <typename T, typename PyClass>
 static void declareBaseColumnViewOverloads(PyClass &cls) {
@@ -81,9 +81,9 @@ static void declareBaseColumnView(WrapperCollection &wrappers) {
     // we use for those.
     wrappers.wrapType(PyBaseColumnView(wrappers.module, "_BaseColumnViewBase"), [](auto &mod, auto &cls) {
         cls.def("getTable", &BaseColumnView::getTable);
-        cls.def_property_readonly("table", &BaseColumnView::getTable);
+        cls.def_prop_ro("table", &BaseColumnView::getTable);
         cls.def("getSchema", &BaseColumnView::getSchema);
-        cls.def_property_readonly("schema", &BaseColumnView::getSchema);
+        cls.def_prop_ro("schema", &BaseColumnView::getSchema);
         // _getBits supports a Python version of getBits that accepts None and field names as keys
         cls.def("_getBits", &BaseColumnView::getBits);
         cls.def("getAllBits", &BaseColumnView::getAllBits);
@@ -111,7 +111,7 @@ static void declareBaseColumnView(WrapperCollection &wrappers) {
 static void declareBitsColumn(WrapperCollection &wrappers) {
     wrappers.wrapType(PyBitsColumn(wrappers.module, "BitsColumn"), [](auto &mod, auto &cls) {
         cls.def("getArray", &BitsColumn::getArray);
-        cls.def_property_readonly("array", &BitsColumn::getArray);
+        cls.def_prop_ro("array", &BitsColumn::getArray, nb::rv_policy::automatic_reference);
         cls.def("getBit", (BitsColumn::SizeT(BitsColumn::*)(Key<Flag> const &) const) & BitsColumn::getBit,
                 "key"_a);
         cls.def("getBit", (BitsColumn::SizeT(BitsColumn::*)(std::string const &) const) & BitsColumn::getBit,

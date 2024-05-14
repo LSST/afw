@@ -319,7 +319,7 @@ public:
      */
     void setCacheCapacity(std::size_t capacity);
 
-protected:
+//protected:
     /**
      *  Main constructor for subclasses.
      *
@@ -344,7 +344,6 @@ protected:
                                                  image::Color const& color) const;
     //@}
 
-private:
     //@{
     /**
      *  These virtual member functions are private, not protected, because we only want derived classes
@@ -362,7 +361,7 @@ private:
     virtual lsst::geom::Box2I doComputeBBox(lsst::geom::Point2D const& position,
                                             image::Color const& color) const = 0;
     //@}
-
+private:
     bool const _isFixed;
     using PsfCache = cpputils::Cache<detail::PsfCacheKey, std::shared_ptr<Image>>;
     std::unique_ptr<PsfCache> _imageCache;

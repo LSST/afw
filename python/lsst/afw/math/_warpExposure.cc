@@ -24,7 +24,7 @@
 #include <memory>
 #include <string>
 
-#include <pybind11/pybind11.h>
+#include <nanobind/nanobind.h>
 #include <lsst/cpputils/python.h>
 
 #include "lsst/afw/geom/SkyWcs.h"
@@ -35,8 +35,8 @@
 #include "lsst/afw/math/warpExposure.h"
 #include "lsst/afw/table/io/python.h"
 
-namespace py = pybind11;
-using namespace py::literals;
+namespace nb = nanobind;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
@@ -47,15 +47,15 @@ namespace {
 @internal Declare a warping kernel class with no constructor
 
 @tparam KernelT  class of warping kernel, e.g. LanczosWarpingKernel
-@param[in] mod  pybind11 module to which to add the kernel
+@param[in] mod  nanobind module to which to add the kernel
 @param[in] name  Python name for class, e.g. "LanczosWarpingKernel"
 @param[in] addConstructor  If true then add a default constructor.
 */
 template <typename KernelT>
 void declareWarpingKernel(lsst::cpputils::python::WrapperCollection &wrappers, std::string const &name) {
-    using PyClass = py::class_<KernelT, std::shared_ptr<KernelT>, SeparableKernel>;
+    using PyClass = nb::class_<KernelT, SeparableKernel>;
     wrappers.wrapType(PyClass(wrappers.module, name.c_str()), [](auto &mod, auto &cls) {
-        cls.def(py::init<int>(), "order"_a);
+        cls.def(nb::init<int>(), "order"_a);
         cls.def("getOrder", &KernelT::getOrder);
         cls.def("clone", &KernelT::clone);
         table::io::python::addPersistableMethods(cls);
@@ -66,15 +66,15 @@ void declareWarpingKernel(lsst::cpputils::python::WrapperCollection &wrappers, s
 @internal Declare a warping kernel class with a defaut constructor
 
 @tparam KernelT  class of warping kernel, e.g. LanczosWarpingKernel
-@param[in] mod  pybind11 module to which to add the kernel
+@param[in] mod  nanobind module to which to add the kernel
 @param[in] name  Python name for class, e.g. "LanczosWarpingKernel"
 @param[in] addConstructor  If true then add a default constructor.
 */
 template <typename KernelT>
 void declareSimpleWarpingKernel(lsst::cpputils::python::WrapperCollection &wrappers, std::string const &name) {
-    using PyClass = py::class_<KernelT, std::shared_ptr<KernelT>, SeparableKernel>;
+    using PyClass = nb::class_<KernelT, SeparableKernel>;
     wrappers.wrapType(PyClass(wrappers.module, name.c_str()), [](auto &mod, auto &cls) {
-        cls.def(py::init<>());
+        cls.def(nb::init<>());
         cls.def("clone", &KernelT::clone);
         table::io::python::addPersistableMethods(cls);
     });
@@ -86,7 +86,7 @@ for a particular pair of image or masked image types
 
 @tparam DestImageT  Desination image type, e.g. Image<int> or MaskedImage<float, MaskType, VarianceType>
 @tparam SrcImageT  Source image type, e.g. Image<int> or MaskedImage<float, MaskType, VarianceType>
-@param[in,out] mod  pybind11 module for which to declare the function wrappers
+@param[in,out] mod  nanobind module for which to declare the function wrappers
 */
 template <typename DestImageT, typename SrcImageT>
 void declareImageWarpingFunctions(lsst::cpputils::python::WrapperCollection &wrappers) {
@@ -118,7 +118,7 @@ Declares both image and masked image variants of warpImage and warpCenteredImage
 
 @tparam DestPixelT  Desination pixel type, e.g. `int` or `float`
 @tparam SrcPixelT  Source pixel type, e.g. `int` or `float`
-@param[in,out] mod  pybind11 module for which to declare the function wrappers
+@param[in,out] mod  nanobind module for which to declare the function wrappers
 */
 template <typename DestPixelT, typename SrcPixelT>
 void declareWarpingFunctions(lsst::cpputils::python::WrapperCollection &wrappers) {
@@ -139,9 +139,9 @@ void declareWarpingFunctions(lsst::cpputils::python::WrapperCollection &wrappers
 }
 
 void declareWarpExposure(lsst::cpputils::python::WrapperCollection &wrappers) {
-    using PyClass = py::class_<WarpingControl, std::shared_ptr<WarpingControl>>;
+    using PyClass = nb::class_<WarpingControl>;
     wrappers.wrapType(PyClass(wrappers.module, "WarpingControl"), [](auto &mod, auto cls) {
-        cls.def(py::init<std::string, std::string, int, int, image::MaskPixel>(), "warpingKernelName"_a,
+        cls.def(nb::init<std::string, std::string, int, int, image::MaskPixel>(), "warpingKernelName"_a,
                 "maskWarpingKernelName"_a = "", "cacheSize"_a = 0, "interpLength"_a = 0,
                 "growFullMask"_a = 0);
 

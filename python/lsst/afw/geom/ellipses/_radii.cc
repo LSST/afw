@@ -21,14 +21,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <pybind11/pybind11.h>
+#include <nanobind/nanobind.h>
 #include <lsst/cpputils/python.h>
 
 #include "lsst/afw/geom/ellipses/radii.h"
 
-namespace py = pybind11;
+namespace nb = nanobind;
 
-using namespace py::literals;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
@@ -36,8 +36,8 @@ namespace geom {
 namespace ellipses {
 void wrapRadii(lsst::cpputils::python::WrapperCollection &wrappers) {
     wrappers.wrapType(
-            py::class_<DeterminantRadius>(wrappers.module, "DeterminantRadius"), [](auto &mod, auto &cls) {
-                cls.def(py::init<double>(), "value"_a = 1.0);
+            nb::class_<DeterminantRadius>(wrappers.module, "DeterminantRadius"), [](auto &mod, auto &cls) {
+                cls.def(nb::init<double>(), "value"_a = 1.0);
                 cls.def("normalize", &DeterminantRadius::normalize);
                 cls.def_static("getName", DeterminantRadius::getName);
                 cls.def("__str__", [](DeterminantRadius const &self) { return std::to_string(self); });
@@ -46,8 +46,8 @@ void wrapRadii(lsst::cpputils::python::WrapperCollection &wrappers) {
                 });
             });
 
-    wrappers.wrapType(py::class_<TraceRadius>(wrappers.module, "TraceRadius"), [](auto &mod, auto &cls) {
-        cls.def(py::init<double>(), "value"_a = 1.0);
+    wrappers.wrapType(nb::class_<TraceRadius>(wrappers.module, "TraceRadius"), [](auto &mod, auto &cls) {
+        cls.def(nb::init<double>(), "value"_a = 1.0);
         cls.def("normalize", &TraceRadius::normalize);
         cls.def_static("getName", TraceRadius::getName);
         cls.def("__str__", [](TraceRadius const &self) { return std::to_string(self); });
@@ -55,9 +55,9 @@ void wrapRadii(lsst::cpputils::python::WrapperCollection &wrappers) {
                 [](TraceRadius const &self) { return self.getName() + "(" + std::to_string(self) + ")"; });
     });
 
-    wrappers.wrapType(py::class_<LogDeterminantRadius>(wrappers.module, "LogDeterminantRadius"),
+    wrappers.wrapType(nb::class_<LogDeterminantRadius>(wrappers.module, "LogDeterminantRadius"),
                       [](auto &mod, auto &cls) {
-                          cls.def(py::init<double>(), "value"_a = 0.0);
+                          cls.def(nb::init<double>(), "value"_a = 0.0);
                           cls.def("normalize", &LogDeterminantRadius::normalize);
                           cls.def_static("getName", LogDeterminantRadius::getName);
                           cls.def("__str__",
@@ -67,9 +67,9 @@ void wrapRadii(lsst::cpputils::python::WrapperCollection &wrappers) {
                           });
                       });
 
-    wrappers.wrapType(py::class_<LogTraceRadius>(wrappers.module, "LogTraceRadius"),
+    wrappers.wrapType(nb::class_<LogTraceRadius>(wrappers.module, "LogTraceRadius"),
                       [](auto &mod, auto &cls) {
-                          cls.def(py::init<double>(), "value"_a = 0.0);
+                          cls.def(nb::init<double>(), "value"_a = 0.0);
                           cls.def("normalize", &LogTraceRadius::normalize);
                           cls.def_static("getName", LogTraceRadius::getName);
                           cls.def("__str__", [](LogTraceRadius const &self) { return std::to_string(self); });

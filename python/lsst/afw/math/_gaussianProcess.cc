@@ -20,14 +20,14 @@
  * see <https://www.lsstcorp.org/LegalNotices/>.
  */
 
-#include <pybind11/pybind11.h>
+#include <nanobind/nanobind.h>
 #include <lsst/cpputils/python.h>
 
-#include "ndarray/pybind11.h"
+#include "ndarray/nanobind.h"
 
 #include "lsst/afw/math/GaussianProcess.h"
 
-namespace py = pybind11;
+namespace nb = nanobind;
 
 using namespace lsst::afw::math;
 namespace lsst {
@@ -37,8 +37,8 @@ namespace {
 template <typename T>
 void declareKdTree(lsst::cpputils::python::WrapperCollection &wrappers, const std::string &suffix) {
     wrappers.wrapType(
-            py::class_<KdTree<T>>(wrappers.module, ("KdTree" + suffix).c_str()), [](auto &mod, auto &cls) {
-                cls.def(py::init<>());
+            nb::class_<KdTree<T>>(wrappers.module, ("KdTree" + suffix).c_str()), [](auto &mod, auto &cls) {
+                cls.def(nb::init<>());
                 cls.def("Initialize", &KdTree<T>::Initialize);
                 cls.def("removePoint", &KdTree<T>::removePoint);
                 cls.def("getData", (T(KdTree<T>::*)(int, int) const) & KdTree<T>::getData);
@@ -54,27 +54,27 @@ template <typename T>
 void declareCovariograms(lsst::cpputils::python::WrapperCollection &wrappers, const std::string &suffix) {
     /* Covariogram */
 
-    wrappers.wrapType(py::class_<Covariogram<T>, std::shared_ptr<Covariogram<T>>>(
+    wrappers.wrapType(nb::class_<Covariogram<T>>(
                               wrappers.module, ("Covariogram" + suffix).c_str()),
                       [](auto &mod, auto &cls) {
-                          cls.def(py::init<>());
+                          cls.def(nb::init<>());
                           cls.def("__call__", &Covariogram<T>::operator());
                       });
     /* SquaredExpCovariogram */
     wrappers.wrapType(
-            py::class_<SquaredExpCovariogram<T>, std::shared_ptr<SquaredExpCovariogram<T>>, Covariogram<T>>(
+            nb::class_<SquaredExpCovariogram<T>, Covariogram<T>>(
                     wrappers.module, ("SquaredExpCovariogram" + suffix).c_str()),
             [](auto &mod, auto &cls) {
-                cls.def(py::init<>());
+                cls.def(nb::init<>());
                 cls.def("__call__", &SquaredExpCovariogram<T>::operator());
                 cls.def("setEllSquared", &SquaredExpCovariogram<T>::setEllSquared);
             });
     /* NeuralNetCovariogram */
     wrappers.wrapType(
-            py::class_<NeuralNetCovariogram<T>, std::shared_ptr<NeuralNetCovariogram<T>>, Covariogram<T>>(
+            nb::class_<NeuralNetCovariogram<T>, Covariogram<T>>(
                     wrappers.module, ("NeuralNetCovariogram" + suffix).c_str()),
             [](auto &mod, auto &cls) {
-                cls.def(py::init<>());
+                cls.def(nb::init<>());
                 cls.def("setSigma0", &NeuralNetCovariogram<T>::setSigma0);
                 cls.def("setSigma1", &NeuralNetCovariogram<T>::setSigma1);
             });
@@ -83,17 +83,17 @@ void declareCovariograms(lsst::cpputils::python::WrapperCollection &wrappers, co
 template <typename T>
 void declareGaussianProcess(lsst::cpputils::python::WrapperCollection &wrappers, const std::string &suffix) {
     wrappers.wrapType(
-            py::class_<GaussianProcess<T>>(wrappers.module, ("GaussianProcess" + suffix).c_str()),
+            nb::class_<GaussianProcess<T>>(wrappers.module, ("GaussianProcess" + suffix).c_str()),
             [](auto &mod, auto &cls) {
                 /* Constructors */
-                cls.def(py::init<ndarray::Array<T, 2, 2> const &, ndarray::Array<T, 1, 1> const &,
+                cls.def(nb::init<ndarray::Array<T, 2, 2> const &, ndarray::Array<T, 1, 1> const &,
                                  std::shared_ptr<Covariogram<T>> const &>());
-                cls.def(py::init<ndarray::Array<T, 2, 2> const &, ndarray::Array<T, 1, 1> const &,
+                cls.def(nb::init<ndarray::Array<T, 2, 2> const &, ndarray::Array<T, 1, 1> const &,
                                  ndarray::Array<T, 1, 1> const &, ndarray::Array<T, 1, 1> const &,
                                  std::shared_ptr<Covariogram<T>> const &>());
-                cls.def(py::init<ndarray::Array<T, 2, 2> const &, ndarray::Array<T, 2, 2> const &,
+                cls.def(nb::init<ndarray::Array<T, 2, 2> const &, ndarray::Array<T, 2, 2> const &,
                                  std::shared_ptr<Covariogram<T>> const &>());
-                cls.def(py::init<ndarray::Array<T, 2, 2> const &, ndarray::Array<T, 1, 1> const &,
+                cls.def(nb::init<ndarray::Array<T, 2, 2> const &, ndarray::Array<T, 1, 1> const &,
                                  ndarray::Array<T, 1, 1> const &, ndarray::Array<T, 2, 2> const &,
                                  std::shared_ptr<Covariogram<T>> const &>());
                 /* Members */

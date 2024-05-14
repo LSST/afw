@@ -21,8 +21,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
-#include "pybind11/stl.h"
+#include "nanobind/nanobind.h"
+#include "nanobind/stl/vector.h"
+#include "nanobind/stl/string.h"
 
 #include "lsst/cpputils/python.h"
 
@@ -32,15 +33,15 @@
 #include "lsst/afw/table/detail/SchemaImpl.h"
 #include "lsst/afw/table/SchemaMapper.h"
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+namespace nb = nanobind;
+using namespace nanobind::literals;
 
 namespace lsst {
 namespace afw {
 namespace table {
 
-using cpputils::python::WrapperCollection;
-using PySchemaMapper = py::class_<SchemaMapper, std::shared_ptr<SchemaMapper>>;
+using utils::python::WrapperCollection;
+using PySchemaMapper = nb::class_<SchemaMapper>;
 
 namespace {
 
@@ -54,14 +55,14 @@ void declareSchemaMapperOverloads(PySchemaMapper &cls, std::string const &suffix
 
 void wrapSchemaMapper(WrapperCollection &wrappers) {
     wrappers.wrapType(PySchemaMapper(wrappers.module, "SchemaMapper"), [](auto &mod, auto &cls) {
-        cls.def(py::init<>());
-        cls.def(py::init<Schema const &, Schema const &>());
-        cls.def(py::init<Schema const &, bool>(), "input"_a, "shareAliasMap"_a = false);
+        cls.def(nb::init<>());
+        cls.def(nb::init<Schema const &, Schema const &>());
+        cls.def(nb::init<Schema const &, bool>(), "input"_a, "shareAliasMap"_a = false);
 
         cls.def("getInputSchema", &SchemaMapper::getInputSchema);
         cls.def("getOutputSchema", &SchemaMapper::getOutputSchema);
         cls.def("editOutputSchema", &SchemaMapper::editOutputSchema,
-                py::return_value_policy::reference_internal);
+                nb::rv_policy::reference_internal);
         cls.def("addMinimalSchema", &SchemaMapper::addMinimalSchema, "minimal"_a, "doMap"_a = true);
         cls.def_static("removeMinimalSchema", &SchemaMapper::removeMinimalSchema);
         cls.def_static("join", &SchemaMapper::join, "inputs"_a, "prefixes"_a = std::vector<std::string>());

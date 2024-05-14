@@ -21,8 +21,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
-#include "lsst/cpputils/python.h"
+#include "nanobind/nanobind.h"
+#include "lsst/utils/python.h"
 
 namespace lsst {
 namespace afw {
@@ -40,7 +40,7 @@ void wrapReducedShear(lsst::cpputils::python::WrapperCollection &);
 void wrapQuadrupole(lsst::cpputils::python::WrapperCollection &);
 void wrapSeparable(lsst::cpputils::python::WrapperCollection &);
 
-PYBIND11_MODULE(_ellipses, mod) {
+NB_MODULE(_ellipses, mod) {
     lsst::cpputils::python::WrapperCollection wrappers(mod, "lsst.afw.geom.ellipses");
     wrappers.addSignatureDependency("lsst.afw.geom");
     wrapEllipse(wrappers);

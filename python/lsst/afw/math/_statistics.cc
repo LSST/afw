@@ -20,14 +20,15 @@
  * see <https://www.lsstcorp.org/LegalNotices/>.
  */
 
-#include <pybind11/pybind11.h>
+#include <nanobind/nanobind.h>
+#include <nanobind/stl/shared_ptr.h>
 #include <lsst/cpputils/python.h>
-#include <pybind11/stl.h>
+#include <nanobind/stl/vector.h>
 
 #include "lsst/afw/math/Statistics.h"
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+namespace nb = nanobind;
+using namespace nanobind::literals;
 
 namespace lsst {
 namespace afw {
@@ -56,6 +57,29 @@ void declareStatistics(lsst::cpputils::python::WrapperCollection &wrappers) {
                 (Statistics(*)(image::Image<Pixel> const &, int const,
                                StatisticsControl const &))makeStatistics<Pixel>,
                 "img"_a, "flags"_a, "sctrl"_a = StatisticsControl());
+
+        // interface with const Property flags instead of int for nanobind
+        // interface should be fixed in the C++ code
+        mod.def("makeStatistics", [](image::Image<Pixel> const & img, image::Mask<image::MaskPixel> const &mask,
+                const Property flags, StatisticsControl const & ctrl) {
+                return makeStatistics<Pixel>(img, mask, int(flags), ctrl);
+        }, "img"_a, "msk"_a, "flags"_a, "sctrl"_a = StatisticsControl());
+
+        mod.def("makeStatistics",[](image::MaskedImage<Pixel> const &mask, Property const flags,
+                StatisticsControl const & ctrl) {
+            return makeStatistics<Pixel>(mask, int(flags), ctrl);
+                }, "mimg"_a, "flags"_a, "sctrl"_a = StatisticsControl());
+        mod.def("makeStatistics", [](image::MaskedImage<Pixel> const &mask, image::Image<WeightPixel> const &weights,
+                                     const Property flags, StatisticsControl const &ctrl) {
+            return makeStatistics<Pixel>(mask, weights, int(flags), ctrl);
+        }, "mimg"_a, "weights"_a, "flags"_a, "sctrl"_a = StatisticsControl());
+        mod.def("makeStatistics", [](image::Mask<image::MaskPixel> const &mask , Property const flags,
+                StatisticsControl const &ctrl) {
+            return makeStatistics(mask, int(flags), ctrl);
+        }, "msk"_a, "flags"_a, "sctrl"_a = StatisticsControl());
+        mod.def("makeStatistics", [](image::Image<Pixel> const &img, Property const flags, StatisticsControl const & ctrl) {
+            return makeStatistics<Pixel>(img, int(flags), ctrl);
+        }, "img"_a, "flags"_a, "sctrl"_a = StatisticsControl());
     });
 }
 
@@ -70,12 +94,19 @@ void declareStatisticsVectorOverloads(lsst::cpputils::python::WrapperCollection 
                 (Statistics(*)(std::vector<Pixel> const &, std::vector<WeightPixel> const &, int const,
                                StatisticsControl const &))makeStatistics<Pixel>,
                 "v"_a, "vweights"_a, "flags"_a, "sctrl"_a = StatisticsControl());
+        mod.def("makeStatistics", [](std::vector<Pixel> const &v, Property const flags, StatisticsControl const & ctrl) {
+            return makeStatistics<Pixel>(v, int(flags), ctrl);
+        }, "v"_a, "flags"_a, "sctrl"_a = StatisticsControl());
+        mod.def("makeStatistics", [](std::vector<Pixel> const &v, std::vector<WeightPixel> const &weights,
+                Property const flags, StatisticsControl const &ctrl) {
+            return makeStatistics<Pixel>(v, weights, int(flags), ctrl);
+        }, "v"_a, "vweights"_a, "flags"_a, "sctrl"_a = StatisticsControl());
     });
 }
 
 void declareStatistics(lsst::cpputils::python::WrapperCollection &wrappers) {
     /* Module level */
-    wrappers.wrapType(py::enum_<Property>(wrappers.module, "Property", py::arithmetic()),
+    wrappers.wrapType(nb::enum_<Property>(wrappers.module, "Property", nb::flag_enum()),
                       [](auto &mod, auto &enm) {
                           enm.value("NOTHING", Property::NOTHING);
                           enm.value("ERRORS", Property::ERRORS);
@@ -98,14 +129,23 @@ void declareStatistics(lsst::cpputils::python::WrapperCollection &wrappers) {
                           enm.export_values();
                       });
 
-    wrappers.wrap([](auto &mod) { mod.def("stringToStatisticsProperty", stringToStatisticsProperty); });
+    wrappers.wrap([](auto &mod) {
+        mod.def("stringToStatisticsProperty", stringToStatisticsProperty); });
 
-    using PyClass = py::class_<StatisticsControl, std::shared_ptr<StatisticsControl>>;
-    auto control = wrappers.wrapType(PyClass(wrappers.module, "StatisticsControl"), [](auto &mod, auto &cls) {
-        cls.def(py::init<double, int, lsst::afw::image::MaskPixel, bool,
+    using PyClass = nb::class_<StatisticsControl>;
+    auto control = PyClass(wrappers.module, "StatisticsControl");
+    wrappers.wrapType(nb::enum_<StatisticsControl::WeightsBoolean>(control, "WeightsBoolean", nb::flag_enum()),
+                      [](auto &mod, auto &enm) {
+                          enm.value("WEIGHTS_FALSE", StatisticsControl::WeightsBoolean::WEIGHTS_FALSE);
+                          enm.value("WEIGHTS_TRUE", StatisticsControl::WeightsBoolean::WEIGHTS_TRUE);
+                          enm.value("WEIGHTS_NONE", StatisticsControl::WeightsBoolean::WEIGHTS_NONE);
+                          enm.export_values();
+                      });
+    wrappers.wrapType(control, [](auto &mod, auto &cls) {
+        cls.def(nb::init<double, int, lsst::afw::image::MaskPixel, bool,
                          typename StatisticsControl::WeightsBoolean>(),
                 "numSigmaClip"_a = 3.0, "numIter"_a = 3, "andMask"_a = 0x0, "isNanSafe"_a = true,
-                "useWeights"_a = StatisticsControl::WEIGHTS_NONE);
+                "useWeights"_a = StatisticsControl::WeightsBoolean::WEIGHTS_NONE);
 
         cls.def("getMaskPropagationThreshold", &StatisticsControl::getMaskPropagationThreshold);
         cls.def("setMaskPropagationThreshold", &StatisticsControl::setMaskPropagationThreshold);
@@ -128,15 +168,7 @@ void declareStatistics(lsst::cpputils::python::WrapperCollection &wrappers) {
         cls.def("setCalcErrorMosaicMode", &StatisticsControl::setCalcErrorMosaicMode);
     });
 
-    wrappers.wrapType(py::enum_<StatisticsControl::WeightsBoolean>(control, "WeightsBoolean"),
-                      [](auto &mod, auto &enm) {
-                          enm.value("WEIGHTS_FALSE", StatisticsControl::WeightsBoolean::WEIGHTS_FALSE);
-                          enm.value("WEIGHTS_TRUE", StatisticsControl::WeightsBoolean::WEIGHTS_TRUE);
-                          enm.value("WEIGHTS_NONE", StatisticsControl::WeightsBoolean::WEIGHTS_NONE);
-                          enm.export_values();
-                      });
-
-    wrappers.wrapType(py::class_<Statistics>(wrappers.module, "Statistics"), [](auto &mod, auto &cls) {
+    wrappers.wrapType(nb::class_<Statistics>(wrappers.module, "Statistics"), [](auto &mod, auto &cls) {
         cls.def("getResult", &Statistics::getResult, "prop"_a = Property::NOTHING);
         cls.def("getError", &Statistics::getError, "prop"_a = Property::NOTHING);
         cls.def("getValue", &Statistics::getValue, "prop"_a = Property::NOTHING);
@@ -157,6 +189,7 @@ void wrapStatistics(lsst::cpputils::python::WrapperCollection &wrappers) {
     declareStatisticsVectorOverloads<double>(wrappers);
     declareStatisticsVectorOverloads<float>(wrappers);
     declareStatisticsVectorOverloads<int>(wrappers);
+    wrappers.module.def("testProp", [](Property const flags) {return flags;});
 }
 }  // namespace math
 }  // namespace afw

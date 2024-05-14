@@ -21,9 +21,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
+#include "nanobind/nanobind.h"
 #include <lsst/cpputils/python.h>
-#include "pybind11/stl.h"
+#include "nanobind/stl/vector.h"
+#include "nanobind/stl/unordered_map.h"
+#include "nanobind/stl/shared_ptr.h"
+#include <nanobind/make_iterator.h>
 
 #include <vector>
 
@@ -32,60 +35,56 @@
 #include "lsst/afw/cameraGeom/CameraSys.h"
 #include "lsst/afw/cameraGeom/TransformMap.h"
 
-namespace py = pybind11;
-using namespace py::literals;
+namespace nb = nanobind;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
 namespace cameraGeom {
 namespace {
 
-using PyTransformMap = py::class_<TransformMap, std::shared_ptr<TransformMap>>;
+using PyTransformMap = nb::class_<TransformMap>;
 using PyTransformMapConnection =
-        py::class_<TransformMap::Connection, std::shared_ptr<TransformMap::Connection>>;
+        nb::class_<TransformMap::Connection>;
 
 void declareTransformMap(lsst::cpputils::python::WrapperCollection &wrappers) {
     auto transformMap = wrappers.wrapType(PyTransformMap(wrappers.module, "TransformMap"), [](auto &mod,
                                                                                               auto &cls) {
-        cls.def(py::init([](CameraSys const &reference, TransformMap::Transforms const &transforms) {
-                    // An apparent pybind11 bug: it's usually happy to cast away constness, but won't do it
-                    // here.
-                    return std::const_pointer_cast<TransformMap>(TransformMap::make(reference, transforms));
-                }),
+        cls.def("__init__", [](TransformMap *transformMap, CameraSys const &reference, TransformMap::Transforms const &transforms) {
+                    TransformMap::make(transformMap, reference, transforms);
+                },
                 "reference"_a, "transforms"_a);
-        cls.def(py::init([](CameraSys const &reference,
+        cls.def("__init__", [](TransformMap *transformMap, CameraSys const &reference,
                             std::vector<TransformMap::Connection> const &connections) {
-                    // An apparent pybind11 bug: it's usually happy to cast away constness, but won't do it
-                    // here.
-                    return std::const_pointer_cast<TransformMap>(TransformMap::make(reference, connections));
-                }),
+                    TransformMap::make(transformMap, reference, connections);
+                },
                 "reference"_a, "connections"_a);
         cls.def("__len__", &TransformMap::size);
         cls.def("__contains__", &TransformMap::contains);
         cls.def(
                 "__iter__",
-                [](TransformMap const &self) { return py::make_iterator(self.begin(), self.end()); },
-                py::keep_alive<0, 1>()); /* Essential: keep object alive while iterator exists */
+                [](TransformMap const &self) { return nb::make_iterator(nb::type<TransformMap>(), "iterator", self.begin(), self.end()); },
+                nb::keep_alive<0, 1>()); /* Essential: keep object alive while iterator exists */
 
         cls.def("transform",
-                py::overload_cast<lsst::geom::Point2D const &, CameraSys const &, CameraSys const &>(
-                        &TransformMap::transform, py::const_),
+                nb::overload_cast<lsst::geom::Point2D const &, CameraSys const &, CameraSys const &>(
+                        &TransformMap::transform, nb::const_),
                 "point"_a, "fromSys"_a, "toSys"_a);
         cls.def("transform",
-                py::overload_cast<std::vector<lsst::geom::Point2D> const &, CameraSys const &,
-                                  CameraSys const &>(&TransformMap::transform, py::const_),
+                nb::overload_cast<std::vector<lsst::geom::Point2D> const &, CameraSys const &,
+                                  CameraSys const &>(&TransformMap::transform, nb::const_),
                 "pointList"_a, "fromSys"_a, "toSys"_a);
         cls.def("getTransform", &TransformMap::getTransform, "fromSys"_a, "toSys"_a);
         cls.def("getConnections", &TransformMap::getConnections);
         table::io::python::addPersistableMethods(cls);
     });
     wrappers.wrapType(PyTransformMapConnection(transformMap, "Connection"), [](auto &mod, auto &cls) {
-        cls.def(py::init<std::shared_ptr<afw::geom::TransformPoint2ToPoint2 const>, CameraSys const &,
+        cls.def(nb::init<std::shared_ptr<afw::geom::TransformPoint2ToPoint2 const>, CameraSys const &,
                          CameraSys const &>(),
                 "transform"_a, "fromSys"_a, "toSys"_a);
-        cls.def_readwrite("transform", &TransformMap::Connection::transform);
-        cls.def_readwrite("fromSys", &TransformMap::Connection::fromSys);
-        cls.def_readwrite("toSys", &TransformMap::Connection::toSys);
+        cls.def_rw("transform", &TransformMap::Connection::transform);
+        cls.def_rw("fromSys", &TransformMap::Connection::fromSys);
+        cls.def_rw("toSys", &TransformMap::Connection::toSys);
         cpputils::python::addOutputOp(cls, "__repr__");
     });
 }

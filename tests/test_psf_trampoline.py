@@ -74,6 +74,8 @@ class PyGaussianPsf(Psf):
         return img
 
     def _doComputeBBox(self, position=None, color=None):
+        print(type(self.dimensions/2))
+        print(self.dimensions/2)
         return Box2I(Point2I(-self.dimensions/2), self.dimensions)
 
     def _doComputeShape(self, position=None, color=None):

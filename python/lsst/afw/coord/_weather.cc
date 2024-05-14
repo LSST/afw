@@ -23,33 +23,33 @@
 
 #include <sstream>
 
-#include <pybind11/pybind11.h>
+#include <nanobind/nanobind.h>
 
 #include "lsst/cpputils/python.h"
 
 #include "lsst/afw/coord/Weather.h"
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+namespace nb = nanobind;
+using namespace nanobind::literals;
 
 namespace lsst {
 namespace afw {
 namespace coord {
 
 void wrapWeather(lsst::cpputils::python::WrapperCollection &wrappers) {
-    wrappers.wrapType(py::class_<lsst::afw::coord::Weather>(wrappers.module, "Weather"), [](auto &mod,
+    wrappers.wrapType(nb::class_<lsst::afw::coord::Weather>(wrappers.module, "Weather"), [](auto &mod,
                                                                                             auto &cls) {
         /* Constructors */
-        cls.def(py::init<double, double, double>(), "airTemperature"_a, "airPressure"_a, "humidity"_a);
-        cls.def(py::init<Weather const &>(), "weather"_a);
+        cls.def(nb::init<double, double, double>(), "airTemperature"_a, "airPressure"_a, "humidity"_a);
+        cls.def(nb::init<Weather const &>(), "weather"_a);
 
         /* Operators */
         cls.def(
                 "__eq__", [](Weather const &self, Weather const &other) { return self == other; },
-                py::is_operator());
+                nb::is_operator());
         cls.def(
                 "__ne__", [](Weather const &self, Weather const &other) { return self != other; },
-                py::is_operator());
+                nb::is_operator());
 
         /* Members */
         cls.def("getAirPressure", &lsst::afw::coord::Weather::getAirPressure);

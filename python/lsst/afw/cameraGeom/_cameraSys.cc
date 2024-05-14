@@ -23,13 +23,13 @@
 
 #include <string>
 
-#include <pybind11/pybind11.h>
-#include <lsst/cpputils/python.h>
+#include <nanobind/nanobind.h>
+#include "lsst/cpputils/python.h"
 
 #include "lsst/afw/cameraGeom/CameraSys.h"
 
-namespace py = pybind11;
-using namespace py::literals;
+namespace nb = nanobind;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
@@ -40,17 +40,17 @@ namespace {
 @internal Declare methods common to CameraSysPrefix and CameraSys
 
 @tparam CppClass  C++ class; one of CameraSysPrefix or CameraSys
-@tparam PyClass  pybind11 class corresponding to `CppClass`
+@tparam PyClass  nanobind class corresponding to `CppClass`
 */
 template <typename CppClass, typename PyClass>
 void declareCommonSysMethods(PyClass &cls) {
     /* Operators */
     cls.def(
             "__eq__", [](CppClass const &self, CppClass const &other) { return self == other; },
-            py::is_operator());
+            nb::is_operator());
     cls.def(
             "__ne__", [](CppClass const &self, CppClass const &other) { return self != other; },
-            py::is_operator());
+            nb::is_operator());
     cpputils::python::addOutputOp(cls, "__str__");
     cpputils::python::addOutputOp(cls, "__repr__");
     cpputils::python::addHash(cls);
@@ -62,31 +62,31 @@ void declareCommonSysMethods(PyClass &cls) {
 
 void wrapCameraSys(lsst::cpputils::python::WrapperCollection &wrappers) {
     /* Module level */
-    wrappers.wrapType(py::class_<CameraSysPrefix>(wrappers.module, "CameraSysPrefix"),
+    wrappers.wrapType(nb::class_<CameraSysPrefix>(wrappers.module, "CameraSysPrefix"),
                       [](auto &mod, auto &cls) {
                           declareCommonSysMethods<CameraSysPrefix>(cls);
-                          cls.def(py::init<std::string const &>(), "sysName"_a);
+                          cls.def(nb::init<std::string const &>(), "sysName"_a);
                       });
-    wrappers.wrapType(py::class_<CameraSys>(wrappers.module, "CameraSys"), [](auto &mod, auto &cls) {
+    wrappers.wrapType(nb::class_<CameraSys>(wrappers.module, "CameraSys"), [](auto &mod, auto &cls) {
         declareCommonSysMethods<CameraSys>(cls);
         /* Constructors */
-        cls.def(py::init<std::string const &>(), "sysName"_a);
-        cls.def(py::init<std::string const &, std::string const &>(), "sysName"_a, "detectorName"_a = "");
-        cls.def(py::init<CameraSysPrefix const &, std::string const &>(), "sysPrefix"_a,
+        cls.def(nb::init<std::string const &>(), "sysName"_a);
+        cls.def(nb::init<std::string const &, std::string const &>(), "sysName"_a, "detectorName"_a = "");
+        cls.def(nb::init<CameraSysPrefix const &, std::string const &>(), "sysPrefix"_a,
                 "detectorName"_a = "");
         /* Members */
         cls.def("getDetectorName", &CameraSys::getDetectorName);
         cls.def("hasDetectorName", &CameraSys::hasDetectorName);
     });
 
-    // The following must come after the associated pybind11 class is declared
+    // The following must come after the associated nanobind class is declared
     // (e.g. FOCAL_PLANE is a CameraSys, so clsCameraSys must have been declared
     wrappers.wrap([](auto &mod) {
-        mod.attr("FOCAL_PLANE") = py::cast(FOCAL_PLANE);
-        mod.attr("FIELD_ANGLE") = py::cast(FIELD_ANGLE);
-        mod.attr("PIXELS") = py::cast(PIXELS);
-        mod.attr("TAN_PIXELS") = py::cast(TAN_PIXELS);
-        mod.attr("ACTUAL_PIXELS") = py::cast(ACTUAL_PIXELS);
+        mod.attr("FOCAL_PLANE") = nb::cast(FOCAL_PLANE);
+        mod.attr("FIELD_ANGLE") = nb::cast(FIELD_ANGLE);
+        mod.attr("PIXELS") = nb::cast(PIXELS);
+        mod.attr("TAN_PIXELS") = nb::cast(TAN_PIXELS);
+        mod.attr("ACTUAL_PIXELS") = nb::cast(ACTUAL_PIXELS);
     });
 }
 }  // namespace cameraGeom

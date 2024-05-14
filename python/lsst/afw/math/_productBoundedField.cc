@@ -20,23 +20,23 @@
  * see <https://www.lsstcorp.org/LegalNotices/>.
  */
 
-#include "pybind11/pybind11.h"
+#include "nanobind/nanobind.h"
 #include <lsst/cpputils/python.h>
-#include "pybind11/stl.h"
+#include "nanobind/stl/vector.h"
 
 #include "lsst/afw/math/ProductBoundedField.h"
 
-namespace py = pybind11;
+namespace nb = nanobind;
 
 using namespace lsst::afw::math;
 namespace lsst {
 namespace afw {
 namespace math {
-using PyClass = py::class_<ProductBoundedField, std::shared_ptr<ProductBoundedField>, BoundedField>;
+using PyClass = nb::class_<ProductBoundedField, BoundedField>;
 
 void wrapProductBoundedField(lsst::cpputils::python::WrapperCollection &wrappers) {
     wrappers.wrapType(PyClass(wrappers.module, "ProductBoundedField"), [](auto &mod, auto &cls) {
-        cls.def(py::init<std::vector<std::shared_ptr<BoundedField const>>>());
+        cls.def(nb::init<std::vector<std::shared_ptr<BoundedField const>>>());
         // All other operations are wrapped by the BoundedField base class.
     });
 }

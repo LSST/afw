@@ -21,35 +21,35 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pybind11/pybind11.h"
+#include "nanobind/nanobind.h"
 #include "lsst/cpputils/python.h"
 
 #include <limits>
 
 #include "lsst/afw/image/Color.h"
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+namespace nb = nanobind;
+using namespace nanobind::literals;
 
 namespace lsst {
 namespace afw {
 namespace image {
 
-using PyColor = py::class_<Color, std::shared_ptr<Color>>;
+using PyColor = nb::class_<Color>;
 
 void wrapColor(lsst::cpputils::python::WrapperCollection &wrappers) {
     /* Module level */
     wrappers.wrapType(PyColor(wrappers.module, "Color"), [](auto &mod, auto &cls) {
         /* Constructors */
-        cls.def(py::init<double>(), "g_r"_a = std::numeric_limits<double>::quiet_NaN());
+        cls.def(nb::init<double>(), "g_r"_a = std::numeric_limits<double>::quiet_NaN());
 
         /* Operators */
         cls.def(
                 "__eq__", [](Color const &self, Color const &other) { return self == other; },
-                py::is_operator());
+                nb::is_operator());
         cls.def(
                 "__ne__", [](Color const &self, Color const &other) { return self != other; },
-                py::is_operator());
+                nb::is_operator());
 
         /* Members */
         cls.def("isIndeterminate", &Color::isIndeterminate);

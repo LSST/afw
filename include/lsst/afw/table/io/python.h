@@ -24,7 +24,8 @@
 #ifndef LSST_AFW_TABLE_IO_PYTHON_H
 #define LSST_AFW_TABLE_IO_PYTHON_H
 
-#include "pybind11/pybind11.h"
+#include "nanobind/nanobind.h"
+#include "nanobind/stl/shared_ptr.h"
 
 #include <memory>
 #include <string>
@@ -32,8 +33,8 @@
 #include "lsst/afw/fits.h"
 #include "lsst/afw/table/io/Persistable.h"
 
-namespace py = pybind11;
-using namespace py::literals;
+namespace nb = nanobind;
+using namespace nb::literals;
 
 namespace lsst {
 namespace afw {
@@ -53,7 +54,7 @@ namespace python {
  * - Call this function to wrap the methods that make your object persistable.
  */
 template <typename Class, typename... Args>
-void addPersistableMethods(pybind11::class_<Class, Args...> &cls) {
+void addPersistableMethods(nanobind::class_<Class, Args...> &cls) {
     cls.def_static("readFits",
                    (std::shared_ptr<Class>(*)(std::string const &, int)) & PersistableFacade<Class>::readFits,
                    "fileName"_a, "hdu"_a = fits::DEFAULT_HDU);
