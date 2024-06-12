@@ -691,9 +691,13 @@ std::shared_ptr<SpanSet> SpanSet::fromShape(int r, Stencil s, lsst::geom::Point2
     tempVec.reserve(2 * r + 1);
     switch (s) {
         case Stencil::CIRCLE:
-            for (auto dy = -r; dy <= r; ++dy) {
-                int dx = static_cast<int>(sqrt(r * r - dy * dy));
-                tempVec.emplace_back(dy + offset.getY(), -dx + offset.getX(), dx + offset.getX());
+            {
+                double dr = static_cast<double>(r);
+                dr *= dr;
+                for (auto dy = std::make_pair<int, double>(-r, -r); dy.first <= r; ++dy.first, ++dy.second) {
+                    int dx = static_cast<int>(sqrt(dr-(dy.second*dy.second)));
+                    tempVec.emplace_back(dy.first + offset.getY(), -dx + offset.getX(), dx + offset.getX());
+                }
             }
             break;
         case Stencil::MANHATTAN:
