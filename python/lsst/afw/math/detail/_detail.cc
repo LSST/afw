@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 #include "nanobind/nanobind.h"
 #include <lsst/cpputils/python.h>
 
