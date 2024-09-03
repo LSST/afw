@@ -185,15 +185,9 @@ void declarePhotoCalib(lsst::cpputils::python::WrapperCollection &wrappers) {
                         "maskedImage"_a);
 
                 /* Operators */
-<<<<<<< HEAD
-                cls.def("__eq__", &PhotoCalib::operator==, py::is_operator());
-                cls.def("__ne__", &PhotoCalib::operator!=, py::is_operator());
-                cpputils::python::addOutputOp(cls, "__str__");
-=======
                 cls.def("__eq__", &PhotoCalib::operator==, nb::is_operator());
                 cls.def("__ne__", &PhotoCalib::operator!=, nb::is_operator());
-                utils::python::addOutputOp(cls, "__str__");
->>>>>>> fc01b5209 (Initial nanobind migration)
+                cpputils::python::addOutputOp(cls, "__str__");
                 cls.def("__repr__", [](PhotoCalib const &self) {
                     std::ostringstream os;
                     os << "PhotoCalib(" << self << ")";

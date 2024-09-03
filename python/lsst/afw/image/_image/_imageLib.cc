@@ -30,6 +30,8 @@ namespace image {
 
 void wrapImage(lsst::cpputils::python::WrapperCollection &);
 void wrapImageSlice(lsst::cpputils::python::WrapperCollection &);
+
+NB_MODULE(_imageLib, mod) {
     lsst::cpputils::python::WrapperCollection wrappers(mod, "lsst.afw.image._image");
     wrapImage(wrappers);
     wrapImageSlice(wrappers);
