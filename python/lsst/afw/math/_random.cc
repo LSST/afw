@@ -72,7 +72,6 @@ void declareRandom(lsst::cpputils::python::WrapperCollection &wrappers) {
     });
 
     wrappers.wrapType(clsRandom, [](auto &mod,
->>>>>>> b7d9a91a8 (Save for rebase)
                                                                                          auto &cls) {
         /* Constructors */
         cls.def(nb::init<Random::Algorithm, unsigned long>(), "algorithm"_a = Random::Algorithm::MT19937,
