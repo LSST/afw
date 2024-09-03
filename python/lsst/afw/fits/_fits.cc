@@ -160,7 +160,7 @@ void declareImageScale(lsst::cpputils::python::WrapperCollection &wrappers) {
     });
 }
 
-void declareImageWriteOptions(cpplsst::utils::python::WrapperCollection &wrappers) {
+void declareImageWriteOptions(lsst::cpputils::python::WrapperCollection &wrappers) {
     wrappers.wrapType(nb::class_<ImageWriteOptions>(wrappers.module, "ImageWriteOptions"),
                       [](auto &mod, auto &cls) {
                           cls.def(nb::init<lsst::afw::image::Image<std::uint16_t>>());
