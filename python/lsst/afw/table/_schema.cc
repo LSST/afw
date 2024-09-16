@@ -71,6 +71,7 @@ template <typename T>
 using PySchemaItem = nb::class_<SchemaItem<T>>;
 
 // Specializations for FieldBase
+
 template <typename T>
 void declareFieldBaseSpecializations(PyFieldBase<T> &cls) {
     cls.def(nb::init<>());
@@ -340,6 +341,7 @@ void declareSchemaType(WrapperCollection &wrappers) {
     wrappers.wrapType(PyField<T>(wrappers.module, ("Field" + suffix).c_str()), [pySuffix, astropyUnit](
                                                                                        auto &mod, auto &cls) {
         declareFieldSpecializations(cls);
+
         mod.attr("_Field")[pySuffix] = cls;
 
 	cls.def("__init__", [astropyUnit](Field<T> *field, // capture by value to refcount in Python instead of dangle in C++

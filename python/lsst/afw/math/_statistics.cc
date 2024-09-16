@@ -106,7 +106,7 @@ void declareStatisticsVectorOverloads(lsst::cpputils::python::WrapperCollection 
 
 void declareStatistics(lsst::cpputils::python::WrapperCollection &wrappers) {
     /* Module level */
-    wrappers.wrapType(nb::enum_<Property>(wrappers.module, "Property", nb::flag_enum()),
+    wrappers.wrapType(nb::enum_<Property>(wrappers.module, "Property", nb::is_flag()),
                       [](auto &mod, auto &enm) {
                           enm.value("NOTHING", Property::NOTHING);
                           enm.value("ERRORS", Property::ERRORS);
@@ -134,7 +134,7 @@ void declareStatistics(lsst::cpputils::python::WrapperCollection &wrappers) {
 
     using PyClass = nb::class_<StatisticsControl>;
     auto control = PyClass(wrappers.module, "StatisticsControl");
-    wrappers.wrapType(nb::enum_<StatisticsControl::WeightsBoolean>(control, "WeightsBoolean", nb::flag_enum()),
+    wrappers.wrapType(nb::enum_<StatisticsControl::WeightsBoolean>(control, "WeightsBoolean", nb::is_flag()),
                       [](auto &mod, auto &enm) {
                           enm.value("WEIGHTS_FALSE", StatisticsControl::WeightsBoolean::WEIGHTS_FALSE);
                           enm.value("WEIGHTS_TRUE", StatisticsControl::WeightsBoolean::WEIGHTS_TRUE);

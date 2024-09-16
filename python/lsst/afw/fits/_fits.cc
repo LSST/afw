@@ -266,6 +266,7 @@ void declareFitsModule(lsst::cpputils::python::WrapperCollection &wrappers) {
                     return readMetadata(filename, hdu, strip);
                 },
                 "fileName"_a, "hdu"_a = DEFAULT_HDU, "strip"_a = false);
+
         mod.def(
                 "readMetadata",
                 [](std::string const &filename, std::string const &hduname, bool strip = false) {

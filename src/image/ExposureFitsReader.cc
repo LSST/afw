@@ -481,11 +481,8 @@ std::shared_ptr<TransmissionCurve> ExposureFitsReader::readTransmissionCurve() {
 }
 
 std::shared_ptr<cameraGeom::Detector> ExposureFitsReader::readDetector() {
-    std::cout << "readDetector\n";
     _ensureReaders();
-    auto temp =  _archiveReader->readComponent<cameraGeom::Detector>(_getFitsFile(), ArchiveReader::DETECTOR);
-    std::cout << temp << "\n";
-    return temp;
+    return _archiveReader->readComponent<cameraGeom::Detector>(_getFitsFile(), ArchiveReader::DETECTOR);
 }
 
 std::shared_ptr<typehandling::Storable> ExposureFitsReader::readComponent(std::string const& componentName) {
