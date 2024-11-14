@@ -168,12 +168,8 @@ class SpanSetTestCase(lsst.utils.tests.TestCase):
         spanSetArea = spanSetArea.shiftedBy(2, 2)
 
         testArray = np.arange(5*5*3).reshape(5, 5, 3)
-        #print('------------- flatten ------------------')
-        #print(testArray)
         flattened2DArray = spanSetArea.flatten(testArray)
 
-        #print(flattened2DArray)
-        #print('------------- flatten ------------------')
         truthArray = np.arange(5*5*3).reshape(5*5, 3)
         self.assertFloatsAlmostEqual(flattened2DArray, truthArray)
 
