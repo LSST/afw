@@ -52,20 +52,12 @@ using PySpanSet = nb::class_<SpanSet>;
 template <typename Pixel, typename PyClass>
 void declareFlattenMethod(PyClass &cls) {
     cls.def("flatten", [](SpanSet &self, ndarray::Array<Pixel, 2, 0> const &array, lsst::geom::Point2I const &point) {
-            std::cout << "+++++++++++++++\n";
             static_assert(!std::is_same_v<Pixel, bool>);
-            std::cout << array;
             auto result = self.flatten<Pixel, 2, 0>(array, point);
-            std::cout << "+++++++++++++++\n";
-            //std::cout << result;
             return result;
         }, "input"_a, "xy0"_a = lsst::geom::Point2I(), nb::rv_policy::reference);
     cls.def("flatten", [](SpanSet &self, ndarray::Array<Pixel, 3, 0> const & array, lsst::geom::Point2I const &point) {
-            std::cout << "+++++++++++++++\n";
-            std::cout << array;
             auto result =  self.flatten<Pixel, 3, 0>(array, point);
-            std::cout << "+++++++++++++++\n";
-            //std::cout << result;
             return result;
         },"input"_a, "xy0"_a = lsst::geom::Point2I(), nb::rv_policy::reference);
     cls.def("flatten",

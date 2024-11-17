@@ -68,8 +68,20 @@ public:
 
     /// @internal Access to the private Key constructor.
     template <typename T>
+    static void makeKey(Key<T> *key, std::size_t offset) {
+        new (key) Key<T>(offset);
+    }
+
+    /// @internal Access to the private Key constructor.
+    template <typename T>
     static Key<T> makeKey(Field<T> const &field, std::size_t offset) {
         return Key<T>(offset, field);
+    }
+
+    /// @internal Access to the private Key constructor.
+    template <typename T>
+    static Key<T> makeKey(Key<T> *key, Field<T> const &field, std::size_t offset) {
+        new (key) Key<T>(offset, field);
     }
 
     /// @internal Access to the private Key constructor.

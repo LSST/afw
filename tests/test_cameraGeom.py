@@ -227,7 +227,7 @@ class CameraGeomTestCase(lsst.utils.tests.TestCase):
         """
         cameraBuilder = Camera.Builder("CameraWithCustomTransforms")
 
-        pixelSize = lsst.geom.Extent2D((0.02, 0.02))
+        pixelSize = lsst.geom.Extent2D(0.02, 0.02)
         # Detector with custom map:
         detectorBuilder = cameraBuilder.add("Det0", 0)
         detectorBuilder.setPixelSize(pixelSize)

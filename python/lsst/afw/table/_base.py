@@ -106,7 +106,6 @@ class Catalog(metaclass=TemplateMeta):
             result, self._columns = self._get_column_from_key(key, self._columns)
             return result
         elif isinstance(key, Key):
-            print("col" ,self._columns)
             result, self._columns = self._get_column_from_key(key, self._columns)
             return result
         else:

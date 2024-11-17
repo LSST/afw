@@ -129,6 +129,7 @@ class PythonStorableTestSuite(lsst.utils.tests.TestCase):
         self.assertIsInstance(retrieved, Storable)
         self.assertIsInstance(retrieved, cppLib.CppStorable)
         self.assertIsInstance(retrieved, SpecializedStorable)
+        print("retrieved", retrieved, " - ", repr(retrieved))
         self.assertEqual(repr(retrieved), "Pythonic Foo")
         cppLib.assertPythonStorable(retrieved, "Pythonic Foo")
 
@@ -206,8 +207,6 @@ class ExposureStorableBlobTestSuite(lsst.utils.tests.TestCase):
         # Extra components must be ALL CAPS for fits storage.
         im.getInfo().setComponent("BLOB", self.blob)
         with lsst.utils.tests.getTempFilePath(".fits") as tmpFile:
-            print('-------------------', tmpFile)
-            print(type(tmpFile))
             im.writeFits(tmpFile)
 
             newIm = ExposureF(tmpFile)

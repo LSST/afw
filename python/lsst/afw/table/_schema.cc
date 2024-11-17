@@ -220,16 +220,16 @@ void declareKeySpecializations(PyKey<T> &cls) {
                 /* Return a tuple that fully encodes the state of the object */
                 return nb::make_tuple(self.getOffset());
             });
-            cls.def("__getstate__",
-            [](nb::tuple t) {
-                int const NPARAMS = 1;
-                if (t.size() != NPARAMS) {
-                    std::ostringstream os;
-                    os << "Invalid number of parameters (" << t.size() << ") when unpickling; expected "
-                       << NPARAMS;
-                    throw std::runtime_error(os.str());
-                }
-                return detail::Access::makeKey<T>(nb::cast<int>(t[0]));
+            cls.def("__setstate__",
+                [](Key<T> *key, nb::tuple t) {
+                    int const NPARAMS = 1;
+                    if (t.size() != NPARAMS) {
+                        std::ostringstream os;
+                        os << "Invalid number of parameters (" << t.size() << ") when unpickling; expected "
+                           << NPARAMS;
+                        throw std::runtime_error(os.str());
+                    }
+                    detail::Access::makeKey<T>(key, nb::cast<int>(t[0]));
             });
 }
 

@@ -186,7 +186,7 @@ class FitsReaderTestCase(lsst.utils.tests.TestCase):
         reader = MaskedImageFitsReader(fileName)
         self.checkMultiPlaneReader(reader, maskedImageIn, fileName, dtypesOut,
                                    compare=self.assertMaskedImagesEqual)
-        
+
     def checkExposureFitsReader(self, exposureIn, fileName, dtypesOut):
         """Test ExposureFitsReader.
 
@@ -200,7 +200,6 @@ class FitsReaderTestCase(lsst.utils.tests.TestCase):
             Compatible image pixel types to try to read in.
         """
         reader = ExposureFitsReader(fileName)
-        print(fileName)
         self.assertIn('EXPINFO_V', reader.readMetadata().toDict(), "metadata is automatically versioned")
         reader.readMetadata().remove('EXPINFO_V')
         # ensure EXTNAMEs can be read and make sense
@@ -253,17 +252,10 @@ class FitsReaderTestCase(lsst.utils.tests.TestCase):
         # instances for *archive* components, and hence equality comparisons
         # should work even if it just amounts to C++ pointer equality.
         record = reader.readCoaddInputs().ccds[0]
-
         self.assertEqual(record.getWcs(), reader.readWcs())
-        #print((record.getPsf()))
-        #print((reader.readPsf()))
-        a = record.getPsf()
-        b = reader.readPsf()
-        print(id(a),id(b))
-        print(record.getPsf(), reader.readPsf())
-        #self.assertEqual(a, b)
+        self.assertEqual(record.getPsf(), reader.readPsf())
         self.assertEqual(record.getValidPolygon(), reader.readValidPolygon())
-        #self.assertEqual(record.getApCorrMap(), reader.readApCorrMap())
+        self.assertEqual(record.getApCorrMap(), reader.readApCorrMap())
         self.assertEqual(record.getPhotoCalib(), reader.readPhotoCalib())
         self.assertEqual(record.getDetector(), reader.readDetector())
         self.checkMultiPlaneReader(

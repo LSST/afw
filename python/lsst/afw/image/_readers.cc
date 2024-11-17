@@ -23,6 +23,7 @@
 
 #include "nanobind/nanobind.h"
 #include "nanobind/stl/vector.h"
+#include "nanobind/stl/string.h"
 #include "nanobind/stl/shared_ptr.h"
 #include "nanobind/stl/optional.h"
 #include "lsst/cpputils/python.h"
@@ -73,6 +74,7 @@ static nb::object create_dtype(const std::string &type) {
     }
     return nb::object(nb::handle(dtype), nb::detail::steal_t());
 }
+
 
 // ImageBaseFitsReader is an implementation detail and is not exposed directly
 // to Python, as we have better ways to share wrapper code between classes
@@ -345,13 +347,15 @@ void declareExposureFitsReader(lsst::cpputils::python::WrapperCollection &wrappe
                     if (dtype.is(nb::none())) {
                         dtype = create_dtype(self.readImageDType());
                     }
-                    return cpputils::python::TemplateInvoker().apply(
+                    auto result = cpputils::python::TemplateInvoker().apply(
                             [&](auto t) {
                                 return self.read<decltype(t)>(bbox, origin, conformMasks, allowUnsafe);
                             },
                             dtype,
                             cpputils::python::TemplateInvoker::Tag<std::uint16_t, int, float, double,
                                                                 std::uint64_t>());
+                    return result;
+
                 },
                 "bbox"_a = lsst::geom::Box2I(), "origin"_a = PARENT, "conformMasks"_a = false,
                 "allowUnsafe"_a = false, "dtype"_a = nb::none());

@@ -58,7 +58,7 @@ class FluxFromABMagTableTestCase(lsst.utils.tests.TestCase):
 
     def testVector(self):
         flux = np.array([1.0, 210.0, 3210.0, 43210.0, 543210.0])
-        #flux.flags.writeable = False  # Put the 'const' into ndarray::Array<double const, 1, 0>
+        # flux.flags.writeable = False  # Put the 'const' into ndarray::Array<double const, 1, 0>
         abMag = afwImage.abMagFromFlux(flux)
         self.assertFloatsAlmostEqual(abMag, refABMagFromFlux(flux))
         fluxRoundTrip = afwImage.fluxFromABMag(abMag)

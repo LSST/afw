@@ -423,7 +423,7 @@ class SchemaMapperTestCase(unittest.TestCase):
         inKey = schema.addField("bb", type=float)
         outField = lsst.afw.table.Field[float]("cc", "doc for bb->cc")
         mapper.addMapping(inKey, outField, True)
-        
+
         pickled = pickle.dumps(mapper, protocol=pickle.HIGHEST_PROTOCOL)
         unpickled = pickle.loads(pickled)
         self.assertEqual(mapper, unpickled)

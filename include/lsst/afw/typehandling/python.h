@@ -89,7 +89,23 @@ public:
     }
 
     bool equals(Storable const& other) const noexcept override {
-        NB_OVERRIDE_NAME("__eq__", equals, other);
+        using nb_ret_type = decltype(NBBase::equals(other));
+        nanobind::detail::ticket nb_ticket(nb_trampoline, "__eq__", false);
+        if (nb_ticket.key.is_valid()) {
+            std::cout << "here0\n";
+            auto l = nb_ticket.key;
+            std::cout << "here1\n";
+            auto k1 = nb_trampoline.base().attr(nb_ticket.key);
+            std::cout << "here2\n";
+            auto k = nb_trampoline.base().attr(nb_ticket.key)(other);
+            std::cout << "here4\n";
+            return nanobind::cast<nb_ret_type>(nb_trampoline.base().attr(nb_ticket.key)(other));
+        }
+        else  {
+             std::cout << "here4\n";
+            return NBBase::equals(other);
+        }
+
     }
 
     bool isPersistable() const noexcept override {
@@ -197,7 +213,7 @@ void StorableHelper<Base>::write(table::io::OutputArchiveHandle& handle) const {
     nanobind::detail::ticket nb_ticket(nb_trampoline, "_write", false);
     if (!nb_ticket.key.is_valid())
         throw std::runtime_error("Cannot find StorableHelper _write overload");
-    auto o = nanobind::cast<std::string>(nb_trampoline.base().attr(nb_ticket.key)());
+    std::string o = (nanobind::bytearray(nb_trampoline.base().attr(nb_ticket.key)())).c_str();
     auto const &keys = StorableHelperPersistenceHelper::get();
     table::BaseCatalog cat = handle.makeCatalog(keys.schema);
     std::shared_ptr<table::BaseRecord> record = cat.addNew();
