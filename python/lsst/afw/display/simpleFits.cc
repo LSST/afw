@@ -26,20 +26,18 @@
  *
  * This version knows about LSST data structures
  */
-#ifndef DOXYGEN    // Doxygen doesn't like includes inside namespaces
-namespace posix {  // here so no-one includes them first outside namespace posix {}
 #include <unistd.h>
 #include <fcntl.h>
-}  // namespace posix
-#endif  // !DOXYGEN
-using namespace posix;
 #include <cstdint>
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
-#include <cassert>
 #include <cctype>
 #include <any>
+#include <vector>
+#include <string>
+
+#include <fmt/core.h>
 
 #include "lsst/pex/exceptions.h"
 #include "lsst/afw/fits.h"
@@ -48,7 +46,9 @@ using namespace posix;
 namespace image = lsst::afw::image;
 using lsst::daf::base::PropertySet;
 
-#define FITS_SIZE 2880
+constexpr int CARD_SIZE = 80;
+constexpr int MAX_CARDS = 36;
+constexpr int FITS_SIZE = MAX_CARDS * CARD_SIZE;
 
 /// @cond
 class Card {
@@ -63,8 +63,6 @@ public:
             : keyword(name), value(val), comment(commnt) {}
     Card(const std::string &name, const std::string &val, const char *commnt = "")
             : keyword(name), value(val), comment(commnt) {}
-    Card(const std::string &name, const char *val, const char *commnt = "")
-            : keyword(name), value(std::string(val)), comment(commnt) {}
 
     ~Card() = default;
 
@@ -79,36 +77,37 @@ public:
  * Write a Card
  */
 int Card::write(int fd, int ncard, char *record) const {
-    char *card = &record[80 * ncard];
-
+    char *card = &record[CARD_SIZE * ncard];
+    // sizes are incremwnred by one to accomodate null termination by snprinf
+    // claang and gcc check the buffer length based on the format string
     if (value.type() == typeid(std::string)) {
         std::string const &str = std::any_cast<std::string>(value);
-        if (keyword == "" || keyword == "COMMENT" || keyword == "END" || keyword == "HISTORY") {
-            sprintf(card, "%-8.8s%-72s", keyword.c_str(), str.c_str());
+        if (keyword.empty() || keyword == "COMMENT" || keyword == "END" || keyword == "HISTORY") {
+            snprintf(card, CARD_SIZE+1, "%-8.8s%-72s", keyword.c_str(), str.c_str());
         } else {
-            sprintf(card, "%-8.8s= '%s' %c%-*s", keyword.c_str(), str.c_str(), (comment == "" ? ' ' : '/'),
-                    (int)(80 - 14 - str.size()), comment.c_str());
+            snprintf(card, CARD_SIZE+1, "%-8.8s= '%s' %c%-*s", keyword.c_str(), str.c_str(), (comment.empty() ? ' ' : '/'),
+                    (int)(CARD_SIZE - 14 - str.size()), comment.c_str());
         }
     } else {
-        sprintf(card, "%-8.8s= ", keyword.c_str());
+        snprintf(card, 11, "%-8.8s= ", keyword.c_str());
         card += 10;
         if (value.type() == typeid(bool)) {
-            sprintf(card, "%20s", std::any_cast<bool>(value) ? "T" : "F");
+            snprintf(card, 21, "%20s", std::any_cast<bool>(value) ? "T" : "F");
         } else if (value.type() == typeid(int)) {
-            sprintf(card, "%20d", std::any_cast<int>(value));
+            snprintf(card, 21, "%20d", std::any_cast<int>(value));
         } else if (value.type() == typeid(double)) {
-            sprintf(card, "%20.10f", std::any_cast<double>(value));
+            snprintf(card, 21, "%20.10f", std::any_cast<double>(value));
         } else if (value.type() == typeid(float)) {
-            sprintf(card, "%20.7f", std::any_cast<float>(value));
+            snprintf(card, 21, "%20.7f", std::any_cast<float>(value));
         }
         card += 20;
-        sprintf(card, " %c%-48s", (comment == "" ? ' ' : '/'), comment.c_str());
+        snprintf(card, CARD_SIZE-30+1, " %c%-48s", (comment.empty() ? ' ' : '/'), comment.c_str());
     }
     /*
      * Write record if full
      */
-    if (++ncard == 36) {
-        if (posix::write(fd, record, FITS_SIZE) != FITS_SIZE) {
+    if (++ncard == MAX_CARDS) {
+        if (::write(fd, record, FITS_SIZE) != FITS_SIZE) {
             throw LSST_EXCEPT(lsst::pex::exceptions::RuntimeError, "Cannot write header record");
         }
         ncard = 0;
@@ -201,44 +200,27 @@ void swap_8(char *arr,      // array to swap
     }
 }
 
-int write_fits_hdr(int fd, int bitpix, int naxis, int *naxes, std::list<Card> &cards, /* extra header cards */
-                   int primary) /* is this the primary HDU? */
+void write_fits_hdr(int fd, int bitpix, std::array<int, 2> const naxes, std::vector<Card> const &cards)
 {
     int i;
+    constexpr int naxis = naxes.size();
     char record[FITS_SIZE + 1]; /* write buffer */
 
     int ncard = 0;
-    if (primary) {
-        Card card("SIMPLE", true);
-        ncard = card.write(fd, ncard, record);
-    } else {
-        Card card("XTENSION", "IMAGE");
-        ncard = card.write(fd, ncard, record);
-    }
+    ncard = Card("SIMPLE", true).write(fd, ncard, record);
+    ncard = Card("BITPIX", bitpix).write(fd, ncard, record);
+    ncard = Card("NAXIS", naxis).write(fd, ncard, record);
 
-    {
-        Card card("BITPIX", bitpix);
-        ncard = card.write(fd, ncard, record);
-    }
-    {
-        Card card("NAXIS", naxis);
-        ncard = card.write(fd, ncard, record);
-    }
     for (i = 0; i < naxis; i++) {
-        char key[] = "NAXIS.";
-        sprintf(key, "NAXIS%d", i + 1);
-        Card card(key, naxes[i]);
-        ncard = card.write(fd, ncard, record);
+        std::string key = "NAXIS" + std::to_string(i + 1);
+        ncard = Card(key, naxes[i]).write(fd, ncard, record);
     }
-    if (primary) {
-        Card card("EXTEND", true, "There may be extensions");
-        ncard = card.write(fd, ncard, record);
-    }
+    ncard = Card("EXTEND", true, "There may be extensions").write(fd, ncard, record);
     /*
      * Write extra header cards
      */
-    for (std::list<Card>::const_iterator card = cards.begin(); card != cards.end(); card++) {
-        ncard = card->write(fd, ncard, record);
+    for (const auto&  c: cards) {
+        ncard = c.write(fd, ncard, record);
     }
 
     {
@@ -249,8 +231,6 @@ int write_fits_hdr(int fd, int bitpix, int naxis, int *naxes, std::list<Card> &c
         Card card("", "");
         ncard = card.write(fd, ncard, record);
     }
-
-    return 0;
 }
 
 /*
@@ -277,20 +257,14 @@ void pad_to_fits_record(int fd,      // output file descriptor
 
 int write_fits_data(int fd, int bitpix, char *begin, char *end) {
     const int bytes_per_pixel = (bitpix > 0 ? bitpix : -bitpix) / 8;
+    char buffer[FITS_SIZE * bytes_per_pixel];
     int swap_bytes = 0;          // the default
 #if defined(LSST_LITTLE_ENDIAN)  // we'll need to byte swap FITS
     if (bytes_per_pixel > 1) {
         swap_bytes = 1;
     }
 #endif
-
-    char *buff = nullptr;       // I/O buffer
-    bool allocated = false;  // do I need to free it?
-    if (swap_bytes || bitpix == 16) {
-        buff = new char[FITS_SIZE * bytes_per_pixel];
-        allocated = true;
-    }
-
+    char *buff = buffer;
     int nbyte = end - begin;
     int nwrite = (nbyte > FITS_SIZE) ? FITS_SIZE : nbyte;
     for (char *ptr = begin; ptr != end; nbyte -= nwrite, ptr += nwrite) {
@@ -329,14 +303,10 @@ int write_fits_data(int fd, int bitpix, char *begin, char *end) {
         }
     }
 
-    if (allocated) {
-        delete buff;
-    }
-
     return (nbyte == 0 ? 0 : -1);
 }
 
-void addWcs(std::string const &wcsName, std::list<Card> &cards, int x0 = 0.0, int y0 = 0.0) {
+void addWcs(std::string const &wcsName, std::vector<Card> &cards, int x0 = 0, int y0 = 0) {
     cards.emplace_back(str(boost::format("CRVAL1%s") % wcsName), x0, "(output) Column pixel of Reference Pixel");
     cards.emplace_back(str(boost::format("CRVAL2%s") % wcsName), y0, "(output) Row pixel of Reference Pixel");
     cards.emplace_back(str(boost::format("CRPIX1%s") % wcsName), 1.0, "Column Pixel Coordinate of Reference");
@@ -361,7 +331,7 @@ void writeBasicFits(int fd,                   // file descriptor to write to
     /*
      * Allocate cards for FITS headers
      */
-    std::list<Card> cards;
+    std::vector<Card> cards;
     /*
      * What sort if image is it?
      */
@@ -422,12 +392,9 @@ void writeBasicFits(int fd,                   // file descriptor to write to
     /*
      * Basic FITS stuff
      */
-    const int naxis = 2;  // == NAXIS
-    int naxes[naxis];     /* values of NAXIS1 etc */
-    naxes[0] = data.getWidth();
-    naxes[1] = data.getHeight();
+    std::array<int, 2> naxes{data.getWidth(), data.getHeight()};
 
-    write_fits_hdr(fd, bitpix, naxis, naxes, cards, 1);
+    write_fits_hdr(fd, bitpix, naxes, cards);
     for (int y = 0; y != data.getHeight(); ++y) {
         if (write_fits_data(fd, bitpix, (char *)(data.row_begin(y)), (char *)(data.row_end(y))) < 0) {
             throw LSST_EXCEPT(lsst::pex::exceptions::RuntimeError,
