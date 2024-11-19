@@ -24,6 +24,7 @@
 #include <nanobind/nanobind.h>
 
 #include "lsst/afw/table/io/python.h"  // for addPersistableMethods
+#include "lsst/afw/typehandling/python.h"
 #include "lsst/afw/detection/GaussianPsf.h"
 
 #include "lsst/cpputils/python.h"

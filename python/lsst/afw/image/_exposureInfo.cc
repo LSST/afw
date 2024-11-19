@@ -59,7 +59,7 @@ void declareGenericMethods(PyExposureInfo &cls) {
             [](PyExposureInfo::Type &self, std::string const &key, T const &object) {
                 self.setComponent(typehandling::makeKey<T>(key), object);
             },
-            "key"_a, "object"_a);
+            "key"_a, nb::arg("object").none());
 }
 // Template methods where we need to provide a unified interface (T is not input)
 void declareGenericMethodsMerged(PyExposureInfo &cls) {
@@ -120,21 +120,14 @@ void declareExposureInfo(lsst::cpputils::python::WrapperCollection &wrappers) {
         cls.attr("KEY_WCS") = ExposureInfo::KEY_WCS.getId();
         cls.def("hasWcs", &ExposureInfo::hasWcs);
         cls.def("getWcs", (std::shared_ptr<geom::SkyWcs>(ExposureInfo::*)()) & ExposureInfo::getWcs);
-        cls.def("setWcs", &ExposureInfo::setWcs, "wcs"_a);
+        cls.def("setWcs", &ExposureInfo::setWcs, nb::arg("wcs").none());
 
         cls.attr("KEY_DETECTOR") = ExposureInfo::KEY_DETECTOR.getId();
         cls.def("hasDetector", &ExposureInfo::hasDetector);
         cls.def("getDetector", &ExposureInfo::getDetector);
         cls.def(
-                "setDetector",
-                [](ExposureInfo &self, nb::object detector) {
-                    if (detector.is(nb::none())) {
-                        self.setDetector(nullptr);
-                    } else {
-                        self.setDetector(nb::cast<std::shared_ptr<afw::cameraGeom::Detector>>(detector));
-                    }
-                },
-                "detector"_a);
+                "setDetector", &ExposureInfo::setDetector,
+                nb::arg("detector").none());
 
         cls.attr("KEY_FILTER") = ExposureInfo::KEY_FILTER.getId();
         cls.def("hasFilter", &ExposureInfo::hasFilter);
@@ -147,7 +140,7 @@ void declareExposureInfo(lsst::cpputils::python::WrapperCollection &wrappers) {
         cls.attr("KEY_PHOTO_CALIB") = ExposureInfo::KEY_PHOTO_CALIB.getId();
         cls.def("hasPhotoCalib", &ExposureInfo::hasPhotoCalib);
         cls.def("getPhotoCalib", &ExposureInfo::getPhotoCalib);
-        cls.def("setPhotoCalib", &ExposureInfo::setPhotoCalib, "photoCalib"_a);
+        cls.def("setPhotoCalib", &ExposureInfo::setPhotoCalib, nb::arg("photoCalib").none());
 
         cls.def("hasId", &ExposureInfo::hasId);
         // Use exception handler to avoid overhead of calling hasId twice, and
@@ -178,43 +171,29 @@ void declareExposureInfo(lsst::cpputils::python::WrapperCollection &wrappers) {
         cls.def("hasPsf", &ExposureInfo::hasPsf);
         cls.def("getPsf", &ExposureInfo::getPsf);
         cls.def(
-                "setPsf",
-                [](ExposureInfo &self, nb::object psf) {
-                    if (psf.is(nb::none())) {
-                        self.setPsf(nullptr);
-                    } else {
-                        self.setPsf(nb::cast<std::shared_ptr<afw::detection::Psf>>(psf));
-                    }
-                },
-                "psf"_a);
+                "setPsf", &ExposureInfo::setPsf, 
+                nb::arg("psf").none());
 
         cls.attr("KEY_VALID_POLYGON") = ExposureInfo::KEY_VALID_POLYGON.getId();
         cls.def("hasValidPolygon", &ExposureInfo::hasValidPolygon);
         cls.def("getValidPolygon", &ExposureInfo::getValidPolygon);
         cls.def(
-                "setValidPolygon",
-                [](ExposureInfo &self, nb::object polygon) {
-                    if (polygon.is(nb::none())) {
-                        self.setValidPolygon(nullptr);
-                    } else {
-                        self.setValidPolygon(nb::cast<std::shared_ptr<afw::geom::polygon::Polygon>>(polygon));
-                    }
-                },
-                "polygon"_a);
+                "setValidPolygon", &ExposureInfo::setValidPolygon,
+                nb::arg("polygon").none());
 
         cls.attr("KEY_AP_CORR_MAP") = ExposureInfo::KEY_AP_CORR_MAP.getId();
         cls.def("hasApCorrMap", &ExposureInfo::hasApCorrMap);
         cls.def("getApCorrMap", (std::shared_ptr<ApCorrMap>(ExposureInfo::*)()) & ExposureInfo::getApCorrMap);
-        cls.def("setApCorrMap", &ExposureInfo::setApCorrMap, "apCorrMap"_a);
+        cls.def("setApCorrMap", &ExposureInfo::setApCorrMap, nb::arg("apCorrMap").none());
 
         cls.attr("KEY_COADD_INPUTS") = ExposureInfo::KEY_COADD_INPUTS.getId();
         cls.def("hasCoaddInputs", &ExposureInfo::hasCoaddInputs);
         cls.def("getCoaddInputs", &ExposureInfo::getCoaddInputs);
-        cls.def("setCoaddInputs", &ExposureInfo::setCoaddInputs, "coaddInputs"_a);
+        cls.def("setCoaddInputs", &ExposureInfo::setCoaddInputs, nb::arg("coaddInputs").none());
 
         cls.def("hasVisitInfo", &ExposureInfo::hasVisitInfo);
         cls.def("getVisitInfo", &ExposureInfo::getVisitInfo);
-        cls.def("setVisitInfo", &ExposureInfo::setVisitInfo, "visitInfo"_a);
+        cls.def("setVisitInfo", &ExposureInfo::setVisitInfo, nb::arg("visitInfo").none());
 
         cls.attr("KEY_TRANSMISSION_CURVE") = ExposureInfo::KEY_TRANSMISSION_CURVE.getId();
         cls.def("hasTransmissionCurve", &ExposureInfo::hasTransmissionCurve);

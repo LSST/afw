@@ -159,6 +159,10 @@ class PsfTrampolineTestSuite(lsst.utils.tests.TestCase):
                 pgp.computeKernelBBox(pgp.getAveragePosition()),
                 gp.computeKernelBBox(gp.getAveragePosition()),
             )
+            a1 = pgp.getAveragePosition()
+            a2 = gp.getAveragePosition()
+            print("type id ", type(pgp))
+            a3 = pgp.computeImageBBox(a1)
             self.assertEqual(
                 pgp.computeImageBBox(pgp.getAveragePosition()),
                 gp.computeImageBBox(gp.getAveragePosition()),
@@ -187,6 +191,7 @@ class PsfTrampolineTestSuite(lsst.utils.tests.TestCase):
             # PyGaussianPsf.resized above
             rpgp2 = cppLib.resizedPsf(pgp, width+2, height+4)
             rgp = gp.resized(width+2, height+4)
+            print("rpg", type(rgp), dir(rgp))
             self.assertImagesAlmostEqual(
                 rpgp.computeImage(rpgp.getAveragePosition()),
                 rgp.computeImage(rgp.getAveragePosition())

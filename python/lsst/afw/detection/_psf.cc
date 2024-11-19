@@ -34,6 +34,7 @@
 #include "lsst/afw/image/Color.h"
 #include "lsst/afw/table/io/python.h"  // for addPersistableMethods
 #include "lsst/afw/typehandling/Storable.h"
+#include "lsst/afw/typehandling/python.h"
 #include "lsst/afw/detection/Psf.h"
 #include "lsst/afw/detection/python.h"
 
@@ -49,11 +50,12 @@ namespace detection {
 
 void wrapPsf(utils::python::WrapperCollection& wrappers) {
     auto clsPsf = wrappers.wrapType(
-            nb::class_<Psf, PsfTrampoline<>>(
+            nb::class_<Psf, typehandling::Storable, PsfTrampoline<>>(
                 wrappers.module, "Psf"
             ),
             [](auto& mod, auto& cls) {
                 table::io::python::addPersistableMethods<Psf>(cls);
+		        typehandling::python::addStorableMethods<Psf>(cls);
                 cls.def(nb::init<bool, size_t>(), "isFixed"_a=false, "capacity"_a=100);  // Constructor for pure-Python subclasses
                 cls.def("clone", &Psf::clone);
                 cls.def("resized", &Psf::resized, "width"_a, "height"_a);

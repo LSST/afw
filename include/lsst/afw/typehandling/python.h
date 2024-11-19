@@ -41,6 +41,16 @@ namespace lsst {
 namespace afw {
 namespace typehandling {
 
+namespace python {
+namespace nb = nanobind;
+using namespace nb::literals;
+
+template<typename Class, typename... Args>
+void addStorableMethods(nanobind::class_<Class, Args...> &cls) {
+    //cls.def(nanobind::init<>());  // Dummy constructor for pure-Python subclasses
+    cls.def("__eq__", [](Storable const &self, Storable const &other) { return self.equals(other); }, "other"_a);
+}
+}
 /**
  * "Trampoline" for Storable to let it be used as a base class in Python.
  *

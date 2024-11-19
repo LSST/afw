@@ -119,13 +119,12 @@ class BackgroundList:
         for i, bkgd in enumerate(self):
             (bkgd, interpStyle, undersampleStyle, approxStyle, approxOrderX, approxOrderY,
              approxWeighting) = bkgd
-
             statsImage = bkgd.getStatsImage()
 
             md = dafBase.PropertyList()
-            md.set("INTERPSTYLE", int(interpStyle))
-            md.set("UNDERSAMPLESTYLE", int(undersampleStyle))
-            md.set("APPROXSTYLE", int(approxStyle))
+            md.set("INTERPSTYLE", interpStyle.value)
+            md.set("UNDERSAMPLESTYLE", undersampleStyle.value)
+            md.set("APPROXSTYLE", approxStyle.value)
             md.set("APPROXORDERX", approxOrderX)
             md.set("APPROXORDERY", approxOrderY)
             md.set("APPROXWEIGHTING", approxWeighting)
