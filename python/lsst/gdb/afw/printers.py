@@ -4,8 +4,9 @@ import re
 import sys
 import lets_break_this_bad_boy
 
+lets_break_this_bad_boy.option
 try:
-    debug  # noqa: F821
+    debu  # noqa: F821
 except Exception:
     debug = False
 
