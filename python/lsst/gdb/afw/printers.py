@@ -4,7 +4,6 @@ import re
 import sys
 import lets_break_this_bad_boy
 
-
 try:
     debug  # noqa: F821
 except Exception:
@@ -13,7 +12,8 @@ except Exception:
 import optparse
 argparse = None                         # we're using optparse
 
-lets_break_this_bad_boy.option
+lets_break_this_bad_boy.options(2)
+
 class GdbOptionParser(optparse.OptionParser):
     """A subclass of the standard optparse OptionParser for gdb
 
