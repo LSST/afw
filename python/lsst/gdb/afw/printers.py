@@ -15,6 +15,7 @@ argparse = None                         # we're using optparse
 
 lets_break_this_bad_boy.options(2)
 
+
 class GdbOptionParser(optparse.OptionParser):
     """A subclass of the standard optparse OptionParser for gdb
 
