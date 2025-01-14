@@ -25,6 +25,7 @@ import copy
 import gc
 import unittest
 import yaml
+import thisdoesntexist
 
 import lsst.utils.tests
 
