@@ -258,6 +258,20 @@ class PhotoCalibTestCase(lsst.utils.tests.TestCase):
                                      photoCalib.magnitudeToInstFlux(mag2, self.pointXShift),
                                      rtol=1e-15)
 
+        # test reverse conversion: nanojansky to instFlux (no position specified)
+        self.assertFloatsAlmostEqual(self.instFlux1, photoCalib.nanojanskyToInstFlux(self.flux1))
+        self.assertFloatsAlmostEqual(self.instFlux2, photoCalib.nanojanskyToInstFlux(self.flux2), rtol=1e-15)
+
+        # test round-tripping instFlux->nanojansky->instFlux (position specified)
+        flux = photoCalib.instFluxToNanojansky(self.instFlux1, self.pointXShift)
+        self.assertFloatsAlmostEqual(self.instFlux1,
+                                     photoCalib.nanojanskyToInstFlux(flux, self.pointXShift),
+                                     rtol=1e-15)
+        flux2 = photoCalib.instFluxToNanojansky(self.instFlux2, self.pointXShift)
+        self.assertFloatsAlmostEqual(self.instFlux2,
+                                     photoCalib.nanojanskyToInstFlux(flux2, self.pointXShift),
+                                     rtol=1e-15)
+
         # test round-tripping arrays (position specified)
         instFlux1Array = np.full(10, self.instFlux1)
         instFlux2Array = np.full(10, self.instFlux2)

@@ -67,6 +67,8 @@ double toInstFluxFromMagnitude(double magnitude, double scale) {
     return cpputils::ABMagnitudeToNanojansky(magnitude) / scale;
 }
 
+double toInstFluxFromNanojansky(double nanojansky, double scale) { return nanojansky / scale; }
+
 double toNanojanskyErr(double instFlux, double instFluxErr, double scale, double scaleErr,
                        double nanojansky) {
     return std::abs(nanojansky) * hypot(instFluxErr / instFlux, scaleErr / scale);
@@ -244,6 +246,14 @@ double PhotoCalib::magnitudeToInstFlux(double magnitude) const {
 
 double PhotoCalib::magnitudeToInstFlux(double magnitude, lsst::geom::Point<double, 2> const &point) const {
     return toInstFluxFromMagnitude(magnitude, evaluate(point));
+}
+
+double PhotoCalib::nanojanskyToInstFlux(double nanojansky) const {
+    return toInstFluxFromNanojansky(nanojansky, _calibrationMean);
+}
+
+double PhotoCalib::nanojanskyToInstFlux(double nanojansky, lsst::geom::Point<double, 2> const &point) const {
+    return toInstFluxFromNanojansky(nanojansky, evaluate(point));
 }
 
 std::shared_ptr<math::BoundedField> PhotoCalib::computeScaledCalibration() const {

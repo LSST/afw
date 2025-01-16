@@ -406,6 +406,23 @@ public:
     double magnitudeToInstFlux(double magnitude) const;
 
     /**
+     * Convert nanojansky to instFlux (ADU).
+     *
+     * If passed point, use the exact calculation at that point, otherwise, use the mean scaling factor.
+     *
+     * Useful for computing expected instrumental flux from reference catalog sources.
+     *
+     * @param[in]  nanojansky  The flux in nanojanksies to convert.
+     * @param[in]  point       The position that flux is to be converted at.
+     *
+     * @returns    Source instFlux in ADU.
+     */
+    double nanojanskyToInstFlux(double nanojansky, lsst::geom::Point<double, 2> const &point) const;
+
+    /// @overload nanojanskyToInstFlux(double, lsst::geom::Point<double, 2> const &) const;
+    double nanojanskyToInstFlux(double nanojansky) const;
+
+    /**
      * Get the mean photometric calibration.
      *
      * This value is defined, for instFlux at (x,y), such that:
