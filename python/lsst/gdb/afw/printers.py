@@ -2,6 +2,7 @@ import gdb
 import math
 import re
 import sys
+import booooo
 
 try:
     debug  # noqa: F821
