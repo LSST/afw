@@ -12,7 +12,6 @@ import optparse
 argparse = None                         # we're using optparse
 
 
-
 class GdbOptionParser(optparse.OptionParser):
     """A subclass of the standard optparse OptionParser for gdb
 
