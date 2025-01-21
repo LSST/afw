@@ -1,5 +1,3 @@
-# flake8: noqa
-
 import gdb
 import math
 import re
