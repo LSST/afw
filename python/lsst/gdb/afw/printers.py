@@ -2,7 +2,6 @@ import gdb
 import math
 import re
 import sys
-import lets_break_this_bad_boy
 
 try:
     debug  # noqa: F821
