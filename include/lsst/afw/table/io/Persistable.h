@@ -47,8 +47,10 @@ LSST_EXCEPTION_TYPE(MalformedArchiveError, lsst::afw::table::io::PersistenceErro
  */
 #define LSST_ARCHIVE_ASSERT(EXPR) \
     if (!(EXPR))                  \
-    throw LSST_EXCEPT(lsst::afw::table::io::MalformedArchiveError, "Archive assertion failed: " #EXPR)
-
+        throw LSST_EXCEPT(                                           \
+            lsst::afw::table::io::MalformedArchiveError,             \
+            "Archive assertion failed: " #EXPR                       \
+            " (File: " __FILE__ ", Line: " + std::to_string(__LINE__) + ")")
 /**
  *  A base class for objects that can be persisted via afw::table::io Archive classes.
  *
